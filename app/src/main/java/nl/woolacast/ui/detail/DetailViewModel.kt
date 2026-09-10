@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import nl.woolacast.data.ChartRepository
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.dataset.ChartsDataset
+import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.data.dataset.ShowPosition
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.LocalStore
@@ -34,7 +35,9 @@ data class DetailUiState(
     val cadence: String? = null,
     /** Aflevering-id → plek in Apple's afleveringenlijst van dit land. */
     val episodeRanks: Map<String, Int> = emptyMap(),
-    val countryCode: String = Catalog.defaultCountry.code
+    val countryCode: String = Catalog.defaultCountry.code,
+    /** Media die deze podcast tipten. */
+    val tips: List<MediaTip> = emptyList()
 )
 
 class DetailViewModel(
@@ -74,6 +77,11 @@ class DetailViewModel(
     init {
         load()
         viewModelScope.launch { store.markOpened(showId) }
+
+        viewModelScope.launch {
+            val tips = dataset?.tipsFor(showId, countryCode).orEmpty()
+            if (tips.isNotEmpty()) _state.value = _state.value.copy(tips = tips)
+        }
 
         viewModelScope.launch {
             val tracking = dataset?.tracking(showId) ?: return@launch

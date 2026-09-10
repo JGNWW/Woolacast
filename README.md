@@ -182,6 +182,38 @@ JavaScript meedraagt. Het klusje vist dat token elke run opnieuw uit de pagina
 tabblad wie de laatste dagen de Top 200 binnenkwam, gegroepeerd per dag, uit
 de eigen metingen.
 
+## Tips van de media
+
+Kranten, omroepen en podcastgidsen tippen podcasts; de app haalt die tips op
+en koppelt ze aan de catalogus, zodat je er meteen naartoe kunt. Er is geen
+gezamenlijke bron: per medium leest `collect.py tips` de rubriek — een RSS als
+die er is, anders de indexpagina van de gids, waarna elk artikel wordt gelezen
+op vetgedrukte en aangehaalde titels. Wat overblijft moet **exact** een show in
+Apple's catalogus zijn; anders sneuvelt het (een citaat van een geïnterviewde
+lijkt anders precies op een titel).
+
+Wat dat oplevert, gemeten:
+
+| Land | Tips | Media |
+| --- | --- | --- |
+| US | 32 | Podcast Review |
+| GB | 19 | The Guardian (Hear Here), Radio Times |
+| NL | 14 | VPRO Podcastgids, NOS |
+| CA | 5 | CBC |
+| FR | 3 | Télérama |
+| BE | 2 | Humo, De Standaard |
+| IE | 2 | The Irish Times |
+| BR, IT | 1 | G1, Il Post |
+| DE, ES, SE, DK, NO, AU, MX, JP, IN | 0 | — |
+
+De verdeling is scheef en dat is geen bug: **alleen een echte podcastgids
+levert wat op.** Een gewone cultuurfeed uitkammen op het woord "podcast" gaf
+in vrijwel elk land nul bruikbare tips. Wat verder niet lukte: de tagpagina's
+van DPG-titels (Volkskrant, Parool, De Morgen, HLN) en die van De Standaard
+staan achter een firewall die automatische lezers weert (403), en voor
+Duitsland vond ik geen gids met een leesbare index. Dat is per land uit te
+breiden door een adapter toe te voegen aan `TIP_SOURCES`.
+
 ## Stijgers en dalers
 
 Er bestaat geen publieke bron voor "gisteren". De app bewaart daarom zelf per
@@ -219,6 +251,7 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Luistervoortgang onthouden en hervatten | werkt |
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
 | Donker thema | werkt |
+| Tips van de media: op Ontdek, als eigen scherm, en op de podcastpagina | werkt in 8 landen |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -238,7 +271,8 @@ app/src/main/java/nl/woolacast/
               player/ het uitklapbare spelerscherm
 charts-service/  legt dagelijks de ranglijsten vast (historie) en haalt op
               wat de app niet zelf kan: Apple's afleveringen per categorie
-              en Apple's redactionele lijst "Nieuwe programma's"
+              en Apple's redactionele lijst "Nieuwe programma's", plus de
+              podcasttips van kranten, omroepen en gidsen
 tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```

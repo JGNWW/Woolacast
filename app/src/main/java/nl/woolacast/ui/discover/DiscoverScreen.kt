@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.data.dataset.DatasetMover
+import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.Category
 import nl.woolacast.domain.Country
@@ -45,6 +46,8 @@ import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.PageTitle
 import nl.woolacast.ui.common.SectionHeader
 import nl.woolacast.ui.common.WoolIcons
+import nl.woolacast.ui.common.shortDate
+import nl.woolacast.ui.tips.OutletMark
 import nl.woolacast.ui.theme.LocalChartColors
 
 /* De tegelkleuren uit de mockup (de artwork-plaatshouders), rondgedeeld over de categorieën. */
@@ -68,6 +71,7 @@ fun DiscoverScreen(
     onPick: (Country?, Category?) -> Unit,
     onSearch: () -> Unit,
     onAlerts: () -> Unit,
+    onTips: () -> Unit,
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -101,6 +105,27 @@ fun DiscoverScreen(
                         style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.5.sp),
                         color = LocalChartColors.current.muted
                     )
+                }
+            }
+
+            if (state.tips.isNotEmpty()) {
+                item {
+                    SectionHeader(
+                        "Tips van de media",
+                        action = if (state.tipCount > state.tips.size) "Alle ${state.tipCount}" else "Alles",
+                        onAction = onTips
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.tips, key = { it.url + it.showId }) { tip ->
+                            TipCard(tip) {
+                                tip.showId?.let { onOpenPodcast(it, tip.feedUrl, tip.showTitle.orEmpty()) }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(20.dp))
                 }
             }
 
@@ -213,6 +238,59 @@ fun DiscoverScreen(
 }
 
 private fun Color.luminance(): Float = 0.299f * red + 0.587f * green + 0.114f * blue
+
+/** Een tip als kaart: de podcast, het citaat uit het artikel, en wie het schreef. */
+@Composable
+private fun TipCard(tip: MediaTip, onClick: () -> Unit) {
+    val colors = LocalChartColors.current
+    Column(
+        modifier = Modifier
+            .width(236.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(start = 14.dp, end = 14.dp, top = 13.dp, bottom = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(11.dp)) {
+            Artwork(tip.artworkUrl, 48.dp, corner = 11.dp)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    tip.showTitle.orEmpty(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    tip.publisher,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    color = colors.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        Text(
+            tip.headline,
+            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 17.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            OutletMark(tip.outlet, size = 18.dp)
+            Text(
+                listOfNotNull(tip.outlet, shortDate(tip.date)).joinToString(" · "),
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.muted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
 
 @Composable
 private fun MoverCard(mover: DatasetMover, onClick: () -> Unit) {

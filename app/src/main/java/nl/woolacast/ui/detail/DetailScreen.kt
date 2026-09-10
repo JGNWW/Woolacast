@@ -63,6 +63,7 @@ import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.minutes
 import nl.woolacast.ui.common.remaining
 import nl.woolacast.ui.common.shortDate
+import nl.woolacast.ui.tips.OutletMark
 import nl.woolacast.ui.theme.DisplayFamily
 import nl.woolacast.ui.theme.LocalChartColors
 
@@ -220,6 +221,13 @@ fun DetailScreen(
                             countryCount = state.countryCount,
                             onClick = onOpenTracker
                         )
+                        Spacer(Modifier.height(15.dp))
+                    }
+                }
+
+                if (state.tips.isNotEmpty()) {
+                    item {
+                        TipBox(state.tips)
                         Spacer(Modifier.height(15.dp))
                     }
                 }
@@ -549,6 +557,59 @@ private fun ActionRow(icon: ImageVector, label: String, active: Boolean, onClick
         Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge, color = tint, modifier = Modifier.weight(1f))
         if (active) Icon(WoolIcons.Check, null, tint = tint, modifier = Modifier.size(18.dp))
+    }
+}
+
+/** Wat de media over deze podcast schreven, in de accentkleur onder de noteringen. */
+@Composable
+private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = 13.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(
+                WoolIcons.News, null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(17.dp)
+            )
+            Text(
+                if (tips.size == 1) "Getipt door 1 medium" else "Getipt door ${tips.size} media",
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+        tips.take(3).forEach { tip ->
+            Row(
+                modifier = Modifier.clickable {
+                    runCatching {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(tip.url)))
+                    }
+                },
+                horizontalArrangement = Arrangement.spacedBy(9.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                OutletMark(tip.outlet, size = 20.dp)
+                Text(
+                    buildString {
+                        append(tip.outlet)
+                        shortDate(tip.date)?.let { append(" · ").append(it) }
+                        append(" — ").append(tip.headline)
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 17.sp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 

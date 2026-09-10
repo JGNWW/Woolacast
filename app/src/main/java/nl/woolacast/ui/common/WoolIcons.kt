@@ -92,5 +92,6 @@ object WoolIcons {
     val Flat = filled("flat", 12f, "M1.5 5h9v2h-9z")
     val Remove = stroke("remove", 1.9f, StrokeCap.Round, "M5 12h14")
     val Trend = stroke("trend", 2.2f, StrokeCap.Round, "M4 17l6-6 4 4 6-7", "M15 8h5v5")
+    val News = stroke("news", 1.9f, StrokeCap.Round, "M4 5h13v14H6a2 2 0 0 1 -2-2z", "M17 8h3v9a2 2 0 0 1 -2 2", "M7 9h6", "M7 13h7")
     val Spark = filled("spark", 24f, "M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z")
 }

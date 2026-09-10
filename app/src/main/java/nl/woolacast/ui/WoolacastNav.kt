@@ -71,6 +71,8 @@ import nl.woolacast.ui.player.PlayerScreen
 import nl.woolacast.ui.search.SearchScreen
 import nl.woolacast.ui.search.SearchViewModel
 import nl.woolacast.ui.theme.LocalChartColors
+import nl.woolacast.ui.tips.TipsScreen
+import nl.woolacast.ui.tips.TipsViewModel
 import nl.woolacast.ui.tracker.TrackerScreen
 import nl.woolacast.ui.tracker.TrackerViewModel
 
@@ -209,6 +211,7 @@ fun WoolacastNav(container: AppContainer) {
                         onOpenPodcast = openPodcast,
                         onSearch = openSearch,
                         onAlerts = { selectTab(Tab.LIBRARY) },
+                        onTips = { navController.navigate("${Tab.DISCOVER.route}/tips") },
                         onPick = { country, category ->
                             // Een land of categorie vanaf Ontdek opent zijn eigen lijst.
                             val query = chartsState.query.copy(
@@ -316,6 +319,20 @@ private fun NavGraphBuilder.tabScreens(
             repository = container.chartRepository,
             onBack = { navController.popBackStack() },
             onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) }
+        )
+    }
+
+    composable("$prefix/tips") {
+        val tipsViewModel: TipsViewModel = viewModel(
+            factory = viewModelFactory { initializer { TipsViewModel(container.dataset) } }
+        )
+        TipsScreen(
+            viewModel = tipsViewModel,
+            countryCode = chartsCountry,
+            onBack = { navController.popBackStack() },
+            // Het land van de tips volgt de hitlijsten; daar kies je het.
+            onPickCountry = { navController.popBackStack() },
+            onOpenPodcast = openPodcast
         )
     }
 

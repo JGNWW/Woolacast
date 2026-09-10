@@ -197,6 +197,398 @@ def write_new_shows(root: pathlib.Path, country: str, limit: int) -> int:
     return len(ranked)
 
 
+# ------------------------------------------------------------------ Mediatips
+
+# Per land de media met een bereikbare feed. "dedicated": elke post is een
+# podcasttip (Guardian's Hear Here, Podcast Review). "keyword": een gewone
+# cultuurfeed waaruit alleen de posts over podcasts worden gevist — dat is wat
+# de meeste kranten bieden; tagpagina's zoals die van de Volkskrant zitten
+# achter een firewall die automatische lezers weert.
+TIP_SOURCES = {
+    "nl": [
+        ("VPRO Podcastgids", "https://www.vpro.nl/thema/podcastgids", "guide:/artikelen/"),
+        ("de Volkskrant", "https://www.volkskrant.nl/cultuur-media/rss.xml", "keyword"),
+        ("NRC", "https://www.nrc.nl/index/podcast/", "nrc-index"),
+        ("NOS", "https://feeds.nos.nl/nosnieuwscultuurenmedia", "keyword"),
+        ("Trouw", "https://www.trouw.nl/cultuur-media/rss.xml", "keyword"),
+        ("Het Parool", "https://www.parool.nl/kunst-media/rss.xml", "keyword"),
+    ],
+    "be": [
+        ("Humo", "https://www.humo.be/rss.xml", "keyword"),
+        ("De Standaard", "https://www.standaard.be/rss", "keyword"),
+        ("De Tijd", "https://www.tijd.be/rss/cultuur.xml", "keyword"),
+    ],
+    "de": [
+        ("Die Zeit", "https://newsfeed.zeit.de/index", "keyword"),
+        ("Süddeutsche Zeitung", "https://rss.sueddeutsche.de/rss/Kultur", "keyword"),
+        ("Der Spiegel", "https://www.spiegel.de/kultur/index.rss", "keyword"),
+        ("FAZ", "https://www.faz.net/rss/aktuell/feuilleton/", "keyword"),
+        ("Tagesspiegel", "https://www.tagesspiegel.de/contentexport/feed/home", "keyword"),
+    ],
+    "gb": [
+        ("The Guardian", "https://www.theguardian.com/tv-and-radio/series/hear-here", "guide:/tv-and-radio/20"),
+        ("The Guardian", "https://www.theguardian.com/tv-and-radio/series/hear-here/rss", "dedicated"),
+        ("Radio Times", "https://www.radiotimes.com/podcasts/", "guide:/audio/podcasts/"),
+    ],
+    "us": [
+        ("Podcast Review", "https://podcastreview.org/", "guide:/list/"),
+        ("Podcast Review", "https://podcastreview.org/feed/", "dedicated"),
+        ("The New York Times", "https://rss.nytimes.com/services/xml/rss/nyt/Arts.xml", "keyword"),
+        ("The Atlantic", "https://www.theatlantic.com/feed/all/", "keyword"),
+    ],
+    "fr": [
+        ("Télérama", "https://www.telerama.fr/rss/radio.xml", "keyword"),
+        ("Le Monde", "https://www.lemonde.fr/culture/rss_full.xml", "keyword"),
+        ("Libération", "https://www.liberation.fr/arc/outboundfeeds/rss/category/culture/", "keyword"),
+    ],
+    "es": [("El País", "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/cultura/portada", "keyword"),
+           ("El Mundo", "https://e00-elmundo.uecdn.es/elmundo/rss/cultura.xml", "keyword")],
+    "it": [("Il Post", "https://www.ilpost.it/tag/podcast/", "guide:/2026/"),
+           ("la Repubblica", "https://www.repubblica.it/rss/spettacoli/rss2.0.xml", "keyword"),
+           ("Corriere della Sera", "https://xml2.corriereobjects.it/rss/spettacoli.xml", "keyword")],
+    "se": [("Dagens Nyheter", "https://www.dn.se/rss/kultur/", "keyword"),
+           ("Svenska Dagbladet", "https://www.svd.se/feed/articles.rss", "keyword")],
+    "dk": [("Politiken", "https://politiken.dk/kultur/podcast/", "guide:/kultur/kultur_podcast/"),
+           ("Politiken", "https://politiken.dk/rss/kultur.rss", "keyword"),
+           ("DR", "https://www.dr.dk/nyheder/service/feeds/kultur", "keyword")],
+    "no": [("Aftenposten", "https://www.aftenposten.no/rss/kultur", "keyword"),
+           ("NRK", "https://www.nrk.no/kultur/toppsaker.rss", "keyword")],
+    "ie": [("The Irish Times", "https://www.irishtimes.com/culture/tv-radio/", "guide:/culture/tv-radio/2"),
+           ("RTÉ", "https://www.rte.ie/feeds/rss/?index=/entertainment/", "keyword")],
+    "ca": [("CBC", "https://www.cbc.ca/radio/podcastnews", "guide:/radio/podcastnews/"),
+           ("CBC", "https://www.cbc.ca/webfeed/rss/rss-arts", "keyword")],
+    "au": [("The Sydney Morning Herald", "https://www.smh.com.au/rss/culture.xml", "keyword"),
+           ("Guardian Australia", "https://www.theguardian.com/au/culture/rss", "keyword"),
+           ("ABC", "https://www.abc.net.au/news/feed/45910/rss.xml", "keyword")],
+    "br": [("Folha de S.Paulo", "https://feeds.folha.uol.com.br/ilustrada/rss091.xml", "keyword"),
+           ("G1", "https://g1.globo.com/rss/g1/pop-arte/", "keyword")],
+    "jp": [("NHK", "https://www3.nhk.or.jp/rss/news/cat6.xml", "keyword")],
+    "in": [("The Hindu", "https://www.thehindu.com/entertainment/feeder/default.rss", "keyword")],
+}
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+TIP_DAYS = 120
+TIP_SEARCH = "https://itunes.apple.com/search?term={term}&country={cc}&media=podcast&entity=podcast&limit=3"
+
+
+def _text(tag: str, item: str) -> str:
+    m = re.search(rf"<{tag}[^>]*>(.*?)</{tag}>", item, re.S)
+    if not m:
+        return ""
+    raw = re.sub(r"<!\[CDATA\[|\]\]>", "", m.group(1))
+    raw = re.sub(r"<[^>]+>", " ", raw)
+    return re.sub(r"\s+", " ", html_unescape(raw)).strip()
+
+
+def html_unescape(text: str) -> str:
+    import html
+    return html.unescape(text)
+
+
+def parse_feed(body: str) -> list[dict]:
+    items = []
+    for raw in re.findall(r"<(?:item|entry)\b(.*?)</(?:item|entry)>", body, re.S):
+        link = _text("link", raw) or (re.search(r'<link[^>]+href="([^"]+)"', raw) or [None, ""])[1]
+        date = _text("pubDate", raw) or _text("published", raw) or _text("updated", raw) or _text("dc:date", raw)
+        items.append({
+            "title": _text("title", raw),
+            "summary": _text("description", raw) or _text("summary", raw) or _text("content", raw),
+            "link": link.strip(),
+            "date": parse_any_date(date),
+        })
+    return items
+
+
+def parse_any_date(raw: str) -> str | None:
+    from email.utils import parsedate_to_datetime
+    if not raw:
+        return None
+    try:
+        return parsedate_to_datetime(raw).strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", raw)
+    return m.group(1) if m else None
+
+
+# Een podcasttitel in een krantenkop staat tussen aanhalingstekens, of vlak
+# achter het woord "podcast". Alles wat daarbuiten valt is te vaag om op te
+# zoeken; een citaat van een geinterviewde lijkt er anders precies op.
+QUOTED = re.compile(r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"']")
+NEAR_PODCAST = re.compile(
+    r"podcast(?:serie|reeks|series)?\s+(?:van\s+de\s+week\s+)?"
+    r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"']",
+    re.I)
+TITLE_PREFIX = re.compile(r"^podcast\s+(?:tip:?\s+)?([^:\u2013\u2014-]{3,60})[:\u2013\u2014-]", re.I)
+# Woorden die verraden dat een fragment een zin is, geen titel.
+SENTENCE_HINT = re.compile(
+    r"\b(?:ik|we|je|hij|zij|het is|dat is|maar|omdat|zegt|vindt|denk|there|that|this|which|because|they|"
+    r"ich|aber|weil|dass|c\u2019est|nous|parce)\b", re.I)
+
+
+LETTERS = re.compile(r"[^\W\d_]")
+# Paginameubilair dat toevallig de naam van een echte podcast kan zijn.
+STOPWORDS = {
+    "read more", "about us", "sign in", "subscribe", "newsletter", "follow us",
+    "share", "comments", "most read", "latest", "home", "menu", "privacy",
+    "cookies", "contact", "advertisement", "sponsored", "podcast", "podcasts",
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+    "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag",
+    "lees meer", "nieuwsbrief", "inloggen", "abonneren", "meest gelezen",
+}
+
+
+def looks_like_title(name: str) -> bool:
+    name = name.strip(" .,:;!?")
+    if name.lower() in STOPWORDS or re.search(r"[{}\[\]<>|]", name):
+        return False
+    if not (4 <= len(name) <= 60):
+        return False
+    # Minstens vier letters, en niet overwegend cijfers: anders glipt er
+    # rommel uit de opmaak van een pagina doorheen.
+    letters = LETTERS.findall(name)
+    if len(letters) < 4 or len(letters) < len(name) / 2:
+        return False
+    words = name.split()
+    if len(words) > 7:
+        return False
+    if name.endswith(("...", ".", "?", "!")):
+        return False
+    if SENTENCE_HINT.search(name):
+        return False
+    # Een titel begint met een hoofdletter of een cijfer.
+    return name[0].isupper() or name[0].isdigit()
+
+
+def podcast_candidates(title: str, summary: str) -> list[str]:
+    found = []
+
+    def add(name):
+        name = name.strip(" .,:;\u2013\u2014-")
+        if looks_like_title(name) and name not in found:
+            found.append(name)
+
+    prefix = TITLE_PREFIX.match(title.strip())
+    if prefix:
+        add(prefix.group(1))
+    # Recensiekoppen zetten de naam vooraan: "X is a juicy true-crime show: ..."
+    lead = re.split(r"\s+(?:is|was|are|zit|blijft|klinkt)\s+|[:\u2013\u2014]", title.strip(), 1)[0]
+    if lead != title.strip():
+        add(lead)
+    for text in (title, summary):
+        for m in NEAR_PODCAST.findall(text or ""):
+            add(m)
+    # Pas als de directe aanwijzingen niets geven: elk citaat dat op een titel lijkt.
+    if not found:
+        for text in (title, summary):
+            for m in QUOTED.findall(text or ""):
+                add(m)
+    return found[:3]
+
+
+def lookup_show(name: str, country: str) -> dict | None:
+    """
+    Zoekt de genoemde titel in Apple's catalogus. Alleen een treffer die exact
+    zo heet telt: "Laika" mag geen show opleveren die het woord toevallig in
+    zijn titel heeft. Een ondertitel achter een dubbele punt mag wegvallen.
+    """
+    data = fetch(TIP_SEARCH.format(term=urllib.parse.quote(name), cc=country))
+    if not data:
+        return None
+    wanted = normalise(name)
+    if len(wanted) < 4:
+        return None
+    for hit in data.get("results", []):
+        title = hit.get("collectionName", "")
+        variants = {normalise(title), normalise(title.split(":")[0]), normalise(title.split(" - ")[0])}
+        if wanted not in variants:
+            continue
+        return {
+            "showId": str(hit.get("collectionId")),
+            "showTitle": title,
+            "publisher": hit.get("artistName", ""),
+            "artworkUrl": hit.get("artworkUrl600") or hit.get("artworkUrl100"),
+            "feedUrl": hit.get("feedUrl"),
+            "genre": hit.get("primaryGenreName"),
+        }
+    return None
+
+
+NRC_INDEX = "https://www.nrc.nl/index/podcast/"
+GUIDE_ARTICLES = 14        # hoeveel artikelen van een gids we per run lezen
+GUIDE_PER_ARTICLE = 6      # een tiplijst noemt er vijf; meer is bijvangst
+
+
+def parse_guide_index(body: str, base: str, prefix: str) -> list[str]:
+    """Artikellinks op de indexpagina van een podcastgids, in paginavolgorde."""
+    links, seen = [], set()
+    for href in re.findall(r'href="([^"]+)"', body):
+        if prefix not in href:
+            continue
+        url = href if href.startswith("http") else urllib.parse.urljoin(base, href)
+        if url.rstrip("/").endswith(prefix.rstrip("/")) or url in seen:
+            continue
+        seen.add(url)
+        links.append(url)
+    return links[:GUIDE_ARTICLES]
+
+
+def read_guide_article(url: str) -> dict | None:
+    """
+    Een artikel uit een podcastgids: kop, datum en de namen die erin vetgedrukt
+    of aangehaald staan. Tiplijsten noemen er vijf; die worden vijf tips.
+    """
+    page = fetch(url, raw=True, headers={"User-Agent": BROWSER_UA, "Accept": "text/html"})
+    if not page:
+        return None
+    body = page[0]
+    for marker in ("Lees meer", "Read more", "Mest lest", "Læs også", "Meest gelezen", "Related stories"):
+        cut = body.find(marker)
+        if cut > 2000:
+            body = body[:cut]
+            break
+    title = re.search(r"<title[^>]*>(.*?)</title>", body, re.S)
+    title = html_unescape(re.sub(r"<[^>]+>", "", title.group(1))).split("|")[0].strip() if title else ""
+    date = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', body)
+
+    names, seen = [], set()
+    tags = (re.findall(r"<h[23][^>]*>(.*?)</h[23]>", body, re.S)
+            + re.findall(r"<(?:strong|b|em|i)[^>]*>(.*?)</(?:strong|b|em|i)>", body, re.S))
+    for tag in tags:
+        text = re.sub(r"\s+", " ", html_unescape(re.sub(r"<[^>]+>", " ", tag))).strip()
+        if looks_like_title(text) and text.lower() not in seen:
+            seen.add(text.lower())
+            names.append(text)
+        if len(names) >= 25:
+            break
+    plain = re.sub(r"\s+", " ", html_unescape(re.sub(r"<[^>]+>", " ", body)))
+    return {
+        "title": title,
+        "summary": plain[:600],
+        "link": url,
+        "date": date.group(1) if date else None,
+        "names": names,
+        "plain": plain,
+    }
+
+
+def parse_nrc_index(body: str) -> list[dict]:
+    """
+    NRC heeft geen feed voor zijn podcastrubriek, wel een indexpagina waarop
+    elk artikel zijn datum in de URL draagt.
+    """
+    items, seen = [], set()
+    for href, inner in re.findall(r'<a[^>]+href="(/nieuws/\d{4}/\d\d/\d\d/[^"]+)"[^>]*>(.*?)</a>', body, re.S):
+        head = re.search(r'headline[^>]*>(.*?)</h\d>', inner, re.S)
+        if not head or href in seen:
+            continue
+        seen.add(href)
+        items.append({
+            "title": html_unescape(re.sub(r"<[^>]+>", " ", head.group(1))).strip(),
+            "summary": "",
+            "link": "https://www.nrc.nl" + href,
+            "date": href[8:18].replace("/", "-"),
+        })
+    return items
+
+
+def read_guide(country: str, outlet: str, index_url: str, index_body: str,
+               prefix: str, tips: list[dict], cutoff: str) -> int:
+    kept = 0
+    for article_url in parse_guide_index(index_body, index_url, prefix):
+        article = read_guide_article(article_url)
+        if not article:
+            continue
+        if article["date"] and article["date"] < cutoff:
+            continue
+        found = 0
+        seen_here = set()
+        for name in article["names"] + podcast_candidates(article["title"], article["summary"]):
+            if found >= GUIDE_PER_ARTICLE:
+                break
+            name = name.strip(" .,:;\u2013\u2014-")
+            if not looks_like_title(name) or name.lower() in seen_here:
+                continue
+            seen_here.add(name.lower())
+            match = lookup_show(name, country)
+            if not match:
+                continue
+            # De podcast moet ook echt in het artikel besproken worden, niet
+            # alleen in een verwijzing naar een ander stuk.
+            found += 1
+            kept += 1
+            tips.append({
+                "outlet": outlet,
+                "headline": article["title"],
+                "summary": article["summary"][:300],
+                "url": article_url,
+                "date": article["date"],
+                **match,
+            })
+    return kept
+
+
+def collect_tips(country: str) -> list[dict]:
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=TIP_DAYS)).strftime("%Y-%m-%d")
+    tips = []
+    for outlet, url, mode in TIP_SOURCES.get(country, []):
+        page = fetch(url, raw=True, headers={"User-Agent": BROWSER_UA, "Accept": "*/*"})
+        if not page:
+            print(f"    {outlet}: niet bereikbaar", flush=True)
+            continue
+        kept = 0
+        if mode.startswith("guide:"):
+            kept = read_guide(country, outlet, url, page[0], mode.split(":", 1)[1], tips, cutoff)
+            print(f"    {outlet}: {kept} tips", flush=True)
+            continue
+        entries = parse_nrc_index(page[0]) if mode == "nrc-index" else parse_feed(page[0])
+        for item in entries:
+            blob = (item["title"] + " " + item["summary"]).lower()
+            if mode == "keyword" and "podcast" not in blob:
+                continue
+            if item["date"] and item["date"] < cutoff:
+                continue
+            match = None
+            for name in podcast_candidates(item["title"], item["summary"]):
+                match = lookup_show(name, country)
+                if match:
+                    break
+            if not match:
+                continue
+            tips.append({
+                "outlet": outlet,
+                "headline": item["title"],
+                "summary": item["summary"][:300],
+                "url": item["link"],
+                "date": item["date"],
+                **(match or {}),
+            })
+            kept += 1
+        print(f"    {outlet}: {kept} tips", flush=True)
+    tips.sort(key=lambda t: t.get("date") or "", reverse=True)
+    # Dezelfde link twee keer (twee feeds van één medium) is één tip.
+    seen, unique = set(), []
+    for tip in tips:
+        key = (tip["outlet"], tip.get("showId") or tip["url"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(tip)
+    return unique
+
+
+def write_tips(root: pathlib.Path, country: str) -> int:
+    tips = collect_tips(country)
+    folder = root / "tips"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{country}.json").write_text(json.dumps({
+        "country": country, "updated": NOW, "count": len(tips),
+        "outlets": sorted({t["outlet"] for t in tips}),
+        "entries": tips,
+    }, ensure_ascii=False, separators=(",", ":")))
+    return len(tips)
+
+
 # ---------------------------------------------------------------- Apple shows
 
 def apple_shows(country: str, genre_id: int, limit: int) -> list[dict] | None:
@@ -564,6 +956,10 @@ def main() -> int:
     new.add_argument("--limit", type=int, default=100)
     new.add_argument("--out", default="charts")
 
+    tips = sub.add_parser("tips", help="podcasttips uit de feeds van kranten en omroepen")
+    tips.add_argument("--countries", default="nl")
+    tips.add_argument("--out", default="charts")
+
     eps = sub.add_parser("episodes", help="duur; lost afleverings-ids op")
     eps.add_argument("--countries", default="nl")
     eps.add_argument("--limit", type=int, default=50)
@@ -576,6 +972,10 @@ def main() -> int:
 
     if args.job == "snapshot":
         run_snapshot(countries, args.limit, root)
+    elif args.job == "tips":
+        for country in countries:
+            print(f"  {country}:", flush=True)
+            print(f"  tips    {country}  {write_tips(root, country):3}", flush=True)
     elif args.job == "new":
         for country in countries:
             print(f"  apple   {country}    26 new        {write_new_shows(root, country, args.limit):3}", flush=True)

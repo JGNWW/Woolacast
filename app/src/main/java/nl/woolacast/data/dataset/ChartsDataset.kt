@@ -98,6 +98,9 @@ interface ChartsDatasetApi {
 
     @GET
     suspend fun shows(@Url url: String): Map<String, ShowRecord>
+
+    @GET
+    suspend fun tips(@Url url: String): MediaTips
 }
 
 /**
@@ -121,6 +124,7 @@ class ChartsDataset(
     private val histories = mutableMapOf<String, DatasetHistory?>()
     private val showShards = mutableMapOf<String, Map<String, ShowRecord>?>()
     private val movers = mutableMapOf<String, DatasetMovers?>()
+    private val tips = mutableMapOf<String, MediaTips?>()
 
     private fun ChartQuery.datasetPath(): String {
         val source = if (this.source == SourceId.SPOTIFY) "spotify" else "apple"
@@ -226,6 +230,22 @@ class ChartsDataset(
             before[id]?.let { previous -> id to (previous - rank) }
         }.toMap()
     }
+
+    /**
+     * Podcasttips uit de media van dit land. Leeg betekent: nog niet
+     * verzameld, of geen medium in dit land met een leesbare rubriek.
+     */
+    suspend fun tips(countryCode: String): MediaTips? = mutex.withLock {
+        if (tips.containsKey(countryCode)) return@withLock tips[countryCode]
+        runCatching { api.tips("$baseUrl/tips/$countryCode.json") }
+            .getOrNull()
+            .takeIf { it != null && it.entries.isNotEmpty() }
+            .also { tips[countryCode] = it }
+    }
+
+    /** De tips over één show, om ze op de podcastpagina te tonen. */
+    suspend fun tipsFor(showId: String, countryCode: String): List<MediaTip> =
+        tips(countryCode)?.entries?.filter { it.showId == showId }.orEmpty()
 
     suspend fun movers(countryCode: String): List<DatasetMover> = mutex.withLock {
         val cached = movers[countryCode]
