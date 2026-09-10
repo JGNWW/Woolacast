@@ -1,0 +1,66 @@
+package nl.woolacast.ui.detail
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import nl.woolacast.data.PodcastRepository
+import nl.woolacast.data.local.FollowedShow
+import nl.woolacast.data.local.LocalStore
+import nl.woolacast.domain.Episode
+import nl.woolacast.domain.Podcast
+
+data class DetailUiState(
+    val loading: Boolean = true,
+    val podcast: Podcast? = null,
+    val episodes: List<Episode> = emptyList(),
+    val error: String? = null
+)
+
+class DetailViewModel(
+    private val showId: String,
+    private val countryCode: String,
+    private val repository: PodcastRepository,
+    private val store: LocalStore
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(DetailUiState())
+    val state: StateFlow<DetailUiState> = _state.asStateFlow()
+
+    val follows: StateFlow<List<FollowedShow>> = store.follows
+
+    init {
+        viewModelScope.launch {
+            runCatching { repository.detail(showId, countryCode) }
+                .onSuccess { detail ->
+                    _state.value = DetailUiState(
+                        loading = false,
+                        podcast = detail.podcast,
+                        episodes = detail.episodes
+                    )
+                }
+                .onFailure { error ->
+                    _state.value = DetailUiState(
+                        loading = false,
+                        error = error.message ?: "Kon deze podcast niet laden."
+                    )
+                }
+        }
+    }
+
+    fun toggleFollow() {
+        val podcast = _state.value.podcast ?: return
+        viewModelScope.launch {
+            store.toggleFollow(
+                FollowedShow(
+                    id = podcast.id,
+                    title = podcast.title,
+                    publisher = podcast.publisher,
+                    artworkUrl = podcast.artworkUrl
+                )
+            )
+        }
+    }
+}

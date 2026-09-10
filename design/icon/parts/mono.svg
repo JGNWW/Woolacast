@@ -1,13 +1,10 @@
 <g transform="translate(256,251) scale(0.93) translate(-256,-256)">
-  <path d="M98 286 C98 12 414 12 414 286" fill="none" stroke="var(--mo-fg)" stroke-width="32" stroke-linecap="round"/>
-  <path d="M256 124 C340 124 404 166 417 236 C432 306 436 358 408 398 C378 434 320 452 256 452 C192 452 134 434 104 398 C76 358 80 306 95 236 C108 166 172 124 256 124 Z" fill="var(--mo-fg)"/>
-  <path d="M102 290 C138 350 190 354 218 330 C244 310 276 312 302 330 C332 350 382 348 418 290" fill="none" stroke="var(--mo-bg)" stroke-width="17" stroke-linecap="round"/>
-  <circle cx="180" cy="226" r="42" fill="var(--mo-bg)"/>
-  <circle cx="332" cy="226" r="42" fill="var(--mo-bg)"/>
-  <circle cx="180" cy="226" r="22" fill="var(--mo-fg)"/>
-  <circle cx="332" cy="226" r="22" fill="var(--mo-fg)"/>
-  <ellipse cx="94" cy="296" rx="74" ry="86" fill="var(--mo-bg)"/>
-  <ellipse cx="418" cy="296" rx="74" ry="86" fill="var(--mo-bg)"/>
-  <ellipse cx="94" cy="296" rx="58" ry="70" fill="var(--mo-fg)"/>
-  <ellipse cx="418" cy="296" rx="58" ry="70" fill="var(--mo-fg)"/>
+  <path data-role="band" d="M98 286 C98 12 414 12 414 286" fill="none" stroke="var(--mo-fg)" stroke-width="32" stroke-linecap="round"/>
+  <path data-role="head" d="M256 124 C340 124 404 166 417 236 C432 306 436 358 408 398 C378 434 320 452 256 452 C192 452 134 434 104 398 C76 358 80 306 95 236 C108 166 172 124 256 124 Z" fill="var(--mo-fg)"/>
+  <circle data-role="hole" cx="180" cy="226" r="43" fill="var(--mo-bg)"/>
+  <circle data-role="hole" cx="332" cy="226" r="43" fill="var(--mo-bg)"/>
+  <ellipse data-role="hole" cx="94" cy="296" rx="74" ry="86" fill="var(--mo-bg)"/>
+  <ellipse data-role="hole" cx="418" cy="296" rx="74" ry="86" fill="var(--mo-bg)"/>
+  <ellipse data-role="cup" cx="94" cy="296" rx="58" ry="70" fill="var(--mo-fg)"/>
+  <ellipse data-role="cup" cx="418" cy="296" rx="58" ry="70" fill="var(--mo-fg)"/>
 </g>

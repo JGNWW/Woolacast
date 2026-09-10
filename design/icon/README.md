@@ -48,8 +48,9 @@ node design/icon/assemble.mjs
 | Beugel | `--m-band` | `#A9CCBE` |
 | Glans beugel | `--m-band2` | `#C6DFD4` |
 
-Grond: `#1B1712` (inkt). Ember valt af — de tan van de kop loopt daarin
-over. Alternatieven: `#2C4A46` (diep groen) en `#CFE2D9` (salie).
+Grond: `#2C4A46` (diep groen). Ember valt af — de tan van de kop loopt daarin
+over, en op papier verdwijnt het icoon tussen andere iconen. Alternatieven:
+`#1B1712` (inkt) en `#CFE2D9` (salie).
 
 ## Merkrechten
 
