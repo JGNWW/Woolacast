@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -505,30 +506,21 @@ private fun EpisodeSheet(
             SquareIconButton(WoolIcons.Share, "Delen", onShare)
         }
 
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            WoolButton(
-                text = if (inQueue) "In wachtrij" else "Wachtrij",
-                onClick = onQueue,
-                kind = ButtonKind.TONAL,
-                icon = if (inQueue) WoolIcons.QueueAdded else WoolIcons.Queue,
-                modifier = Modifier.weight(1f)
-            )
-            WoolButton(
-                text = "Hierna",
-                onClick = onPlayNext,
-                kind = ButtonKind.TONAL,
-                icon = WoolIcons.Next,
-                modifier = Modifier.weight(1f)
-            )
-            WoolButton(
-                text = if (isSaved) "Bewaard" else "Bewaar",
-                onClick = onSave,
-                kind = ButtonKind.TONAL,
-                icon = if (isSaved) WoolIcons.Saved else WoolIcons.Save,
-                modifier = Modifier.weight(1f)
-            )
-        }
+        // Drie knoppen naast elkaar knipten hun tekst af; als rijen past alles.
+        Spacer(Modifier.height(14.dp))
+        ActionRow(
+            icon = if (inQueue) WoolIcons.QueueAdded else WoolIcons.Queue,
+            label = if (inQueue) "Uit de wachtrij halen" else "Aan de wachtrij toevoegen",
+            active = inQueue,
+            onClick = onQueue
+        )
+        ActionRow(icon = WoolIcons.Next, label = "Hierna afspelen", active = false, onClick = onPlayNext)
+        ActionRow(
+            icon = if (isSaved) WoolIcons.Saved else WoolIcons.Save,
+            label = if (isSaved) "Bewaard" else "Bewaren",
+            active = isSaved,
+            onClick = onSave
+        )
 
         episode.description?.takeIf { it.isNotBlank() }?.let { description ->
             Spacer(Modifier.height(18.dp))
@@ -538,6 +530,25 @@ private fun EpisodeSheet(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Composable
+private fun ActionRow(icon: ImageVector, label: String, active: Boolean, onClick: () -> Unit) {
+    val tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .height(48.dp)
+            .padding(horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Icon(icon, null, tint = tint, modifier = Modifier.size(20.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = tint, modifier = Modifier.weight(1f))
+        if (active) Icon(WoolIcons.Check, null, tint = tint, modifier = Modifier.size(18.dp))
     }
 }
 
