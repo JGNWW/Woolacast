@@ -16,6 +16,7 @@ import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.ChartUnavailable
 import nl.woolacast.domain.Country
 import nl.woolacast.domain.SourceId
+import nl.woolacast.domain.WayOut
 
 /** Wat de gebruiker kan doen als een lijst niets oplevert. */
 enum class Suggestion { ALL_CATEGORIES, SWITCH_TO_APPLE, SWITCH_TO_SHOWS }
@@ -112,10 +113,16 @@ class ChartsViewModel(private val repository: ChartRepository) : ViewModel() {
         is ChartUnavailable -> Notice(
             title = if (query.category.isAll) "Nog geen lijst" else "Niet per categorie",
             message = reason,
-            suggestion = when {
-                !query.category.isAll -> Suggestion.ALL_CATEGORIES
-                query.source != SourceId.APPLE -> Suggestion.SWITCH_TO_APPLE
-                else -> null
+            // De bron weet zelf het beste wat de uitweg is.
+            suggestion = when (wayOut) {
+                WayOut.APPLE -> Suggestion.SWITCH_TO_APPLE
+                WayOut.ALL_CATEGORIES -> Suggestion.ALL_CATEGORIES
+                WayOut.SHOWS -> Suggestion.SWITCH_TO_SHOWS
+                null -> when {
+                    !query.category.isAll -> Suggestion.ALL_CATEGORIES
+                    query.source != SourceId.APPLE -> Suggestion.SWITCH_TO_APPLE
+                    else -> null
+                }
             }
         )
 

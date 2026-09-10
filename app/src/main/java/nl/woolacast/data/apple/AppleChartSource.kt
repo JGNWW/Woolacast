@@ -10,6 +10,7 @@ import nl.woolacast.domain.ChartSource
 import nl.woolacast.domain.ChartUnavailable
 import nl.woolacast.domain.SourceCapabilities
 import nl.woolacast.domain.SourceId
+import nl.woolacast.domain.WayOut
 
 /**
  * Apple is de enige bron met een publieke, sleutelloze lijst. Drie routes:
@@ -115,7 +116,8 @@ class AppleChartSource(
         if (entries.isEmpty()) {
             throw ChartUnavailable(
                 "Er staat op dit moment geen ${query.category.label.lowercase()} in de top " +
-                    "$MAX_FEED afleveringen van ${query.country.label}."
+                    "$MAX_FEED afleveringen van ${query.country.label}.",
+                wayOut = WayOut.ALL_CATEGORIES
             )
         }
 

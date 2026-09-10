@@ -10,6 +10,7 @@ import nl.woolacast.domain.ChartUnavailable
 import nl.woolacast.domain.Movement
 import nl.woolacast.domain.SourceCapabilities
 import nl.woolacast.domain.SourceId
+import nl.woolacast.domain.WayOut
 
 class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
 
@@ -27,10 +28,13 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
         val region = query.country.code
 
         val category = when {
+            // Spotify's categorielijsten gaan alleen over shows — in alle zeven
+            // landen waar ze bestaan. Apple heeft die combinatie wel.
             query.level == ChartLevel.EPISODES && !query.category.isAll ->
                 throw ChartUnavailable(
-                    "Spotify houdt de afleveringenlijst apart van de categorieen. " +
-                        "De lijst hieronder is alle categorieen samen."
+                    "Spotify publiceert afleveringen alleen als één lijst, niet per " +
+                        "categorie. Apple doet dat wel.",
+                    wayOut = WayOut.APPLE
                 )
 
             query.level == ChartLevel.EPISODES -> "top-episodes"
@@ -42,7 +46,8 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
                 if (region !in CATEGORY_MARKETS) {
                     throw ChartUnavailable(
                         "Spotify publiceert categorielijsten in maar zeven landen, en " +
-                            "${query.country.label} hoort daar niet bij."
+                            "${query.country.label} hoort daar niet bij.",
+                        wayOut = WayOut.APPLE
                     )
                 }
                 slug
@@ -50,7 +55,10 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
         }
 
         if (region !in CHART_MARKETS) {
-            throw ChartUnavailable("Spotify publiceert geen lijst voor ${query.country.label}.")
+            throw ChartUnavailable(
+                "Spotify publiceert geen lijst voor ${query.country.label}.",
+                wayOut = WayOut.APPLE
+            )
         }
 
         val items = api.chart(category, region, query.limit)

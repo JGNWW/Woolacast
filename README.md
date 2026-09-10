@@ -111,10 +111,22 @@ Accept: application/json
 Dat is dezelfde aanroep die hun pagina zelf doet, en de app doet hem nu ook.
 Uitgemeten tegen de live API:
 
-| Lijst | Landen | Omvang |
-| --- | --- | --- |
-| `top-podcasts`, `top-episodes`, `trending` | 26 | 200 |
-| 16 categorieen (`comedy`, `news`, `true-crime`, …) | 7: us au br de mx se gb | 50 |
+| Lijst | Landen | Niveau | Omvang |
+| --- | --- | --- | --- |
+| `top-podcasts` | 26 | shows | 200 |
+| `top-episodes` | 26 | afleveringen | 200 |
+| `trending` | 26 | shows | 200 |
+| 16 categorieen (`comedy`, `news`, `true-crime`, …) | 7: us au br de mx se gb | **alleen shows** | 50 |
+
+**Afleveringen per categorie bestaan bij Spotify niet.** Dat is geen
+landsverschil maar een grens van de bron: hun eigen site zet `top-episodes`
+náást de genres, niet eronder. Nagelopen in alle zeven categoriemarkten — us,
+au, br, de, mx, se en gb geven daar allemaal shows terug, zonder
+afleveringsvelden. Extra parameters (`type`, `level`, `chartType`, `genre`,
+`category`) worden genegeerd; samengestelde vormen als `comedy_episodes` geven
+een serverfout.
+
+Apple kan die combinatie wel, dus de app biedt aan om over te stappen.
 
 België zit er niet bij, en categorieen bestaan níét voor Nederland. De app zegt
 dat in plaats van een lege lijst te tonen. `chartRankMove` geeft de richting van

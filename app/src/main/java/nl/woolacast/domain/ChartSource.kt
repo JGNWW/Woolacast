@@ -5,7 +5,13 @@ package nl.woolacast.domain
  * (YouTube kent geen afleveringen) of er is geen publieke weg naar de data.
  * Beide zijn gewone antwoorden, geen fouten — de UI legt ze uit.
  */
-class ChartUnavailable(val reason: String) : Exception(reason)
+class ChartUnavailable(
+    val reason: String,
+    /** Wat de gebruiker hieraan kan doen; de UI maakt er een knop van. */
+    val wayOut: WayOut? = null
+) : Exception(reason)
+
+enum class WayOut { ALL_CATEGORIES, APPLE, SHOWS }
 
 interface ChartSource {
     val id: SourceId

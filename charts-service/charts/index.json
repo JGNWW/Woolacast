@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-10T13:26:08Z",
+ "updated": "2026-09-10T14:24:49Z",
  "charts": [
   {
    "source": "apple",
@@ -258,12 +258,36 @@
    "country": "be",
    "genreId": 1301,
    "genreLabel": "Kunst",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1301/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1301/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1303/episodes.history.json"
   },
   {
    "source": "apple",
@@ -282,12 +306,36 @@
    "country": "be",
    "genreId": 1304,
    "genreLabel": "Educatie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1304/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1304/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1305/episodes.history.json"
   },
   {
    "source": "apple",
@@ -306,12 +354,36 @@
    "country": "be",
    "genreId": 1309,
    "genreLabel": "TV & film",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1309/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1309/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1310/episodes.history.json"
   },
   {
    "source": "apple",
@@ -330,12 +402,36 @@
    "country": "be",
    "genreId": 1314,
    "genreLabel": "Religie & spiritualiteit",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1314/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1314/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1318/episodes.history.json"
   },
   {
    "source": "apple",
@@ -354,12 +450,36 @@
    "country": "be",
    "genreId": 1321,
    "genreLabel": "Zaken",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1321/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1321/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1324/episodes.history.json"
   },
   {
    "source": "apple",
@@ -378,12 +498,36 @@
    "country": "be",
    "genreId": 1483,
    "genreLabel": "Fictie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1483/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1483/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1487/episodes.history.json"
   },
   {
    "source": "apple",
@@ -402,12 +546,36 @@
    "country": "be",
    "genreId": 1488,
    "genreLabel": "True crime",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1488/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1488,
+   "genreLabel": "True crime",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1488/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1489/episodes.history.json"
   },
   {
    "source": "apple",
@@ -426,12 +594,36 @@
    "country": "be",
    "genreId": 1502,
    "genreLabel": "Vrije tijd",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1502/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1502/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1511/episodes.history.json"
   },
   {
    "source": "apple",
@@ -450,6 +642,18 @@
    "country": "be",
    "genreId": 1512,
    "genreLabel": "Gezondheid & fitness",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1512/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
     "2026-09-10"
@@ -462,12 +666,36 @@
    "country": "be",
    "genreId": 1533,
    "genreLabel": "Wetenschap",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1533/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/be/1533/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/be/1545/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1014,12 +1242,36 @@
    "country": "de",
    "genreId": 1301,
    "genreLabel": "Kunst",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1301/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1301/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1303/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1038,12 +1290,36 @@
    "country": "de",
    "genreId": 1304,
    "genreLabel": "Educatie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1304/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1304/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1305/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1062,12 +1338,36 @@
    "country": "de",
    "genreId": 1309,
    "genreLabel": "TV & film",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1309/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1309/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1310/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1086,12 +1386,36 @@
    "country": "de",
    "genreId": 1314,
    "genreLabel": "Religie & spiritualiteit",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1314/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1314/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1318/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1110,12 +1434,36 @@
    "country": "de",
    "genreId": 1321,
    "genreLabel": "Zaken",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1321/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1321/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1324/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1134,12 +1482,36 @@
    "country": "de",
    "genreId": 1483,
    "genreLabel": "Fictie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1483/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1483/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1487/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1158,12 +1530,36 @@
    "country": "de",
    "genreId": 1488,
    "genreLabel": "True crime",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1488/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1488,
+   "genreLabel": "True crime",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1488/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1489/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1182,12 +1578,36 @@
    "country": "de",
    "genreId": 1502,
    "genreLabel": "Vrije tijd",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1502/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1502/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1511/episodes.history.json"
   },
   {
    "source": "apple",
@@ -1206,6 +1626,18 @@
    "country": "de",
    "genreId": 1512,
    "genreLabel": "Gezondheid & fitness",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1512/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
     "2026-09-10"
@@ -1218,12 +1650,36 @@
    "country": "de",
    "genreId": 1533,
    "genreLabel": "Wetenschap",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1533/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/de/1533/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/de/1545/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2022,12 +2478,36 @@
    "country": "gb",
    "genreId": 1301,
    "genreLabel": "Kunst",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1301/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1301/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1303/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2046,12 +2526,36 @@
    "country": "gb",
    "genreId": 1304,
    "genreLabel": "Educatie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1304/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1304/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1305/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2070,12 +2574,36 @@
    "country": "gb",
    "genreId": 1309,
    "genreLabel": "TV & film",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1309/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1309/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1310/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2094,12 +2622,36 @@
    "country": "gb",
    "genreId": 1314,
    "genreLabel": "Religie & spiritualiteit",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1314/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1314/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1318/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2118,12 +2670,36 @@
    "country": "gb",
    "genreId": 1321,
    "genreLabel": "Zaken",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1321/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1321/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1324/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2142,12 +2718,36 @@
    "country": "gb",
    "genreId": 1483,
    "genreLabel": "Fictie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1483/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1483/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1487/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2166,12 +2766,36 @@
    "country": "gb",
    "genreId": 1488,
    "genreLabel": "True crime",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1488/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1488,
+   "genreLabel": "True crime",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1488/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1489/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2190,12 +2814,36 @@
    "country": "gb",
    "genreId": 1502,
    "genreLabel": "Vrije tijd",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1502/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1502/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1511/episodes.history.json"
   },
   {
    "source": "apple",
@@ -2214,6 +2862,18 @@
    "country": "gb",
    "genreId": 1512,
    "genreLabel": "Gezondheid & fitness",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1512/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
     "2026-09-10"
@@ -2226,12 +2886,36 @@
    "country": "gb",
    "genreId": 1533,
    "genreLabel": "Wetenschap",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1533/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/gb/1533/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/gb/1545/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4518,12 +5202,36 @@
    "country": "us",
    "genreId": 1301,
    "genreLabel": "Kunst",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1301/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1301/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1303/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4542,12 +5250,36 @@
    "country": "us",
    "genreId": 1304,
    "genreLabel": "Educatie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1304/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1304/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1305/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4566,12 +5298,36 @@
    "country": "us",
    "genreId": 1309,
    "genreLabel": "TV & film",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1309/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1309/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1310/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4590,12 +5346,36 @@
    "country": "us",
    "genreId": 1314,
    "genreLabel": "Religie & spiritualiteit",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1314/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1314/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1318/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4614,12 +5394,36 @@
    "country": "us",
    "genreId": 1321,
    "genreLabel": "Zaken",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1321/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1321/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1324/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4638,12 +5442,36 @@
    "country": "us",
    "genreId": 1483,
    "genreLabel": "Fictie",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1483/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1483/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1487/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4662,12 +5490,36 @@
    "country": "us",
    "genreId": 1488,
    "genreLabel": "True crime",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1488/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1488,
+   "genreLabel": "True crime",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1488/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1489/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4686,12 +5538,36 @@
    "country": "us",
    "genreId": 1502,
    "genreLabel": "Vrije tijd",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1502/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1502/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1511/episodes.history.json"
   },
   {
    "source": "apple",
@@ -4710,6 +5586,18 @@
    "country": "us",
    "genreId": 1512,
    "genreLabel": "Gezondheid & fitness",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1512/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
     "2026-09-10"
@@ -4722,12 +5610,36 @@
    "country": "us",
    "genreId": 1533,
    "genreLabel": "Wetenschap",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1533/episodes.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
     "2026-09-10"
    ],
    "hasList": false,
    "path": "apple/us/1533/shows.history.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "episodes",
+   "days": [
+    "2026-09-10"
+   ],
+   "hasList": true,
+   "path": "apple/us/1545/episodes.history.json"
   },
   {
    "source": "apple",
