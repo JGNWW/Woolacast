@@ -25,7 +25,7 @@ import nl.woolacast.domain.SourceId
 import nl.woolacast.domain.WayOut
 
 /** Wat de gebruiker kan doen als een lijst niets oplevert. */
-enum class Suggestion { ALL_CATEGORIES, SWITCH_TO_APPLE, SWITCH_TO_SHOWS }
+enum class Suggestion { ALL_CATEGORIES, SWITCH_TO_APPLE, SWITCH_TO_SPOTIFY, SWITCH_TO_SHOWS }
 
 data class Notice(val title: String, val message: String, val suggestion: Suggestion? = null)
 
@@ -70,7 +70,10 @@ class ChartsViewModel(
 
     fun setSource(source: SourceId) = update { it.copy(source = source) }
 
-    fun setLevel(level: ChartLevel) = update { it.copy(level = level) }
+    /** Trending en Nieuw gaan over de hele lijst; een categorie valt dan weg. */
+    fun setLevel(level: ChartLevel) = update {
+        it.copy(level = level, category = if (level.isRanking) it.category else Catalog.defaultCategory)
+    }
 
     fun setFilters(country: Country, category: Category) =
         update { it.copy(country = country, category = category) }
@@ -134,8 +137,9 @@ class ChartsViewModel(
         val query = _state.value.query
         val source = repository.source(query.source)
 
-        // Wat de bron sowieso niet publiceert vragen we niet op.
-        if (!source.capabilities.supports(query.level)) {
+        // Wat de bron sowieso niet publiceert vragen we niet op. Trending en
+        // Nieuw leidt de repository zelf af als de bron ze niet heeft.
+        if (query.level.isRanking && !source.capabilities.supports(query.level)) {
             _state.value = _state.value.copy(
                 loading = false,
                 chart = null,
@@ -172,11 +176,17 @@ class ChartsViewModel(
 
     private fun Throwable.toNotice(query: ChartQuery): Notice = when (this) {
         is ChartUnavailable -> Notice(
-            title = if (query.category.isAll) "Nog geen lijst" else "Niet per categorie",
+            title = when {
+                query.level == ChartLevel.TRENDING -> "Nog geen trending"
+                query.level == ChartLevel.NEW -> "Nog geen nieuwe binnenkomers"
+                query.category.isAll -> "Nog geen lijst"
+                else -> "Niet per categorie"
+            },
             message = reason,
             // De bron weet zelf het beste wat de uitweg is.
             suggestion = when (wayOut) {
                 WayOut.APPLE -> Suggestion.SWITCH_TO_APPLE
+                WayOut.SPOTIFY -> Suggestion.SWITCH_TO_SPOTIFY
                 WayOut.ALL_CATEGORIES -> Suggestion.ALL_CATEGORIES
                 WayOut.SHOWS -> Suggestion.SWITCH_TO_SHOWS
                 null -> when {
@@ -196,6 +206,7 @@ class ChartsViewModel(
     fun applySuggestion(suggestion: Suggestion) = when (suggestion) {
         Suggestion.ALL_CATEGORIES -> clearCategory()
         Suggestion.SWITCH_TO_APPLE -> setSource(SourceId.APPLE)
+        Suggestion.SWITCH_TO_SPOTIFY -> setSource(SourceId.SPOTIFY)
         Suggestion.SWITCH_TO_SHOWS -> setLevel(ChartLevel.SHOWS)
     }
 }

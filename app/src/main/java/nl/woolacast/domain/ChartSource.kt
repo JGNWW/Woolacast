@@ -11,7 +11,7 @@ class ChartUnavailable(
     val wayOut: WayOut? = null
 ) : Exception(reason)
 
-enum class WayOut { ALL_CATEGORIES, APPLE, SHOWS }
+enum class WayOut { ALL_CATEGORIES, APPLE, SPOTIFY, SHOWS }
 
 interface ChartSource {
     val id: SourceId

@@ -163,6 +163,25 @@ Hun code overnemen kan ook, maar dat is een licentiekeuze:
 
 Geen van beide heeft trouwens hitlijsten — dat is nou juist wat deze app toevoegt.
 
+## Trending en Nieuw
+
+Twee extra tabbladen naast Podcasts en Afleveringen.
+
+**Trending.** Spotify publiceert een echte trending-lijst (`/api/charts/trending`,
+dezelfde 26 landen als de Top 200). Apple niet: daar toont het tabblad de
+snelste stijgers in de Top 200 uit de eigen dagelijkse metingen, dus pas vanaf
+de tweede dag.
+
+**Nieuw.** Apple heeft er wél een echte lijst voor: het tabblad "Nieuw" op
+podcasts.apple.com is redactioneel, en het eerste blok daarop is "Nieuwe
+programma's" — per land een eigen selectie van zo'n 20–32 shows. Die staat
+alleen achter de `amp-api` met het bearer-token dat de webpagina zelf in zijn
+JavaScript meedraagt. Het klusje vist dat token elke run opnieuw uit de pagina
+(`collect.py new`, draait ook mee in `snapshot`) en schrijft
+`apple/{land}/26/new.json`. Spotify heeft geen nieuw-lijst; daar toont het
+tabblad wie de laatste dagen de Top 200 binnenkwam, gegroepeerd per dag, uit
+de eigen metingen.
+
 ## Stijgers en dalers
 
 Er bestaat geen publieke bron voor "gisteren". De app bewaart daarom zelf per
@@ -181,6 +200,8 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Onderdeel | Status |
 | --- | --- |
 | Hitlijsten: Apple en Spotify, land × categorie × niveau | werkt |
+| Trending: Spotify's eigen lijst; bij Apple de snelste stijgers uit eigen metingen | werkt (Apple vanaf dag twee) |
+| Nieuw: Apple's redactionele "Nieuwe programma's" per land; bij Spotify de binnenkomers uit eigen metingen | werkt (Spotify vanaf dag twee) |
 | Afleveringen direct uit een lijst afspelen (audio via de feed van de show) | werkt |
 | Offline: laatst opgehaalde lijst | werkt |
 | Stijgers en dalers | werkt vanaf de tweede dag |
@@ -217,6 +238,7 @@ app/src/main/java/nl/woolacast/
               player/ het uitklapbare spelerscherm
 charts-service/  legt dagelijks de ranglijsten vast (historie) en haalt op
               wat de app niet zelf kan: Apple's afleveringen per categorie
+              en Apple's redactionele lijst "Nieuwe programma's"
 tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```

@@ -125,6 +125,7 @@ class ChartsDataset(
     private fun ChartQuery.datasetPath(): String {
         val source = if (this.source == SourceId.SPOTIFY) "spotify" else "apple"
         val genre = category.appleGenreId ?: 26
+        // Trending en Nieuw worden afgeleid uit de historie van de showlijst.
         val level = if (this.level == ChartLevel.EPISODES) "episodes" else "shows"
         return "$source/${country.code}/$genre/$level"
     }
@@ -166,6 +167,46 @@ class ChartsDataset(
             entries = entries,
             updatedLabel = "Apple's eigen categorielijst · ${dataset.updated?.take(10).orEmpty()}".trim()
         )
+    }
+
+    /**
+     * Apple's redactionele lijst "Nieuwe programma's" van het land, als het
+     * klusje hem heeft opgehaald. Null: nog niet verzameld.
+     */
+    suspend fun newShows(countryCode: String): List<ChartEntry>? {
+        val path = "apple/$countryCode/26/new"
+        val dataset = mutex.withLock {
+            if (charts.containsKey(path)) charts[path]
+            else runCatching { api.chart("$baseUrl/$path.json") }
+                .getOrNull()
+                .takeIf { it != null && it.entries.isNotEmpty() }
+                .also { charts[path] = it }
+        } ?: return null
+        return dataset.entries.map { entry ->
+            ChartEntry(
+                rank = entry.rank, id = entry.id, title = entry.title, publisher = entry.publisher,
+                artworkUrl = entry.artworkUrl, genre = null, storeUrl = null,
+                showId = entry.id, feedUrl = entry.feedUrl, releaseDate = entry.releaseDate
+            )
+        }
+    }
+
+    /**
+     * Per id: de dag waarop hij de lijst binnenkwam, afgeleid uit de bewaarde
+     * dagen — de dag na de laatste dag waarop hij ontbrak. Wie er alle bewaarde
+     * dagen al stond, staat er niet in. Alleen mogelijk vanaf twee dagen.
+     */
+    suspend fun enteredOn(query: ChartQuery): Map<String, String> {
+        val days = history(query)?.days?.toSortedMap() ?: return emptyMap()
+        if (days.size < 2) return emptyMap()
+        val ordered = days.keys.toList()
+        val latest = days.getValue(ordered.last())
+        return latest.keys.mapNotNull { id ->
+            val lastAbsent = ordered.dropLast(1).lastOrNull { day -> !days.getValue(day).containsKey(id) }
+                ?: return@mapNotNull null
+            val entered = ordered[ordered.indexOf(lastAbsent) + 1]
+            id to entered
+        }.toMap()
     }
 
     /**

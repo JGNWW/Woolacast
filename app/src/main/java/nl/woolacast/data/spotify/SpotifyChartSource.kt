@@ -17,7 +17,8 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
     override val id = SourceId.SPOTIFY
 
     override val capabilities = SourceCapabilities(
-        levels = setOf(ChartLevel.SHOWS, ChartLevel.EPISODES),
+        // Trending is een echte Spotify-lijst; Nieuw leidt de app zelf af.
+        levels = setOf(ChartLevel.SHOWS, ChartLevel.EPISODES, ChartLevel.TRENDING),
         categoryLevels = setOf(ChartLevel.SHOWS),
         countryCount = 26,
         cadence = "Dagelijks",
@@ -40,6 +41,7 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
                 )
 
             query.level == ChartLevel.EPISODES -> "top-episodes"
+            query.level == ChartLevel.TRENDING -> "trending"
             query.category.isAll -> "top-podcasts"
 
             else -> {
@@ -87,8 +89,11 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
             )
         }
 
-        val label = if (query.category.isAll) "Spotify · dagelijks bijgewerkt"
-        else "Spotify · top 50 in ${query.category.label}"
+        val label = when {
+            query.level == ChartLevel.TRENDING -> "Spotify's eigen trending-lijst · dagelijks"
+            query.category.isAll -> "Spotify · dagelijks bijgewerkt"
+            else -> "Spotify · top 50 in ${query.category.label}"
+        }
 
         return Chart(query, entries, updatedLabel = label)
     }

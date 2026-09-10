@@ -7,6 +7,10 @@ Verzamelt wat de app niet zelf kan ophalen. Twee klussen, met heel andere kosten
             de lijst zelf — die haalt de app zo op — maar om de *historie*:
             stijgers en dalers kun je niet met terugwerkende kracht bepalen.
 
+  new       Apple's redactionele lijst "Nieuwe programma's" per land. Geen
+            ranglijst maar wel een echte lijst; alleen via het webtoken van
+            podcasts.apple.com te lezen. Draait ook mee in snapshot.
+
   episodes  Apple's afleveringenlijst per categorie. De ranglijst is publiek,
             maar geeft alleen ids, en een afleverings-id is nergens massaal op
             te lossen. Elk id kost een eigen aanroep. Dit is de dure klus en
@@ -86,6 +90,111 @@ def fetch(url: str, *, raw: bool = False, tries: int = 3, headers: dict | None =
                 return None
             time.sleep(1.5 * (attempt + 1))
     return None
+
+
+# ------------------------------------------------------ Apple "Nieuwe programma's"
+
+APPLE_WEB = "https://podcasts.apple.com"
+APPLE_AMP = "https://amp-api.podcasts.apple.com/v1"
+_apple_token: str | None = None
+
+
+def apple_token() -> str | None:
+    """
+    Het bearer-token dat podcasts.apple.com zelf gebruikt staat in zijn
+    JavaScript. Het is publiek, maar verloopt en verhuist; vandaar dat we het
+    elke run opnieuw uit de pagina vissen.
+    """
+    global _apple_token
+    if _apple_token:
+        return _apple_token
+    page = fetch(f"{APPLE_WEB}/nl/new", raw=True, headers={"User-Agent": "Mozilla/5.0"})
+    if not page:
+        return None
+    match = re.search(r'src="(/assets/index~[^"]+\.js)"', page[0])
+    if not match:
+        return None
+    bundle = fetch(APPLE_WEB + match.group(1), raw=True, headers={"User-Agent": "Mozilla/5.0"})
+    if not bundle:
+        return None
+    token = re.search(r"eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}", bundle[0])
+    _apple_token = token.group(0) if token else None
+    return _apple_token
+
+
+def apple_new_shows(country: str, limit: int = 100) -> list[dict] | None:
+    """
+    Apple's tabblad "Nieuw" is redactioneel: het eerste 'room'-element op de
+    pagina is "Nieuwe programma's" (per land een eigen lijst). Geen ranglijst,
+    wel een echte lijst — en alleen via de amp-api met het webtoken te lezen.
+    """
+    token = apple_token()
+    if not token:
+        return None
+    headers = {"Authorization": f"Bearer {token}", "Origin": APPLE_WEB, "User-Agent": "Mozilla/5.0"}
+    groupings = fetch(
+        f"{APPLE_AMP}/editorial/{country}/groupings?platform=web&name=podcasts",
+        headers=headers)
+    if not groupings:
+        return None
+
+    def rooms(node):
+        if isinstance(node, dict):
+            attrs = node.get("attributes", {})
+            if node.get("type") == "editorial-elements" and str(attrs.get("editorialElementKind")) == "260":
+                yield node
+            for value in node.values():
+                yield from rooms(value)
+        elif isinstance(node, list):
+            for item in node:
+                yield from rooms(item)
+
+    room = next(iter(rooms(groupings)), None)
+    if not room:
+        return None
+
+    entries = []
+    label = ""
+    url = (f"{APPLE_AMP}/editorial/{country}/rooms/{room['id']}"
+           f"?extend%5Bpodcasts%5D=feedUrl")
+    while url and len(entries) < limit:
+        page = fetch(url, headers=headers)
+        if not page:
+            break
+        node = page["data"][0] if page.get("data") else page
+        label = label or node.get("attributes", {}).get("title", "")
+        contents = node.get("relationships", {}).get("contents", page)
+        for item in contents.get("data", []):
+            if item.get("type") != "podcasts":
+                continue
+            attrs = item.get("attributes", {})
+            art = (attrs.get("artwork") or {}).get("url", "")
+            entries.append({
+                "id": item["id"],
+                "title": attrs.get("name", ""),
+                "publisher": attrs.get("artistName", ""),
+                "artworkUrl": art.replace("{w}x{h}bb.{f}", "600x600bb.jpg") if art else None,
+                "feedUrl": attrs.get("feedUrl"),
+                "genre": next(iter(attrs.get("genreNames") or []), None),
+                "releaseDate": attrs.get("releaseDate"),
+            })
+        nxt = contents.get("next")
+        url = (APPLE_AMP.rsplit("/v1", 1)[0] + nxt + "&extend%5Bpodcasts%5D=feedUrl") if nxt else None
+    return {"label": label, "entries": entries[:limit]} if entries else None
+
+
+def write_new_shows(root: pathlib.Path, country: str, limit: int) -> int:
+    result = apple_new_shows(country, limit)
+    if not result:
+        return 0
+    folder = root / "apple" / country / str(ROOT_GENRE)
+    folder.mkdir(parents=True, exist_ok=True)
+    ranked = [{"rank": i, **e} for i, e in enumerate(result["entries"], 1)]
+    (folder / "new.json").write_text(json.dumps({
+        "source": "apple", "level": "new", "country": country, "genreId": ROOT_GENRE,
+        "genreLabel": result["label"], "updated": NOW, "count": len(ranked), "entries": ranked,
+    }, ensure_ascii=False, separators=(",", ":")))
+    return len(ranked)
 
 
 # ---------------------------------------------------------------- Apple shows
@@ -417,6 +526,10 @@ def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
                         collected.append(record(root, "spotify", country, genre_id, "shows", rows, store_list=False))
                         print(f"  spotify {country} {genre_id:5} shows      {len(rows):3}", flush=True)
 
+        # Apple's redactionele "Nieuwe programma's": drie aanroepen, dus dit mag mee.
+        got = write_new_shows(root, country, 100)
+        print(f"  apple   {country}    26 new        {got:3}", flush=True)
+
         if collected:
             write_movers(root, country, collected)
             write_shows(root, country, collected)
@@ -446,6 +559,11 @@ def main() -> int:
     snap.add_argument("--limit", type=int, default=100)
     snap.add_argument("--out", default="charts")
 
+    new = sub.add_parser("new", help="Apple's redactionele lijst Nieuwe programma's per land")
+    new.add_argument("--countries", default="nl")
+    new.add_argument("--limit", type=int, default=100)
+    new.add_argument("--out", default="charts")
+
     eps = sub.add_parser("episodes", help="duur; lost afleverings-ids op")
     eps.add_argument("--countries", default="nl")
     eps.add_argument("--limit", type=int, default=50)
@@ -458,6 +576,9 @@ def main() -> int:
 
     if args.job == "snapshot":
         run_snapshot(countries, args.limit, root)
+    elif args.job == "new":
+        for country in countries:
+            print(f"  apple   {country}    26 new        {write_new_shows(root, country, args.limit):3}", flush=True)
     else:
         run_episodes(countries, args.limit, args.workers, root)
 

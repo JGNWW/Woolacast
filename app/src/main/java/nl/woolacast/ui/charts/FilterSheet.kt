@@ -79,7 +79,7 @@ fun FilterSheet(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val capabilities = repository.source(source).capabilities
-    val categoriesAllowed = capabilities.supportsCategories(query.level)
+    val categoriesAllowed = query.level.isRanking && capabilities.supportsCategories(query.level)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -142,8 +142,11 @@ fun FilterSheet(
                 }
 
                 Label(
-                    if (categoriesAllowed) "Categorie"
-                    else "Categorie · niet op ${query.level.label.lowercase()}niveau bij ${source.label}"
+                    when {
+                        categoriesAllowed -> "Categorie"
+                        !query.level.isRanking -> "Categorie · niet bij ${query.level.label}"
+                        else -> "Categorie · niet op ${query.level.label.lowercase()}niveau bij ${source.label}"
+                    }
                 )
                 FlowRow(
                     modifier = Modifier.padding(horizontal = 20.dp),
@@ -180,7 +183,8 @@ fun FilterSheet(
                     kind = ButtonKind.OUTLINE
                 )
                 WoolButton(
-                    "Toon ${expectedCount(source, query.level, category)} ${query.level.label.lowercase()}",
+                    if (query.level.isRanking) "Toon ${expectedCount(source, query.level, category)} ${query.level.label.lowercase()}"
+                    else "Toon ${query.level.label.lowercase()}",
                     onClick = { onApply(source, country, category) },
                     modifier = Modifier.weight(1f)
                 )

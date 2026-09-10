@@ -27,7 +27,9 @@ data class ChartEntry(
     val description: String? = null,
     /** Alleen op afleveringniveau, en alleen als de bron ze meegeeft. */
     val durationMillis: Long? = null,
-    val releaseDate: String? = null
+    val releaseDate: String? = null,
+    /** Alleen op het tabblad Nieuw: de dag waarop de show de lijst binnenkwam. */
+    val enteredOn: String? = null
 )
 
 data class Chart(

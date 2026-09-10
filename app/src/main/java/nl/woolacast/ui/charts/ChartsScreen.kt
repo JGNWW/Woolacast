@@ -45,7 +45,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.data.ChartRepository
+import androidx.compose.foundation.lazy.LazyListScope
+import nl.woolacast.domain.Chart
 import nl.woolacast.domain.ChartEntry
+import nl.woolacast.domain.Movement
+import nl.woolacast.ui.common.TextPill
+import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.domain.ChartLevel
 import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.Flag
@@ -134,11 +139,13 @@ fun ChartsScreen(
                     onClick = { filtersOpen = true },
                     leading = { Flag(state.query.country.code) }
                 )
-                SmallChip(
-                    if (state.query.category.isAll) "Categorie" else state.query.category.label,
-                    onClick = { filtersOpen = true },
-                    modifier = Modifier.weight(1f, fill = false)
-                )
+                if (state.query.level.isRanking) {
+                    SmallChip(
+                        if (state.query.category.isAll) "Categorie" else state.query.category.label,
+                        onClick = { filtersOpen = true },
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                }
             }
 
             val levels = ChartLevel.entries
@@ -180,32 +187,27 @@ fun ChartsScreen(
                                 )
                             }
                         }
-                        items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
-                            val open = {
-                                entry.showId?.let { id ->
-                                    // Op afleveringniveau is de titel die van de aflevering;
-                                    // voor het opzoeken van een feed hebben we de show nodig.
-                                    val showTitle = if (chart.query.level == ChartLevel.EPISODES) {
-                                        entry.publisher
-                                    } else {
-                                        entry.title
-                                    }
-                                    onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
+                        if (!chart.query.level.isRanking) {
+                            item {
+                                Row(
+                                    modifier = Modifier.height(30.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        if (chart.query.level == ChartLevel.TRENDING) WoolIcons.Trend else WoolIcons.Spark,
+                                        null, tint = LocalChartColors.current.muted, modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        chart.updatedLabel.orEmpty(),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                                        color = LocalChartColors.current.muted,
+                                        maxLines = 1, overflow = TextOverflow.Ellipsis
+                                    )
                                 }
-                                Unit
                             }
-                            if (chart.query.level == ChartLevel.EPISODES) {
-                                EpisodeChartRow(
-                                    entry = entry,
-                                    resolving = state.resolvingId == entry.id,
-                                    onClick = open,
-                                    onPlay = { viewModel.play(entry) }
-                                )
-                            } else {
-                                ChartRow(entry, open, compact = true)
-                            }
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
+                        chartRows(chart, state.resolvingId, onOpenPodcast, viewModel::play)
                     }
 
                     else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -236,6 +238,113 @@ fun ChartsScreen(
                 viewModel.setFilters(country, category)
             }
         )
+    }
+}
+
+/** De rijen van een lijst, per soort: ranglijst, trending (sprong) of nieuw (per dag gegroepeerd). */
+internal fun LazyListScope.chartRows(
+    chart: Chart,
+    resolvingId: String?,
+    onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String, title: String) -> Unit,
+    onPlay: (ChartEntry) -> Unit
+) {
+    val level = chart.query.level
+    val entries = chart.entries
+    var lastDay: String? = null
+    entries.forEachIndexed { index, entry ->
+        val open = {
+            entry.showId?.let { id ->
+                // Op afleveringniveau is de titel die van de aflevering;
+                // voor het opzoeken van een feed hebben we de show nodig.
+                val showTitle = if (level == ChartLevel.EPISODES) entry.publisher else entry.title
+                onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
+            }
+            Unit
+        }
+        if (level == ChartLevel.NEW && entry.enteredOn != null && entry.enteredOn != lastDay) {
+            lastDay = entry.enteredOn
+            item(key = "day-${entry.enteredOn}") { DayHeader(entry.enteredOn) }
+        }
+        item(key = "${entry.rank}-${entry.id}") {
+            when (level) {
+                ChartLevel.EPISODES -> EpisodeChartRow(
+                    entry = entry,
+                    resolving = resolvingId == entry.id,
+                    onClick = open,
+                    onPlay = { onPlay(entry) }
+                )
+                ChartLevel.TRENDING -> TrendingRow(entry, open)
+                ChartLevel.NEW -> NewRow(entry, open)
+                ChartLevel.SHOWS -> ChartRow(entry, open, compact = true)
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+    }
+}
+
+@Composable
+private fun DayHeader(day: String) {
+    Text(
+        (relativeDay(day) ?: day).replaceFirstChar { it.uppercase() },
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+    )
+}
+
+/** Trending: rang, show, en de sprong als pilletje; eronder waar hij nu staat. */
+@Composable
+private fun TrendingRow(entry: ChartEntry, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).height(60.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        RankNumber(entry.rank, size = 22.dp, fontSize = 16.sp)
+        Artwork(entry.artworkUrl, 44.dp, corner = 9.dp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(entry.title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                listOfNotNull(entry.publisher.takeIf { it.isNotBlank() }, entry.description).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+        }
+        when (val move = entry.movement) {
+            is Movement.Up -> TextPill(
+                "▲ ${move.places ?: ""}".trim(),
+                MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            else -> MovementPill(move)
+        }
+    }
+}
+
+/** Nieuw: geen rang vooraan, wel de plek waarop de show binnenkwam. */
+@Composable
+private fun NewRow(entry: ChartEntry, onClick: () -> Unit) {
+    val colors = LocalChartColors.current
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).height(60.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Artwork(entry.artworkUrl, 44.dp, corner = 9.dp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(entry.title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(2.dp))
+            Text(
+                listOfNotNull(entry.publisher.takeIf { it.isNotBlank() }, entry.genre).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis
+            )
+        }
+        if (entry.enteredOn != null) {
+            TextPill("NIEUW OP #${entry.rank}", colors.riseContainer, colors.onRiseContainer)
+        } else {
+            TextPill("NIEUW", colors.riseContainer, colors.onRiseContainer)
+        }
     }
 }
 
@@ -331,5 +440,6 @@ internal fun EpisodeChartRow(
 internal fun Suggestion.label(): String = when (this) {
     Suggestion.ALL_CATEGORIES -> "Toon alle categorieën"
     Suggestion.SWITCH_TO_APPLE -> "Toon Apple Podcasts-lijst"
+    Suggestion.SWITCH_TO_SPOTIFY -> "Toon Spotify's trending-lijst"
     Suggestion.SWITCH_TO_SHOWS -> "Toon podcasts"
 }

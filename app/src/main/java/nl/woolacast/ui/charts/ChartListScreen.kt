@@ -79,7 +79,12 @@ fun ChartListScreen(
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TitleBar(
-                title = if (query.level == ChartLevel.EPISODES) "Top afleveringen" else "Top podcasts",
+                title = when (query.level) {
+                    ChartLevel.EPISODES -> "Top afleveringen"
+                    ChartLevel.TRENDING -> "Trending"
+                    ChartLevel.NEW -> "Nieuw"
+                    ChartLevel.SHOWS -> "Top podcasts"
+                },
                 onBack = onBack
             ) {
                 IconAction(WoolIcons.Filter, "Lijst instellen", { filtersOpen = true })
@@ -149,26 +154,7 @@ fun ChartListScreen(
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 12.dp)
                 ) {
                     item { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
-                    items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
-                        val open = {
-                            entry.showId?.let { id ->
-                                val showTitle = if (query.level == ChartLevel.EPISODES) entry.publisher else entry.title
-                                onOpenPodcast(id, entry.feedUrl, query.country.code, showTitle)
-                            }
-                            Unit
-                        }
-                        if (query.level == ChartLevel.EPISODES) {
-                            EpisodeChartRow(
-                                entry = entry,
-                                resolving = state.resolvingId == entry.id,
-                                onClick = open,
-                                onPlay = { viewModel.play(entry) }
-                            )
-                        } else {
-                            ChartRow(entry, open)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
+                    chartRows(chart, state.resolvingId, onOpenPodcast, viewModel::play)
                 }
 
                 else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

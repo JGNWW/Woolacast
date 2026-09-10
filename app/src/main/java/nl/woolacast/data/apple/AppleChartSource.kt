@@ -47,6 +47,9 @@ class AppleChartSource(
         ChartLevel.EPISODES ->
             if (query.category.isAll) marketingChart(query, feed = EPISODES_FEED)
             else episodesByCategory(query)
+        // Trending en Nieuw leidt de repository af; Apple publiceert ze niet als ranglijst.
+        ChartLevel.TRENDING, ChartLevel.NEW ->
+            throw ChartUnavailable("Apple publiceert geen ${query.level.label.lowercase()}-lijst.")
     }
 
     /**

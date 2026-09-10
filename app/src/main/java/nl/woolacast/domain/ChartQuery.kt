@@ -6,10 +6,19 @@ enum class SourceId(val label: String, val initial: String) {
     SPOTIFY("Spotify", "S")
 }
 
-/** Podcast- of afleveringniveau. */
+/**
+ * De vier tabbladen. De eerste twee zijn ranglijsten; Trending en Nieuw zijn
+ * shows die opvallen — wat een bron zelf publiceert, of anders afgeleid uit
+ * onze eigen dagelijkse metingen.
+ */
 enum class ChartLevel(val label: String) {
     SHOWS("Podcasts"),
-    EPISODES("Afleveringen")
+    EPISODES("Afleveringen"),
+    TRENDING("Trending"),
+    NEW("Nieuw");
+
+    /** Trending en Nieuw kennen geen categorie; die gaan altijd over de hele lijst. */
+    val isRanking: Boolean get() = this == SHOWS || this == EPISODES
 }
 
 data class Country(val code: String, val label: String, val flag: String)
