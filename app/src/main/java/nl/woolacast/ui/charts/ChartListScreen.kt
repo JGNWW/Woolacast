@@ -91,15 +91,6 @@ fun ChartListScreen(
             ) {
                 item {
                     FilterChip(dark = true, onClick = { filtersOpen = true }) {
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(if (query.source == SourceId.APPLE) colors.seriesApple else colors.seriesSpotify),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(query.source.initial, color = Color(0xFFFBF6EE), fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
-                        }
                         Text(query.source.label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanel)
                     }
                 }

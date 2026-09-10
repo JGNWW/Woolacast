@@ -209,18 +209,19 @@ fun UnderlineTabs(
     labels: List<String>,
     selected: Int,
     onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    height: Dp = 46.dp
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp).height(46.dp),
+            modifier = Modifier.padding(horizontal = 20.dp).height(height),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             labels.forEachIndexed { index, label ->
                 val on = index == selected
                 Box(
                     modifier = Modifier
-                        .height(46.dp)
+                        .height(height)
                         // Zo breed als het woord; anders rekt de streep eronder het tabblad op.
                         .width(IntrinsicSize.Max)
                         .clickable { onSelect(index) },
@@ -249,14 +250,14 @@ fun UnderlineTabs(
 }
 
 @Composable
-fun RankNumber(rank: Int, modifier: Modifier = Modifier, size: Dp = 26.dp) {
+fun RankNumber(rank: Int, modifier: Modifier = Modifier, size: Dp = 26.dp, fontSize: androidx.compose.ui.unit.TextUnit = 19.sp) {
     val colors = LocalChartColors.current
     Text(
         text = rank.toString(),
         modifier = modifier.width(size),
         textAlign = TextAlign.End,
         fontFamily = DisplayFamily,
-        fontSize = 19.sp,
+        fontSize = fontSize,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = (-0.6).sp,
         color = if (rank <= 3) colors.rankAccent else colors.muted
@@ -348,24 +349,73 @@ fun TextPill(text: String, background: Color, foreground: Color, modifier: Modif
     }
 }
 
-/** Het vierkantje met de beginletter van een bron (.sdot in de mockup). */
+/** Kleurvlakje van een bron, dezelfde kleur als in de grafiek en de tegels — zonder letter. */
 @Composable
-fun SourceDot(source: SourceId, modifier: Modifier = Modifier, size: Dp = 18.dp, active: Boolean = true) {
+fun SourceDot(source: SourceId, modifier: Modifier = Modifier, size: Dp = 10.dp, active: Boolean = true) {
     val colors = LocalChartColors.current
     val bg = when {
         !active -> MaterialTheme.colorScheme.surfaceContainerHigh
         source == SourceId.APPLE -> colors.seriesApple
         else -> colors.seriesSpotify
     }
-    Box(
-        modifier = modifier.size(size).clip(RoundedCornerShape(size / 3)).background(bg),
-        contentAlignment = Alignment.Center
+    Box(modifier = modifier.size(size).clip(RoundedCornerShape(3.dp)).background(bg))
+}
+
+/** Kolomkoppen boven de landenrijen, zodat de kleur nooit het enige onderscheid is. */
+@Composable
+fun SourceColumnsHeader(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Spacer(Modifier.weight(1f))
+        listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
+            Text(
+                source.label.substringBefore(' '),
+                fontSize = 10.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = LocalChartColors.current.muted,
+                modifier = Modifier.width(41.dp)
+            )
+        }
+    }
+}
+
+/** Kleine chip uit variant E: 36 dp, donker als hij de actieve keuze draagt, met een pijltje. */
+@Composable
+fun SmallChip(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    dark: Boolean = false,
+    leading: (@Composable () -> Unit)? = null
+) {
+    val shape = RoundedCornerShape(10.dp)
+    val colors = LocalChartColors.current
+    Row(
+        modifier = modifier
+            .height(36.dp)
+            .clip(shape)
+            .background(if (dark) colors.panel else MaterialTheme.colorScheme.surfaceContainerLowest)
+            .then(if (dark) Modifier else Modifier.border(1.dp, MaterialTheme.colorScheme.outline, shape))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        leading?.invoke()
         Text(
-            source.initial,
-            fontSize = (size.value * 0.53f).sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = if (active) Color(0xFFFBF6EE) else colors.muted
+            label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = if (dark) colors.onPanel else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Icon(
+            WoolIcons.ChevronDown, null,
+            tint = if (dark) colors.onPanelMuted else colors.muted,
+            modifier = Modifier.size(15.dp)
         )
     }
 }
@@ -386,19 +436,10 @@ fun SourceChip(
             .background(if (selected) colors.panel else MaterialTheme.colorScheme.surfaceContainerLowest)
             .then(if (selected) Modifier else Modifier.border(1.dp, MaterialTheme.colorScheme.outline, shape))
             .clickable(onClick = onClick)
-            .padding(start = 11.dp, end = 15.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(RoundedCornerShape(7.dp))
-                .background(if (selected) MaterialTheme.colorScheme.primary else colors.muted),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(source.initial, color = Color(0xFFFBF6EE), fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
-        }
         Text(
             source.label,
             style = MaterialTheme.typography.labelLarge,

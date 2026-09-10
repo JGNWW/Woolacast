@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,10 +54,9 @@ import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.MovementBadge
 import nl.woolacast.ui.common.MovementPill
 import nl.woolacast.ui.common.NoticePanel
-import nl.woolacast.ui.common.PageTitle
+import nl.woolacast.ui.common.SmallChip
 import nl.woolacast.ui.common.PlayCircle
 import nl.woolacast.ui.common.RankNumber
-import nl.woolacast.ui.common.SourceChip
 import nl.woolacast.ui.common.UnderlineTabs
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.minutes
@@ -93,38 +93,60 @@ fun ChartsScreen(
                 IconAction(WoolIcons.Bell, "Chart-alerts", onAlerts)
             }
 
-            PageTitle("Hitlijsten")
-
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Variant E: kleinere kop met de verversingstijd rechts, drie kleine chips.
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                items(repository.allSources(), key = { it.id.name }) { source ->
-                    SourceChip(
-                        source = source.id,
-                        selected = source.id == state.query.source,
-                        onClick = { viewModel.setSource(source.id) }
-                    )
-                }
+                Text("Hitlijsten", style = MaterialTheme.typography.displaySmall.copy(fontSize = 26.sp, lineHeight = 30.sp))
+                Text(
+                    when {
+                        state.loading -> "Laden…"
+                        state.chart?.cachedAt != null -> "Geen verbinding"
+                        state.loadedAt != null -> "Bijgewerkt ${state.loadedAt}"
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                    color = LocalChartColors.current.muted,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
             }
 
-            Spacer(Modifier.height(14.dp))
-
-            ContextBar(
-                state = state,
-                categoriesAllowed = repository.source(state.query.source).capabilities
-                    .supportsCategories(state.query.level),
-                onOpen = { filtersOpen = true },
-                onClearCategory = viewModel::clearCategory
-            )
-
-            Spacer(Modifier.height(2.dp))
+            var sourceMenu by remember { mutableStateOf(false) }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box {
+                    SmallChip(state.query.source.label.substringBefore(' '), dark = true, onClick = { sourceMenu = true })
+                    DropdownMenu(expanded = sourceMenu, onDismissRequest = { sourceMenu = false }) {
+                        repository.allSources().forEach { source ->
+                            DropdownMenuItem(
+                                text = { Text(source.id.label) },
+                                onClick = { sourceMenu = false; viewModel.setSource(source.id) }
+                            )
+                        }
+                    }
+                }
+                SmallChip(
+                    state.query.country.code.uppercase(),
+                    onClick = { filtersOpen = true },
+                    leading = { Flag(state.query.country.code) }
+                )
+                SmallChip(
+                    if (state.query.category.isAll) "Categorie" else state.query.category.label,
+                    onClick = { filtersOpen = true },
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            }
 
             val levels = ChartLevel.entries
             UnderlineTabs(
                 labels = levels.map { it.label },
                 selected = levels.indexOf(state.query.level),
-                onSelect = { viewModel.setLevel(levels[it]) }
+                onSelect = { viewModel.setLevel(levels[it]) },
+                height = 40.dp
             )
 
             val notice = state.notice
@@ -180,7 +202,7 @@ fun ChartsScreen(
                                     onPlay = { viewModel.play(entry) }
                                 )
                             } else {
-                                ChartRow(entry, open)
+                                ChartRow(entry, open, compact = true)
                             }
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         }
@@ -217,89 +239,22 @@ fun ChartsScreen(
     }
 }
 
-/** De balk met land · categorie die de filtersheet opent (.ctx). */
 @Composable
-private fun ContextBar(
-    state: ChartsUiState,
-    categoriesAllowed: Boolean,
-    onOpen: () -> Unit,
-    onClearCategory: () -> Unit
-) {
-    val muted = LocalChartColors.current.muted
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
-            .clickable(onClick = onOpen)
-            .height(46.dp)
-            .padding(start = 12.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Flag(state.query.country.code)
-        Text(state.query.country.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
-        Text("·", color = muted)
-        Text(
-            state.query.category.label,
-            style = MaterialTheme.typography.labelLarge,
-            color = if (categoriesAllowed || state.query.category.isAll) MaterialTheme.colorScheme.onSurfaceVariant else muted,
-            textDecoration = if (!categoriesAllowed && !state.query.category.isAll) TextDecoration.LineThrough else null,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-        )
-        if (!state.query.category.isAll) {
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(onClick = onClearCategory),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(WoolIcons.Close, "Categorie wissen", tint = muted, modifier = Modifier.size(14.dp))
-            }
-        } else {
-            Icon(WoolIcons.ChevronDown, "Lijst instellen", tint = muted, modifier = Modifier.size(18.dp))
-        }
-        if (state.loading) {
-            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-            Spacer(Modifier.width(6.dp))
-        } else {
-            Text(
-                when {
-                    state.chart?.cachedAt != null -> "geen verbinding"
-                    state.loadedAt != null -> "Bijgewerkt ${state.loadedAt}"
-                    else -> ""
-                },
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                color = muted,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(end = 6.dp)
-            )
-        }
-    }
-}
-
-@Composable
-internal fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
+internal fun ChartRow(entry: ChartEntry, onClick: () -> Unit, compact: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .height(72.dp),
+            .height(if (compact) 60.dp else 72.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        RankNumber(entry.rank)
-        Artwork(entry.artworkUrl, 52.dp)
+        RankNumber(entry.rank, size = if (compact) 22.dp else 26.dp, fontSize = if (compact) 16.sp else 19.sp)
+        Artwork(entry.artworkUrl, if (compact) 44.dp else 52.dp, corner = if (compact) 9.dp else 11.dp)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 entry.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = if (compact) 14.sp else 14.5.sp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
