@@ -23,6 +23,13 @@ interface AppleCatalogApi {
     @GET
     suspend fun legacyTop(@Url url: String): LegacyFeedResponse
 
+    /** De genreboom van een winkel, in de taal van die winkel. */
+    @GET("WebObjects/MZStoreServices.woa/ws/genres")
+    suspend fun genres(
+        @Query("id") id: String = "26",
+        @Query("cc") cc: String
+    ): Map<String, GenreNode>
+
     /** Zoekt een podcast op naam; de enige weg naar een feed voor een Spotify-vermelding. */
     @GET("search")
     suspend fun search(

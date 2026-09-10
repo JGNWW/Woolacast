@@ -11,8 +11,8 @@ import nl.woolacast.data.ChartRepository
 import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.apple.AppleChartSource
+import nl.woolacast.data.apple.AppleGenreTree
 import nl.woolacast.data.feed.FeedClient
-import nl.woolacast.data.fyyd.FyydChartSource
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.spotify.SpotifyChartSource
 import nl.woolacast.player.PlayerController
@@ -25,7 +25,6 @@ class AppContainer(context: Context) {
 
     private val marketingApi = Network.marketingApi()
     private val catalogApi = Network.catalogApi()
-    private val fyydApi = Network.fyydApi()
     private val spotifyApi = Network.spotifyChartsApi()
     private val feedClient = FeedClient(Network.client)
 
@@ -33,9 +32,8 @@ class AppContainer(context: Context) {
 
     val chartRepository = ChartRepository(
         sources = listOf(
-            AppleChartSource(marketingApi, catalogApi),
-            SpotifyChartSource(spotifyApi),
-            FyydChartSource(fyydApi)
+            AppleChartSource(marketingApi, catalogApi, AppleGenreTree(catalogApi)),
+            SpotifyChartSource(spotifyApi)
         ),
         store = store
     )

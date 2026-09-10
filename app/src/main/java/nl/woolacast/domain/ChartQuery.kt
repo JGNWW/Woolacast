@@ -3,8 +3,7 @@ package nl.woolacast.domain
 /** De drie hitlijsten die de app kent. */
 enum class SourceId(val label: String, val initial: String) {
     APPLE("Apple Podcasts", "A"),
-    SPOTIFY("Spotify", "S"),
-    FYYD("fyyd", "F")
+    SPOTIFY("Spotify", "S")
 }
 
 /** Podcast- of afleveringniveau. */

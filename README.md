@@ -37,16 +37,44 @@ dat is, en die keuze is hier: open projecten zonder poortwachter.
 
 | Bron | Sleutel? | Wat het geeft |
 | --- | --- | --- |
-| Apple Podcasts | nee | shows én afleveringen, 175 landen, per categorie |
+| Apple Podcasts | nee | shows én afleveringen, 175 landen, alle categorieen |
 | Spotify | nee | shows én afleveringen in 26 landen, categorieen in zeven |
-| fyyd.de | nee | shows per taalgebied |
 | RSS van de podcast zelf | nee | afleveringen, audio, omschrijvingen, artwork |
+
+Beide feeds van Apple lopen vast boven de honderd vermeldingen, dus honderd is
+het maximum per lijst.
 
 De podcastpagina leest de **RSS van de maker zelf** — daar staat alles in en er
 zit niemand tussen. Dat is dezelfde route die AntennaPod neemt. Alleen bij een
 Apple-lijst is er één opzoeking nodig om de feed-URL te vinden, want Apple geeft
 een catalogus-id in plaats van een feed. Bij fyyd komt de feed-URL meteen mee,
 dus daar is zelfs die stap niet nodig.
+
+### Over de categorielijsten van Apple
+
+Apple toont op `podcasts.apple.com/{land}/charts` wél afleveringen per
+categorie, maar die lijst komt van `amp-api.podcasts.apple.com` en die geeft
+zonder bearer token een 401. De oude rss-generator heeft een endpoint
+`toppodcastepisodes` dat een genre accepteert, maar dat levert al jaren een lege
+feed op; `?genre=` op de marketing-feed wordt genegeerd (getest: dezelfde
+uitslag voor drie verschillende genres).
+
+Wat wel keyless kan, en wat de app doet: de top 100 afleveringen ophalen en zelf
+op categorie schiften. Elke aflevering draagt één genre — soms een hoofdgenre
+met id, soms alleen een subgenrenaam als "Nieuwscommentaar". De genreboom van de
+winkel knoopt die aan hun hoofdgenre, in de taal van die winkel:
+
+```
+GET https://itunes.apple.com/WebObjects/MZStoreServices.woa/ws/genres?id=26&cc=nl
+```
+
+Eén aanroep per land, daarna uit het geheugen. In NL en DE getest: 100 van de
+100 afleveringen laten zich zo toewijzen.
+
+**Dit is dus een afgeleide lijst, geen kopie van Apple's eigen categorielijst.**
+Grote categorieen leveren genoeg op (Nieuws ~39, Sport ~14 in NL), kleine weinig
+(Comedy ~6). De app zet er "geschift op categorie" bij zodat het verschil
+zichtbaar blijft.
 
 ### Over Spotify
 
@@ -114,7 +142,7 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 
 | Onderdeel | Status |
 | --- | --- |
-| Hitlijsten: Apple, Spotify, fyyd | werkt |
+| Hitlijsten: Apple en Spotify | werkt |
 | Offline: laatst opgehaalde lijst | werkt |
 | Stijgers en dalers | werkt vanaf de tweede dag |
 | Podcastpagina uit RSS | werkt |
@@ -133,7 +161,7 @@ De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 app/src/main/java/nl/woolacast/
   domain/     modellen, ChartQuery, ChartSource, catalogus van landen en categorieen
   data/
-    apple/    de publieke Apple-feeds
+    apple/    de publieke Apple-feeds plus de genreboom
     spotify/  het chart-endpoint van podcastcharts.byspotify.com
     fyyd/     open API zonder sleutel
     feed/     RSS-parser en -client: de route zonder tussenpersoon

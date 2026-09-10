@@ -1,5 +1,6 @@
 package nl.woolacast.data.apple
 
+import nl.woolacast.data.Html
 import nl.woolacast.domain.Chart
 import nl.woolacast.domain.ChartEntry
 import nl.woolacast.domain.ChartLevel
@@ -10,62 +11,83 @@ import nl.woolacast.domain.SourceCapabilities
 import nl.woolacast.domain.SourceId
 
 /**
- * Apple is de enige bron met een publieke, sleutelloze lijst. Twee endpoints:
- * de marketing-feed voor de ongefilterde top, en de oude rss-generator zodra
- * er een categorie gekozen is — die laatste is de enige die per genre filtert.
+ * Apple is de enige bron met een publieke, sleutelloze lijst. Drie routes:
+ *
+ * - de marketing-feed voor de ongefilterde top, shows en afleveringen;
+ * - de oudere rss-generator zodra er een categorie gekozen is op showniveau,
+ *   want dat is de enige die per genre filtert;
+ * - voor afleveringen per categorie is er geen gefilterde feed. Apple toont die
+ *   lijst wel op podcasts.apple.com, maar alleen via een API met token. Wat wel
+ *   kan: de top 100 ophalen en zelf op categorie schiften. Elke aflevering
+ *   draagt namelijk een genre — soms een subgenre, en die knoopt [genreTree]
+ *   aan zijn hoofdgenre. Dat is dus een *afgeleide* lijst, geen kopie van
+ *   Apple's eigen categorielijst, en de app zegt dat er ook bij.
  */
 class AppleChartSource(
     private val marketing: AppleMarketingApi,
-    private val catalog: AppleCatalogApi
+    private val catalog: AppleCatalogApi,
+    private val genreTree: AppleGenreTree
 ) : ChartSource {
 
     override val id = SourceId.APPLE
 
     override val capabilities = SourceCapabilities(
         levels = setOf(ChartLevel.SHOWS, ChartLevel.EPISODES),
-        categoryLevels = setOf(ChartLevel.SHOWS),
+        categoryLevels = setOf(ChartLevel.SHOWS, ChartLevel.EPISODES),
         countryCount = 175,
         cadence = "Dagelijks",
-        summary = "Shows en afleveringen · 175 landen · categorieen alleen op showniveau"
+        summary = "Shows en afleveringen · 175 landen · alle categorieen"
     )
 
     override suspend fun load(query: ChartQuery): Chart = when {
-        query.level == ChartLevel.EPISODES && !query.category.isAll ->
-            throw ChartUnavailable(
-                "Apple publiceert geen afleveringenlijst per categorie. " +
-                    "De lijst hieronder is alle categorieen samen."
-            )
-
-        query.level == ChartLevel.EPISODES -> marketingChart(query, feed = "podcast-episodes")
-
-        query.category.isAll -> marketingChart(query, feed = "podcasts")
-
+        query.level == ChartLevel.EPISODES && !query.category.isAll -> episodesByCategory(query)
+        query.level == ChartLevel.EPISODES -> marketingChart(query, feed = EPISODES_FEED)
+        query.category.isAll -> marketingChart(query, feed = SHOWS_FEED)
         else -> legacyChart(query)
     }
 
     private suspend fun marketingChart(query: ChartQuery, feed: String): Chart {
-        val response = marketing.top(query.country.code, query.limit, feed)
+        val response = marketing.top(query.country.code, query.limit.coerceAtMost(MAX_FEED), feed)
         val entries = response.feed.results.mapIndexed { index, result ->
-            ChartEntry(
-                rank = index + 1,
-                id = result.id,
-                title = result.name,
-                publisher = result.artistName.orEmpty(),
-                artworkUrl = result.artworkUrl100?.let(::upscaleArtwork),
-                genre = result.genres.firstOrNull()?.name,
-                storeUrl = result.url,
-                showId = if (feed == "podcast-episodes") result.url?.let(::showIdFromUrl) else result.id,
-                feedUrl = null
-            )
+            result.toEntry(rank = index + 1, episodes = feed == EPISODES_FEED)
         }
         return Chart(query, entries, response.feed.updated)
+    }
+
+    private suspend fun episodesByCategory(query: ChartQuery): Chart {
+        val genreId = query.category.appleGenreId
+            ?: throw ChartUnavailable("Deze categorie heeft geen genre-id.")
+
+        val response = marketing.top(query.country.code, MAX_FEED, EPISODES_FEED)
+        val names = genreTree.topLevelByName(query.country.code)
+
+        val entries = response.feed.results
+            .filter { result ->
+                val genre = result.genres.firstOrNull() ?: return@filter false
+                val topLevel = genre.genreId?.toIntOrNull() ?: names[genre.name]
+                topLevel == genreId
+            }
+            .mapIndexed { index, result -> result.toEntry(rank = index + 1, episodes = true) }
+
+        if (entries.isEmpty()) {
+            throw ChartUnavailable(
+                "Er staat op dit moment geen ${query.category.label.lowercase()} in de top " +
+                    "$MAX_FEED afleveringen van ${query.country.label}."
+            )
+        }
+
+        return Chart(
+            query = query,
+            entries = entries,
+            updatedLabel = "${entries.size} uit de top $MAX_FEED afleveringen · geschift op categorie"
+        )
     }
 
     private suspend fun legacyChart(query: ChartQuery): Chart {
         val genreId = query.category.appleGenreId
             ?: throw ChartUnavailable("Deze categorie heeft geen genre-id.")
         val url = "https://itunes.apple.com/${query.country.code}/rss/toppodcasts/" +
-            "limit=${query.limit}/genre=$genreId/json"
+            "limit=${query.limit.coerceAtMost(MAX_FEED)}/genre=$genreId/json"
 
         val response = catalog.legacyTop(url)
         val entries = response.feed.entry.mapIndexedNotNull { index, entry ->
@@ -78,13 +100,31 @@ class AppleChartSource(
                 artworkUrl = entry.images.lastOrNull()?.label?.let(::upscaleArtwork),
                 genre = entry.category?.attributes?.label,
                 storeUrl = entry.link?.attributes?.href,
-                showId = entryId
+                showId = entryId,
+                description = Html.toPlainText(entry.summary?.label)
             )
         }
         return Chart(query, entries, response.feed.updated?.label)
     }
 
+    private fun MarketingResult.toEntry(rank: Int, episodes: Boolean) = ChartEntry(
+        rank = rank,
+        id = id,
+        title = name,
+        publisher = artistName.orEmpty(),
+        artworkUrl = artworkUrl100?.let(::upscaleArtwork),
+        genre = genres.firstOrNull()?.name,
+        storeUrl = url,
+        showId = if (episodes) url?.let(::showIdFromUrl) else id
+    )
+
     private companion object {
+        const val SHOWS_FEED = "podcasts"
+        const val EPISODES_FEED = "podcast-episodes"
+
+        /** Boven de honderd geeft de feed een serverfout. */
+        const val MAX_FEED = 100
+
         /**
          * De feed levert 55 tot 170 px. De maat zit letterlijk in het pad, dus
          * die vervangen we door iets dat op een telefoon scherp is.

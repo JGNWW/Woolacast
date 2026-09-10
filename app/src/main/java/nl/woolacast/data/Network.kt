@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit
 import kotlinx.serialization.json.Json
 import nl.woolacast.data.apple.AppleCatalogApi
 import nl.woolacast.data.apple.AppleMarketingApi
-import nl.woolacast.data.fyyd.FyydApi
 import nl.woolacast.data.spotify.SpotifyChartsApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -48,9 +47,6 @@ object Network {
 
     fun catalogApi(): AppleCatalogApi =
         retrofit("https://itunes.apple.com/").create(AppleCatalogApi::class.java)
-
-    fun fyydApi(): FyydApi =
-        retrofit("https://api.fyyd.de/").create(FyydApi::class.java)
 
     fun spotifyChartsApi(): SpotifyChartsApi =
         retrofit("https://podcastcharts.byspotify.com/").create(SpotifyChartsApi::class.java)
