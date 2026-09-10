@@ -47,8 +47,8 @@ het maximum per lijst.
 De podcastpagina leest de **RSS van de maker zelf** — daar staat alles in en er
 zit niemand tussen. Dat is dezelfde route die AntennaPod neemt. Alleen bij een
 Apple-lijst is er één opzoeking nodig om de feed-URL te vinden, want Apple geeft
-een catalogus-id in plaats van een feed. Bij fyyd komt de feed-URL meteen mee,
-dus daar is zelfs die stap niet nodig.
+een catalogus-id in plaats van een feed. Spotify geeft alleen een
+`spotify:show:` uri, dus daar zoekt de app de naam op in diezelfde catalogus.
 
 ### Over de categorielijsten van Apple
 
@@ -163,7 +163,6 @@ app/src/main/java/nl/woolacast/
   data/
     apple/    de publieke Apple-feeds plus de genreboom
     spotify/  het chart-endpoint van podcastcharts.byspotify.com
-    fyyd/     open API zonder sleutel
     feed/     RSS-parser en -client: de route zonder tussenpersoon
     local/    volgen, momentopnames en de offline cache in één JSON-bestand
   player/     Media3-service met een StateFlow-laag eromheen

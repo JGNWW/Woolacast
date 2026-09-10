@@ -19,8 +19,8 @@ object Network {
     }
 
     /**
-     * Sommige open API's (fyyd, Podcast Index) weigeren een verzoek zonder
-     * herkenbare User-Agent, dus die zetten we overal.
+     * Sommige bronnen weigeren een verzoek zonder herkenbare User-Agent,
+     * dus die zetten we overal.
      */
     private val userAgent = Interceptor { chain ->
         chain.proceed(
