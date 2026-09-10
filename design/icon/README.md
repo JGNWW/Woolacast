@@ -1,7 +1,8 @@
 # Woolacast — app-icoon
 
-Eerste versie. Drie richtingen, en richting A (de pad) uitgewerkt naar de
-Android-assets die je nodig hebt.
+De pad met koptelefoon, nagetekend als vector naar de referentie van de
+opdrachtgever, en uitgewerkt naar de Android-assets. Richting B en C staan
+er nog als niet-gekozen alternatieven.
 
 ## Structuur
 
@@ -30,6 +31,25 @@ node design/icon/assemble.mjs
 | Monochroom | één laag, voor thema-iconen vanaf Android 13 |
 | Play Store | 512 × 512 px, 32-bits PNG, geen transparantie |
 | Notificatie | 24 dp, één kleur wit, transparante achtergrond |
+
+## Kleur
+
+| Laag | Variabele | Waarde |
+| --- | --- | --- |
+| Kop | `--m-body` | `#C9946E` |
+| Onderkaak | `--m-body2` | `#E7C9A9` |
+| Vlekken, wenkbrauwen | `--m-wart` | `#B27E5B` |
+| Mond, neusgaten | `--m-line` | `#96603E` |
+| Iris | `--m-iris` | `#E8B84B` |
+| Pupil | `--m-pupil` | `#4A3324` |
+| Oorschelp | `--m-cup` | `#9AC2E7` |
+| Binnenrand schelp | `--m-cup2` | `#86B0DA` |
+| Oorkussen | `--m-pad` | `#F7EFE2` |
+| Beugel | `--m-band` | `#A9CCBE` |
+| Glans beugel | `--m-band2` | `#C6DFD4` |
+
+Grond: `#1B1712` (inkt). Ember valt af — de tan van de kop loopt daarin
+over. Alternatieven: `#2C4A46` (diep groen) en `#CFE2D9` (salie).
 
 ## Merkrechten
 

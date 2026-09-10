@@ -1,5 +1,5 @@
-<g>
-  <path d="M136 300 C136 90 376 90 376 300" fill="none" stroke="var(--mo-fg)" stroke-width="46" stroke-linecap="round"/>
-  <rect x="88" y="258" width="96" height="150" rx="48" fill="var(--mo-fg)"/>
-  <rect x="328" y="258" width="96" height="150" rx="48" fill="var(--mo-fg)"/>
+<g transform="translate(0,4)">
+  <path d="M126 296 C126 66 386 66 386 296" fill="none" stroke="var(--mo-fg)" stroke-width="40" stroke-linecap="round"/>
+  <ellipse cx="120" cy="322" rx="62" ry="76" fill="var(--mo-fg)"/>
+  <ellipse cx="392" cy="322" rx="62" ry="76" fill="var(--mo-fg)"/>
 </g>

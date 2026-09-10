@@ -1,36 +1,47 @@
-<g transform="translate(0,-20)">
-  <!-- beugel, ruim boven de kop -->
-  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
-  <!-- kop -->
-  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
-  <!-- oogbulten -->
-  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
-  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
-  <!-- lichte keel; bovenrand is de mondlijn -->
-  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
-  <!-- wratten -->
-  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
-  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
-  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
-  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
-  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+<g transform="translate(256,251) scale(0.93) translate(-256,-256)">
+  <!-- beugel, achter de kop -->
+  <path d="M100 284 C100 18 412 18 412 284" fill="none" stroke="var(--m-band)" stroke-width="25" stroke-linecap="round"/>
+  <path d="M107 271 C108 14 404 14 405 271" fill="none" stroke="var(--m-band2)" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- kop: breed, zware wangen -->
+  <path d="M256 132 C336 132 398 172 410 240 C424 306 428 356 402 394 C374 428 318 444 256 444 C194 444 138 428 110 394 C84 356 88 306 102 240 C114 172 176 132 256 132 Z" fill="var(--m-body)"/>
+
+  <!-- vlekken op de kruin -->
+  <ellipse cx="236" cy="162" rx="19" ry="12" fill="var(--m-wart)"/>
+  <ellipse cx="290" cy="150" rx="14" ry="9" fill="var(--m-wart)"/>
+  <ellipse cx="326" cy="174" rx="17" ry="11" fill="var(--m-wart)"/>
+  <ellipse cx="358" cy="204" rx="11" ry="8" fill="var(--m-wart)"/>
+  <ellipse cx="192" cy="178" rx="13" ry="8" fill="var(--m-wart)"/>
+  <ellipse cx="362" cy="246" rx="9" ry="7" fill="var(--m-wart)"/>
+  <ellipse cx="268" cy="176" rx="10" ry="7" fill="var(--m-wart)"/>
+
+  <!-- onderkaak, bovenrand is de mondlijn -->
+  <path d="M108 292 C142 346 190 350 218 328 C244 308 276 310 302 328 C332 348 376 344 408 292 C424 336 406 396 372 420 C338 440 298 448 256 448 C214 448 174 440 140 420 C106 396 92 336 108 292 Z" fill="var(--m-body2)"/>
+
   <!-- mond -->
-  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M108 292 C142 346 190 350 218 328 C244 308 276 310 302 328 C332 348 376 344 408 292" fill="none" stroke="var(--m-line)" stroke-width="9.5" stroke-linecap="round"/>
+
   <!-- neusgaten -->
-  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
-  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <path d="M226 290 L234 281 L242 290" fill="none" stroke="var(--m-line)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M270 290 L278 281 L286 290" fill="none" stroke="var(--m-line)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- wenkbrauwrichels -->
+  <path d="M136 222 C150 186 220 184 232 214" fill="none" stroke="var(--m-wart)" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
+  <path d="M280 214 C292 184 362 186 376 222" fill="none" stroke="var(--m-wart)" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
+
   <!-- ogen -->
-  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
-  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
-  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
-  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
-  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
-  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
-  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
-  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="184" cy="228" r="38" fill="var(--m-iris)"/>
+  <circle cx="328" cy="228" r="38" fill="var(--m-iris)"/>
+  <circle cx="184" cy="230" r="24" fill="var(--m-pupil)"/>
+  <circle cx="328" cy="230" r="24" fill="var(--m-pupil)"/>
+  <circle cx="193" cy="219" r="7" fill="var(--m-eye)"/>
+  <circle cx="337" cy="219" r="7" fill="var(--m-eye)"/>
+
   <!-- oorschelpen -->
-  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
-  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
-  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
-  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <ellipse cx="100" cy="296" rx="54" ry="66" fill="var(--m-cup)"/>
+  <ellipse cx="412" cy="296" rx="54" ry="66" fill="var(--m-cup)"/>
+  <ellipse cx="123" cy="296" rx="31" ry="62" fill="var(--m-cup2)"/>
+  <ellipse cx="389" cy="296" rx="31" ry="62" fill="var(--m-cup2)"/>
+  <ellipse cx="74" cy="296" rx="30" ry="45" fill="var(--m-pad)"/>
+  <ellipse cx="438" cy="296" rx="30" ry="45" fill="var(--m-pad)"/>
 </g>

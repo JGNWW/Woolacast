@@ -1,14 +1,14 @@
-<g transform="translate(0,-20)">
-  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
-  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
-  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
-  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
-  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
-  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
-  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
-  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
-  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
-  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
-  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
-  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+<g transform="translate(256,251) scale(0.93) translate(-256,-256)">
+  <path d="M98 286 C98 12 414 12 414 286" fill="none" stroke="var(--m-band)" stroke-width="32" stroke-linecap="round"/>
+  <path d="M256 124 C340 124 404 166 417 236 C432 306 436 358 408 398 C378 434 320 452 256 452 C192 452 134 434 104 398 C76 358 80 306 95 236 C108 166 172 124 256 124 Z" fill="var(--m-body)"/>
+  <path d="M102 290 C138 350 190 354 218 330 C244 310 276 312 302 330 C332 350 382 348 418 290 C434 338 412 402 376 426 C340 448 298 456 256 456 C214 456 172 448 136 426 C100 402 86 338 102 290 Z" fill="var(--m-body2)"/>
+  <path d="M102 290 C138 350 190 354 218 330 C244 310 276 312 302 330 C332 350 382 348 418 290" fill="none" stroke="var(--m-line)" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="180" cy="226" r="44" fill="var(--m-iris)"/>
+  <circle cx="332" cy="226" r="44" fill="var(--m-iris)"/>
+  <circle cx="180" cy="228" r="28" fill="var(--m-pupil)"/>
+  <circle cx="332" cy="228" r="28" fill="var(--m-pupil)"/>
+  <ellipse cx="94" cy="296" rx="58" ry="70" fill="var(--m-cup)"/>
+  <ellipse cx="418" cy="296" rx="58" ry="70" fill="var(--m-cup)"/>
+  <ellipse cx="70" cy="296" rx="32" ry="47" fill="var(--m-pad)"/>
+  <ellipse cx="442" cy="296" rx="32" ry="47" fill="var(--m-pad)"/>
 </g>
