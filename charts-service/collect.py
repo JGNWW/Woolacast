@@ -243,11 +243,10 @@ TIP_SOURCES = {
         ("Het Parool", "https://www.parool.nl/kunst-media/rss.xml", "keyword"),
     ],
     "be": [
+        ("De Standaard", "https://standaard.be/podcast/rss", "dedicated"),
         ("Humo", "https://www.humo.be/rss.xml", "keyword"),
-        ("De Standaard", "https://www.standaard.be/rss", "keyword"),
         ("De Tijd", "https://www.tijd.be/rss/cultuur.xml", "keyword"),
     ],
-    # Gevonden met `collect.py prospect --countries de`.
     "de": [
         ("WDR", "https://wdr.de/kultur/podcast", "guide:/kultur/"),
         ("NDR", "https://ndr.de/radio/podcasts", "guide:/radio/"),
@@ -278,25 +277,29 @@ TIP_SOURCES = {
         ("El Confidencial", "https://elconfidencial.com/podcasts", "guide:/us/"),
         ("La Vanguardia", "https://lavanguardia.com/podcast", "guide:/podcast/"),
     ],
-    "it": [("Il Post", "https://www.ilpost.it/tag/podcast/", "guide:/2026/"),
-           ("la Repubblica", "https://www.repubblica.it/rss/spettacoli/rss2.0.xml", "keyword"),
-           ("Corriere della Sera", "https://xml2.corriereobjects.it/rss/spettacoli.xml", "keyword")],
+    "it": [
+        ("Corriere della Sera", "https://corriere.it/podcast/rss", "guide:/podcast/"),
+        ("la Repubblica", "https://repubblica.it/podcast", "guide:/audio/"),
+        ("Il Post", "https://ilpost.it/podcasts", "guide:/podcasts/"),
+    ],
     "se": [("Dagens Nyheter", "https://www.dn.se/rss/kultur/", "keyword"),
            ("Svenska Dagbladet", "https://www.svd.se/feed/articles.rss", "keyword")],
     "dk": [("Politiken", "https://politiken.dk/kultur/podcast/", "guide:/kultur/kultur_podcast/"),
            ("Politiken", "https://politiken.dk/rss/kultur.rss", "keyword"),
            ("DR", "https://www.dr.dk/nyheder/service/feeds/kultur", "keyword")],
-    "no": [("Aftenposten", "https://www.aftenposten.no/rss/kultur", "keyword"),
-           ("NRK", "https://www.nrk.no/kultur/toppsaker.rss", "keyword")],
+    "no": [("NRK", "https://nrk.no/podcast", "guide:/kultur/")],
     "ie": [("The Irish Times", "https://www.irishtimes.com/culture/tv-radio/", "guide:/culture/tv-radio/2"),
            ("RTÉ", "https://www.rte.ie/feeds/rss/?index=/entertainment/", "keyword")],
     "ca": [("CBC", "https://www.cbc.ca/radio/podcastnews", "guide:/radio/podcastnews/"),
            ("CBC", "https://www.cbc.ca/webfeed/rss/rss-arts", "keyword")],
-    "au": [("The Sydney Morning Herald", "https://www.smh.com.au/rss/culture.xml", "keyword"),
-           ("Guardian Australia", "https://www.theguardian.com/au/culture/rss", "keyword"),
-           ("ABC", "https://www.abc.net.au/news/feed/45910/rss.xml", "keyword")],
-    "br": [("Folha de S.Paulo", "https://feeds.folha.uol.com.br/ilustrada/rss091.xml", "keyword"),
-           ("G1", "https://g1.globo.com/rss/g1/pop-arte/", "keyword")],
+    "au": [
+        ("Guardian Australia", "https://theguardian.com/podcasts", "guide:/news/"),
+        ("ABC", "https://www.abc.net.au/news/feed/45910/rss.xml", "keyword"),
+    ],
+    "br": [
+        ("Folha de S.Paulo", "https://folha.uol.com.br/podcast", "guide:/colunas/"),
+        ("G1", "https://g1.globo.com/podcast", "guide:/podcast/"),
+    ],
     "jp": [("NHK", "https://www3.nhk.or.jp/rss/news/cat6.xml", "keyword")],
     "in": [("The Hindu", "https://www.thehindu.com/entertainment/feeder/default.rss", "keyword")],
 }
@@ -371,12 +374,21 @@ STOPWORDS = {
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
     "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag", "zondag",
     "lees meer", "nieuwsbrief", "inloggen", "abonneren", "meest gelezen",
+    "you might also like", "more from", "related", "see also", "top stories",
+    "most popular", "mehr zum thema", "meistgelesen", "anzeige", "empfehlungen",
+    "lo más leído", "te puede interesar", "todas las noticias", "actualidad",
 }
 
 
 def looks_like_title(name: str) -> bool:
     name = name.strip(" .,:;!?")
     if name.lower() in STOPWORDS or re.search(r"[{}\[\]<>|]", name):
+        return False
+    # HELEMAAL IN HOOFDLETTERS is een rubriekskop, geen titel. En een naam in
+    # een ander schrift dan de pagina hoort er niet: dat is menu of advertentie.
+    if len(name) > 4 and name.upper() == name and " " not in name:
+        return False
+    if re.search(r"[\u0400-\u04ff\u4e00-\u9fff\u3040-\u30ff\u0600-\u06ff]", name):
         return False
     if not (4 <= len(name) <= 60):
         return False
