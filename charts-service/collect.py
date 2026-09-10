@@ -76,12 +76,41 @@ HISTORY_LONG = 60   # alle categorieen: voedt de tracker
 HISTORY_SHORT = 2   # per genre: genoeg voor stijgers en dalers
 
 
-def fetch(url: str, *, raw: bool = False, tries: int = 3, headers: dict | None = None):
+_robots: dict[str, "urllib.robotparser.RobotFileParser | None"] = {}
+
+
+def allowed(url: str) -> bool:
+    """
+    Leest robots.txt van de host en houdt zich eraan. Een onbereikbare
+    robots.txt telt als toestemming (dat is de gangbare lezing); een expliciete
+    Disallow is een nee waar we niet omheen gaan.
+    """
+    import urllib.robotparser
+    parts = urllib.parse.urlsplit(url)
+    host = f"{parts.scheme}://{parts.netloc}"
+    if host not in _robots:
+        parser = urllib.robotparser.RobotFileParser()
+        parser.set_url(host + "/robots.txt")
+        try:
+            request = urllib.request.Request(host + "/robots.txt", headers={"User-Agent": UA})
+            with urllib.request.urlopen(request, timeout=15) as response:
+                parser.parse(response.read().decode("utf-8", "replace").splitlines())
+        except Exception:
+            parser = None
+        _robots[host] = parser
+    parser = _robots[host]
+    return True if parser is None else parser.can_fetch(UA, url)
+
+
+def fetch(url: str, *, raw: bool = False, tries: int = 3, headers: dict | None = None,
+          timeout: int = 30):
+    if not allowed(url):
+        return None
     for attempt in range(tries):
         try:
             request = urllib.request.Request(
                 url, headers={"User-Agent": UA, **(headers or {})})
-            with urllib.request.urlopen(request, timeout=30) as response:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
                 body = response.read()
                 final = response.geturl()
             return (body.decode("utf-8", "replace"), final) if raw else json.loads(body)
@@ -265,7 +294,9 @@ TIP_SOURCES = {
     "jp": [("NHK", "https://www3.nhk.or.jp/rss/news/cat6.xml", "keyword")],
     "in": [("The Hindu", "https://www.thehindu.com/entertainment/feeder/default.rss", "keyword")],
 }
-BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+# Geen browser nadoen: wie ons blokkeert moet dat kunnen. De naam verwijst
+# naar de repo, zodat een beheerder kan zien wie er langskomt.
+BROWSER_UA = UA
 TIP_DAYS = 120
 TIP_SEARCH = "https://itunes.apple.com/search?term={term}&country={cc}&media=podcast&entity=podcast&limit=3"
 
@@ -575,6 +606,126 @@ def collect_tips(country: str) -> list[dict]:
         seen.add(key)
         unique.append(tip)
     return unique
+
+
+# ------------------------------------------------------------------ prospector
+
+# De grote media per land, om af te zoeken op een podcastrubriek. Dit is de
+# enige handmatige lijst die overblijft: welke titels ertoe doen in een land
+# valt niet af te leiden, de rest wel.
+MEDIA = {
+    "nl": ["vpro.nl", "nos.nl", "nrc.nl", "volkskrant.nl", "trouw.nl", "parool.nl",
+           "ad.nl", "telegraaf.nl", "nporadio1.nl", "npo.nl", "vn.nl", "groene.nl"],
+    "be": ["standaard.be", "demorgen.be", "hln.be", "vrt.be", "humo.be", "knack.be", "tijd.be"],
+    "de": ["zeit.de", "spiegel.de", "sueddeutsche.de", "faz.net", "tagesspiegel.de",
+           "deutschlandfunk.de", "deutschlandfunkkultur.de", "br.de", "ndr.de", "wdr.de",
+           "stern.de", "taz.de", "detektor.fm", "podwatch.io"],
+    "gb": ["theguardian.com", "radiotimes.com", "bbc.co.uk", "independent.co.uk", "telegraph.co.uk"],
+    "us": ["podcastreview.org", "vulture.com", "nytimes.com", "theatlantic.com", "npr.org", "time.com"],
+    "fr": ["telerama.fr", "lemonde.fr", "liberation.fr", "radiofrance.fr", "lesinrocks.com", "franceinfo.fr"],
+    "es": ["elpais.com", "elmundo.es", "rtve.es", "eldiario.es", "lavanguardia.com", "elconfidencial.com"],
+    "it": ["ilpost.it", "repubblica.it", "corriere.it", "internazionale.it", "rainews.it"],
+    "se": ["dn.se", "svd.se", "sverigesradio.se", "svt.se", "aftonbladet.se", "expressen.se"],
+    "dk": ["politiken.dk", "dr.dk", "berlingske.dk", "information.dk", "jyllands-posten.dk"],
+    "no": ["nrk.no", "aftenposten.no", "vg.no", "dagbladet.no", "morgenbladet.no"],
+    "ie": ["irishtimes.com", "rte.ie", "independent.ie", "thejournal.ie"],
+    "ca": ["cbc.ca", "theglobeandmail.com", "thestar.com", "macleans.ca"],
+    "au": ["abc.net.au", "smh.com.au", "theguardian.com", "theage.com.au", "news.com.au"],
+    "br": ["folha.uol.com.br", "g1.globo.com", "estadao.com.br", "uol.com.br", "oglobo.globo.com"],
+    "mx": ["eluniversal.com.mx", "milenio.com", "eleconomista.com.mx", "reforma.com"],
+    "jp": ["nhk.or.jp", "asahi.com", "yomiuri.co.jp", "nikkei.com"],
+    "in": ["thehindu.com", "indianexpress.com", "hindustantimes.com", "scroll.in"],
+}
+
+# Paden waarachter een podcastrubriek pleegt te zitten, in de talen die we raken.
+PROSPECT_PATHS = [
+    "/podcast", "/podcasts", "/tag/podcast", "/tag/podcasts", "/thema/podcast",
+    "/thema/podcastgids", "/onderwerp/podcast", "/tags/podcasts", "/topic/podcasts",
+    "/podcast-tipps", "/thema/podcast-tipps", "/kultur/podcast", "/cultuur/podcast",
+    "/podcasttips", "/podkast", "/poddar", "/poddradio", "/podcasts-tips",
+    "/culture/podcasts", "/arts/podcasts", "/radio/podcasts", "/audio/podcasts",
+    "/rss/podcast.xml", "/podcast/rss", "/feed/podcast",
+]
+# Aan een link naar een artikel herken je waar de stukken staan.
+ARTICLE_HINT = re.compile(r"/(?:artikel|artikelen|nieuws|news|article|story|kultur|kultuur|"
+                          r"culture|cultuur|podcast|podcasts|audio|radio|20\d\d)/", re.I)
+
+
+def prospect_page(country: str, url: str) -> tuple[int, str | None]:
+    """
+    Kijkt of achter een adres een bruikbare rubriek zit: hoeveel podcasts uit
+    Apple's catalogus worden er genoemd, en achter welk soort artikellink.
+    """
+    # Een verkenner mag niet blijven hangen: één poging, korte tijdslimiet.
+    page = fetch(url, raw=True, tries=1, timeout=10,
+                 headers={"Accept": "text/html,application/xml,*/*"})
+    if not page:
+        return 0, None
+    body = page[0]
+    if "<item" in body or "<entry" in body:
+        hits = 0
+        for item in parse_feed(body)[:20]:
+            for name in podcast_candidates(item["title"], item["summary"]):
+                if lookup_show(name, country):
+                    hits += 1
+                    break
+        return hits, "feed"
+
+    # Welk padvoorvoegsel komt het vaakst terug in artikellinks?
+    prefixes: dict[str, int] = {}
+    for href in re.findall(r'href="([^"?#]+)"', body):
+        path = re.sub(r"^https?://[^/]+", "", href)
+        if not ARTICLE_HINT.search(path):
+            continue
+        parts = [p for p in path.split("/") if p]
+        if len(parts) < 2:
+            continue
+        prefixes["/" + parts[0] + "/"] = prefixes.get("/" + parts[0] + "/", 0) + 1
+    if not prefixes:
+        return 0, None
+    prefix = max(prefixes, key=lambda k: prefixes[k])
+
+    hits = 0
+    for article_url in parse_guide_index(body, url, prefix)[:4]:
+        article = read_guide_article(article_url)
+        if not article:
+            continue
+        for name in (article["names"] + podcast_candidates(article["title"], article["summary"]))[:8]:
+            if lookup_show(name, country):
+                hits += 1
+                break
+    return hits, f"guide:{prefix}"
+
+
+def run_prospect(countries: list[str]) -> None:
+    for country in countries:
+        print(f"\n{country}:", flush=True)
+        def scan(domain: str):
+            best = (0, None, None)
+            for path in PROSPECT_PATHS:
+                url = f"https://{domain}{path}"
+                if not allowed(url):
+                    continue
+                hits, mode = prospect_page(country, url)
+                if hits > best[0]:
+                    best = (hits, url, mode)
+                if best[0] >= 3:
+                    break
+            return domain, best
+
+        found = []
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            for domain, best in pool.map(scan, MEDIA.get(country, [])):
+                if best[0]:
+                    found.append(best)
+                    print(f"  {domain:24} {best[0]:2} tips  {best[2]:22} {best[1]}", flush=True)
+                else:
+                    print(f"  {domain:24}  -", flush=True)
+        found.sort(reverse=True)
+        if found:
+            print("  --- toe te voegen aan TIP_SOURCES ---")
+            for hits, url, mode in found:
+                print(f'        ("?", "{url}", "{mode}"),   # {hits} tips', flush=True)
 
 
 def write_tips(root: pathlib.Path, country: str) -> int:
@@ -956,6 +1107,10 @@ def main() -> int:
     new.add_argument("--limit", type=int, default=100)
     new.add_argument("--out", default="charts")
 
+    pro = sub.add_parser("prospect", help="zoekt per land welke media een leesbare podcastrubriek hebben")
+    pro.add_argument("--countries", default="nl")
+    pro.add_argument("--out", default="charts")
+
     tips = sub.add_parser("tips", help="podcasttips uit de feeds van kranten en omroepen")
     tips.add_argument("--countries", default="nl")
     tips.add_argument("--out", default="charts")
@@ -972,6 +1127,9 @@ def main() -> int:
 
     if args.job == "snapshot":
         run_snapshot(countries, args.limit, root)
+    elif args.job == "prospect":
+        run_prospect(countries)
+        return 0
     elif args.job == "tips":
         for country in countries:
             print(f"  {country}:", flush=True)

@@ -206,6 +206,28 @@ Wat dat oplevert, gemeten:
 | BR, IT | 1 | G1, Il Post |
 | DE, ES, SE, DK, NO, AU, MX, JP, IN | 0 | — |
 
+### Zelf zoeken: de prospector
+
+`collect.py prospect --countries de` loopt de grote media van een land af en
+probeert een handvol paden waarachter een podcastrubriek pleegt te zitten
+(`/podcast`, `/tag/podcast`, `/podcast-tipps`, `/poddar`, …). Wat bereikbaar is
+wordt meteen getoetst: hoeveel van de genoemde titels zijn echt terug te vinden
+in Apple's catalogus? Wat scoort komt eruit als een regel die je in
+`TIP_SOURCES` kunt plakken. Zo hoeft de lijst media niet met de hand bijgehouden
+te worden — alleen wélke titels in een land meetellen blijft een keuze.
+
+Het is een verkenner, geen dagelijkse klus: hij doet honderden verzoeken en
+hoort af en toe te draaien, niet elke ochtend.
+
+### Wat we niet doen
+
+De verzamelaar leest `robots.txt` van elke host en houdt zich eraan, en stelt
+zich voor als `Woolacast-charts/1.0` met een adres erbij. Geen browser nadoen,
+geen 403 omzeilen: wie ons niet wil, krijgt ons niet. Dat kost bereik —
+Google News heeft bijvoorbeeld een prima RSS-zoekfunctie die per land en taal
+werkt, maar hun `robots.txt` verbiedt `/rss/` voor iedereen, dus die route ligt
+dicht. Hetzelfde geldt voor de tagpagina's van DPG-titels en De Standaard.
+
 De verdeling is scheef en dat is geen bug: **alleen een echte podcastgids
 levert wat op.** Een gewone cultuurfeed uitkammen op het woord "podcast" gaf
 in vrijwel elk land nul bruikbare tips. Wat verder niet lukte: de tagpagina's
