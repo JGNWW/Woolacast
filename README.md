@@ -192,21 +192,51 @@ op vetgedrukte en aangehaalde titels. Wat overblijft moet **exact** een show in
 Apple's catalogus zijn; anders sneuvelt het (een citaat van een geïnterviewde
 lijkt anders precies op een titel).
 
+**Welke tip hoort bij welke podcast.** Een recensie noemt onderweg andere
+podcasts: eerder werk van dezelfde makers, iets uit hetzelfde genre. Die horen
+niet als losse tip in de app, want dan staat er een kop boven die er niet over
+gaat. Daarom telt alleen bewijs uit de kop en het webadres van het stuk: een
+recensie koppelt aan de podcast die dáár genoemd wordt, en levert niets als die
+niet exact in de catalogus staat. Alleen een tiplijst — te herkennen aan "vijf
+podcasttips", "de beste kinderpodcasts", "top 10" — mag meerdere podcasts
+noemen. De regel onder een tip is de zin uit het artikel waarin die podcast
+besproken wordt, niet de eerste alinea van het stuk.
+
+**Beeldmerken.** Per medium wordt één keer het `apple-touch-icon` van de site
+opgehaald en bij de gegevens gezet (`charts/logos/`). De app laadt het
+daarvandaan en niet bij de uitgever: die hoeft niet te weten wie er in de app
+leest. Media die ons blokkeren of alleen een `.ico` aanbieden (Telegraaf, Trouw,
+De Tijd, De Standaard, NDR) houden hun beginletters in een gekleurd blokje.
+
+**Elke nacht.** `.github/workflows/charts-tips.yml` draait de ronde dagelijks om
+04:40 UTC. Een podcastrubriek verschijnt wekelijks tot dagelijks; wie er een week
+overheen laat gaan, laat de app verouderen. Let op: GitHub start een schema
+alleen vanaf de standaardtak — zolang dit werk op een aparte tak staat, moet je
+hem met de hand starten.
+
 Wat dat oplevert, gemeten:
 
 | Land | Tips | Media |
 | --- | --- | --- |
 | US | 32 | Podcast Review |
-| IT | 19 | Corriere della Sera, Il Post, la Repubblica |
-| GB | 18 | The Guardian (Hear Here), Radio Times |
-| DE | 13 | WDR, BR, NDR, Der Spiegel, FAZ, Deutschlandfunk Kultur |
-| NL | 11 | VPRO Podcastgids, NOS |
-| BR | 9 | Folha de S.Paulo, G1 |
-| AU · ES | 5 | Guardian Australia · El Confidencial, La Vanguardia |
-| FR | 3 | Télérama |
-| NO | 2 | NRK |
-| BE | 1 | Humo |
-| SE, DK, IE, CA, MX, JP, IN | 0 | — |
+| IE | 17 | The Irish Times, RTÉ, Hot Press |
+| GB | 15 | The Guardian (Hear Here) |
+| FR | 14 | Télérama, Slate, Radio France, Le Nouvel Obs |
+| NL | 9 | VPRO Podcastgids, NOS |
+| ES | 7 | Cadena SER, La Vanguardia |
+| DE | 6 | NDR, FAZ, BR |
+| AU · BR | 5 | Guardian Australia · Folha de S.Paulo, G1 |
+| IT | 4 | Corriere della Sera |
+| BE · MX | 2 | HLN, Humo · El Universal |
+| CA | 1 | The Tyee |
+| SE, DK, NO, JP, IN | 0 | — |
+
+De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
+WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
+Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Noorwegen staat
+op nul omdat NRK tijdens die ronde niet bereikbaar was; dat herstelt vanzelf.
+Japan en India vragen om herkenning van titels in een ander schrift — dat kan de
+lezer nu niet.
 
 ### Zelf zoeken: de prospector
 
@@ -282,7 +312,7 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Luistervoortgang onthouden en hervatten | werkt |
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
 | Donker thema | werkt |
-| Tips van de media: op Ontdek, als eigen scherm, en op de podcastpagina | werkt in 8 landen |
+| Tips van de media: op Ontdek, als eigen scherm, en op de podcastpagina | werkt in 13 landen |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
