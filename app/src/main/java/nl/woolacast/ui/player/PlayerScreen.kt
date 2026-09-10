@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -158,16 +159,21 @@ fun PlayerScreen(
                 }
             }
 
+            // Statisch, geen scrollen: het artwork krimpt mee op een klein scherm,
+            // de rest houdt zijn maat.
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
                     .navigationBarsPadding()
             ) {
                 Spacer(Modifier.height(14.dp))
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Artwork(state.artworkUrl, 298.dp, corner = 24.dp, elevation = 18.dp)
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val side = minOf(298.dp, maxWidth, maxHeight)
+                    Artwork(state.artworkUrl, side, corner = 24.dp, elevation = 18.dp)
                 }
 
                 Spacer(Modifier.height(26.dp))
