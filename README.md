@@ -74,8 +74,15 @@ Dat is precies waar een dienst als Podchaser het verschil maakt: die draait
 servers die dat id-voor-id ophalen, opslaan en opnieuw serveren. Een app op een
 telefoon kan geen 200 losse aanroepen doen per lijst.
 
-Wat de app daarom doet: de top 100 afleveringen ophalen en zelf op categorie
-schiften. Elke aflevering draagt één genre — soms een hoofdgenre
+Daarom staat er nu een verzamelaar in `charts-service/`: een script dat die ids
+één voor één oplost en het resultaat als platte JSON in deze repo zet. Een
+GitHub Action kan het draaien; de app leest alleen van
+`raw.githubusercontent.com`. Geen server, geen sleutel, geen account — de repo
+moet alleen publiek zijn.
+
+Staat de lijst er, dan toont de app Apple's echte volgorde, 50 diep per
+categorie. Staat hij er niet, dan valt de app terug op de top 100 ophalen en
+zelf op categorie schiften. Elke aflevering draagt één genre — soms een hoofdgenre
 met id, soms alleen een subgenrenaam als "Nieuwscommentaar". De genreboom van de
 winkel knoopt die aan hun hoofdgenre, in de taal van die winkel:
 
@@ -165,6 +172,7 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek | werkt |
 | Ontdek | ingang op de lijsten |
+| Afleveringen per categorie, Apple's echte volgorde | via charts-service, handmatig te draaien |
 | Chart-tracker | nog niet |
 | Afleveringen downloaden voor offline luisteren | nog niet |
 
@@ -183,6 +191,7 @@ app/src/main/java/nl/woolacast/
   player/     Media3-service met een StateFlow-laag eromheen
   ui/         Compose-schermen, thema, navigatie
               player/ het uitklapbare spelerscherm
+charts-service/  verzamelt Apple's afleveringenlijst per categorie als JSON
 tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```

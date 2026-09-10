@@ -12,6 +12,7 @@ import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.apple.AppleChartSource
 import nl.woolacast.data.apple.AppleGenreTree
+import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.spotify.SpotifyChartSource
@@ -32,7 +33,12 @@ class AppContainer(context: Context) {
 
     val chartRepository = ChartRepository(
         sources = listOf(
-            AppleChartSource(marketingApi, catalogApi, AppleGenreTree(catalogApi)),
+            AppleChartSource(
+                marketing = marketingApi,
+                catalog = catalogApi,
+                genreTree = AppleGenreTree(catalogApi),
+                dataset = ChartsDataset(Network.chartsDatasetApi())
+            ),
             SpotifyChartSource(spotifyApi)
         ),
         store = store

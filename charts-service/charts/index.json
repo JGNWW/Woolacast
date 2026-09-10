@@ -1,0 +1,185 @@
+{
+ "updated": "2026-09-10T12:35:24Z",
+ "charts": [
+  {
+   "country": "nl",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "path": "nl/26/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:31:59Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "episodes",
+   "path": "nl/1301/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:09Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "episodes",
+   "path": "nl/1303/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:28Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "episodes",
+   "path": "nl/1304/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:40Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "episodes",
+   "path": "nl/1305/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:29Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "episodes",
+   "path": "nl/1309/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:35:05Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "episodes",
+   "path": "nl/1310/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:46Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "episodes",
+   "path": "nl/1314/episodes.json",
+   "resolved": 47,
+   "updated": "2026-09-10T12:34:26Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "episodes",
+   "path": "nl/1318/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:35:14Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "episodes",
+   "path": "nl/1321/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:18Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "episodes",
+   "path": "nl/1324/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:34:46Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "episodes",
+   "path": "nl/1483/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:50Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "episodes",
+   "path": "nl/1487/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:19Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "episodes",
+   "path": "nl/1488/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:35:24Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "episodes",
+   "path": "nl/1489/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:55Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "episodes",
+   "path": "nl/1502/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:37Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "episodes",
+   "path": "nl/1511/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:32:59Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "episodes",
+   "path": "nl/1512/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:33:09Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "episodes",
+   "path": "nl/1533/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:34:37Z"
+  },
+  {
+   "country": "nl",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "episodes",
+   "path": "nl/1545/episodes.json",
+   "resolved": 50,
+   "updated": "2026-09-10T12:34:56Z"
+  }
+ ]
+}
