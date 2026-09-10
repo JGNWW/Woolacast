@@ -235,9 +235,9 @@ def write_new_shows(root: pathlib.Path, country: str, limit: int) -> int:
 # achter een firewall die automatische lezers weert.
 TIP_SOURCES = {
     "nl": [
-        ("VPRO Podcastgids", "https://www.vpro.nl/thema/podcastgids", "guide:/artikelen/"),
+        ("VPRO Podcastgids", "https://www.vpro.nl/rss.xml", "guide-feed"),
         ("de Volkskrant", "https://www.volkskrant.nl/cultuur-media/rss.xml", "keyword"),
-        ("NRC", "https://www.nrc.nl/index/podcast/", "nrc-index"),
+        ("NRC", "https://www.nrc.nl/index/podcast/rss/", "guide-feed"),
         ("NOS", "https://feeds.nos.nl/nosnieuwscultuurenmedia", "keyword"),
         ("Trouw", "https://www.trouw.nl/cultuur-media/rss.xml", "keyword"),
         ("Het Parool", "https://www.parool.nl/kunst-media/rss.xml", "keyword"),
@@ -564,6 +564,32 @@ LIST_HINT = re.compile(
     r"\d+\s*podcast|podcasts\b", re.I | re.UNICODE)
 
 
+# Bij elke tip in een gids staat een rijtje luisterknoppen en labels. Dat is
+# geen zin over de podcast, dus het gaat er vooraf af. Alleen deze woorden:
+# een algemene regel zou de eerste woorden van een gewone zin opeten.
+FURNITURE_WORDS = (
+    "spotify", "apple", "podcasts", "podcast", "google", "rss", "rss-feed",
+    "feed", "npo", "luister", "podimo", "youtube", "beluister", "deel",
+    "share", "nederlands", "engels", "english", "duits", "vlaams", "jeugd",
+)
+STARS = "\u2605\u2606\u2022|\u2013\u2014-\u2026:"
+
+
+def strip_furniture(text: str) -> str:
+    """Haalt luisterknoppen, sterren en taallabels van de kop van een fragment."""
+    words = text.split()
+    cut = 0
+    for i, word in enumerate(words):
+        bare = word.strip(STARS + " ,.").lower()
+        if bare in FURNITURE_WORDS or not bare or all(c in STARS for c in word):
+            cut = i + 1
+        elif i - cut > 1:
+            break
+    if cut and len(words) - cut >= 6:
+        words = words[cut:]
+    return " ".join(words).lstrip(" ,.:;" + STARS)
+
+
 def about_window(plain: str, name: str, width: int = 240) -> str:
     """
     De zin waarin de podcast genoemd wordt, zodat de tip daarover gaat. Een
@@ -579,6 +605,7 @@ def about_window(plain: str, name: str, width: int = 240) -> str:
         end = plain.find(". ", m.end())
         end = end + 1 if end != -1 and end - start <= width else min(len(plain), start + width)
         text = plain[start:end].strip()
+        text = strip_furniture(text)
         words = text.split()
         if len(words) < 6:
             continue
@@ -587,10 +614,19 @@ def about_window(plain: str, name: str, width: int = 240) -> str:
         lower = sum(1 for w in words if w[:1].islower()) / len(words)
         long = sum(1 for w in words if len(w) > 3) / len(words)
         score = lower + long + (0.5 if text.endswith(".") else 0)
+        # "Met deze week: A, B, C en D" is de inleiding van een tiplijst, geen
+        # zin over deze podcast.
+        if text.count(", ") >= 2:
+            score -= 0.6
         if score > best_score:
             best_score, best = score, text
             if start > 0 and not plain[max(0, start - 2):start].strip().endswith("."):
                 best = "\u2026" + text
+    # Een fragment dat middenin een zin begint, begint met een leesteken; dat
+    # is geen begin van een zin en hoort er niet te staan.
+    best = best.lstrip(" ,.?!:;\u2013\u2014")
+    if best.startswith("\u2026 "):
+        best = "\u2026" + best[2:]
     return best if best_score >= 1.0 else ""
 
 
@@ -630,11 +666,24 @@ def read_guide_article(url: str) -> dict | None:
     meta = html_unescape(meta.group(1)).strip() if meta else ""
 
     names, seen = [], set()
-    tags = (re.findall(r"<h[23][^>]*>(.*?)</h[23]>", body, re.S)
-            + re.findall(r"<(?:strong|b|em|i)[^>]*>(.*?)</(?:strong|b|em|i)>", body, re.S))
-    for tag in tags:
+    # Let op de tagnaam: <b[^>]*> zou ook <body> vangen en <i[^>]*> ook <img>
+    # en <iframe>. Zo'n treffer slokt een half artikel op en de namen erin
+    # verdwijnen. De naam moet dus eindigen op > of op een spatie.
+    # Een kop of vetgedrukte naam is de aankondiging van een eigen alinea; een
+    # cursieve naam kan ook een terloopse vergelijking zijn. Dat onderscheid
+    # bepaalt straks of de naam een tip mag worden, dus we houden het bij.
+    headings = [("kop", t) for t in re.findall(r"<h[23](?:\s[^>]*)?>(.*?)</h[23]>", body, re.S)]
+    headings += [("kop" if tag in ("strong", "b") else "terzijde", inner)
+                 for tag, inner in re.findall(
+                     r"<(strong|b|em|i)(?:\s[^>]*)?>(.*?)</\1>", body, re.S)]
+    announced = set()
+    for kind, tag in headings:
         text = re.sub(r"\s+", " ", html_unescape(re.sub(r"<[^>]+>", " ", tag))).strip()
-        if looks_like_title(text) and text.lower() not in seen:
+        if not looks_like_title(text):
+            continue
+        if kind == "kop":
+            announced.add(text.lower())
+        if text.lower() not in seen:
             seen.add(text.lower())
             names.append(text)
         if len(names) >= 25:
@@ -649,6 +698,7 @@ def read_guide_article(url: str) -> dict | None:
         "link": url,
         "date": date.group(1) if date else None,
         "names": names,
+        "announced": announced,
         "plain": plain,
     }
 
@@ -673,6 +723,78 @@ def parse_nrc_index(body: str) -> list[dict]:
     return items
 
 
+def couple_article(country: str, outlet: str, article: dict, article_url: str,
+                   tips: list[dict]) -> int:
+    """
+    Koppelt één artikel aan de podcast(s) waar het over gaat.
+
+    Een recensie noemt onderweg andere podcasts — eerder werk van dezelfde
+    makers, iets uit hetzelfde genre. Die horen er niet als losse tip in, want
+    dan staat er een kop boven die er niet over gaat. Daarom telt bewijs uit de
+    kop en het webadres; alleen een tiplijst mag er meerdere noemen, en dan nog
+    alleen namen die met een kop of vetgedrukt worden aangekondigd, of die meer
+    dan één keer vallen: wie zijn eigen alinea krijgt wordt aangekondigd of
+    vaker genoemd dan wie er ter vergelijking bij staat.
+    """
+    plain = article.get("plain", "")
+    found = 0
+    seen_here: set[str] = set()
+
+    def mentioned_as_podcast(name: str) -> bool:
+        """Een losse naam moet in het artikel bij het woord 'podcast' staan."""
+        if " " in name.strip():
+            return True
+        for m in re.finditer(re.escape(name), plain):
+            window = plain[max(0, m.start() - 120):m.end() + 120].lower()
+            if "podcast" in window or "podkast" in window or "pod " in window:
+                return True
+        return False
+
+    title_low = article["title"].lower()
+    slug = normalise_any(urllib.parse.urlsplit(article_url).path)
+    subject = [n for n in article["names"]
+               if n.lower() in title_low or (len(n) > 4 and normalise_any(n) in slug)]
+    subject += [n for n in podcast_candidates(article["title"], "")
+                if n.lower() not in {x.lower() for x in subject}]
+
+    is_list = bool(LIST_HINT.search(article["title"]))
+    if is_list:
+        names = subject + article["names"] + podcast_candidates(article["title"], article["summary"])
+    elif subject:
+        names = subject          # recensie: alleen het onderwerp zelf
+    else:
+        return 0                 # geen bewijs waar het stuk over gaat
+
+    for name in names:
+        if found >= (GUIDE_PER_ARTICLE if is_list else 1):
+            break
+        name = name.strip(" .,:;\u2013\u2014-")
+        if not looks_like_title(name) or name.lower() in seen_here:
+            continue
+        seen_here.add(name.lower())
+        if not mentioned_as_podcast(name):
+            continue
+        # In een tiplijst krijgt elke besproken podcast zijn eigen alinea, en
+        # daarin valt de naam meer dan eens. Eén vermelding is een zijstraat.
+        if (is_list and name.lower() not in title_low
+                and name.lower() not in article.get("announced", set())):
+            if len(re.findall(re.escape(name), plain, re.I)) < 2:
+                continue
+        match = lookup_show(name, country)
+        if not match:
+            continue
+        found += 1
+        tips.append({
+            "outlet": outlet,
+            "headline": article["title"],
+            "summary": (about_window(plain, name) or article["summary"])[:300],
+            "url": article_url,
+            "date": article["date"],
+            **match,
+        })
+    return found
+
+
 def read_guide(country: str, outlet: str, index_url: str, index_body: str,
                prefix: str, tips: list[dict], cutoff: str) -> int:
     kept = 0
@@ -682,62 +804,32 @@ def read_guide(country: str, outlet: str, index_url: str, index_body: str,
             continue
         if article["date"] and article["date"] < cutoff:
             continue
-        found = 0
-        seen_here = set()
-        plain = article.get("plain", "")
+        kept += couple_article(country, outlet, article, article_url, tips)
+    return kept
 
-        def mentioned_as_podcast(name: str) -> bool:
-            """Een losse naam moet in het artikel bij het woord 'podcast' staan."""
-            if " " in name.strip():
-                return True
-            for m in re.finditer(re.escape(name), plain):
-                window = plain[max(0, m.start() - 120):m.end() + 120].lower()
-                if "podcast" in window or "podkast" in window or "pod " in window:
-                    return True
-            return False
 
-        # Waar gaat dit stuk over? Een naam die in de kop of in het webadres
-        # staat is het onderwerp; een naam die alleen in de lopende tekst
-        # voorkomt kan een zijdelingse verwijzing zijn.
-        title_low = article["title"].lower()
-        slug = normalise_any(urllib.parse.urlsplit(article_url).path)
-        subject = [n for n in article["names"]
-                   if n.lower() in title_low or (len(n) > 4 and normalise_any(n) in slug)]
-        subject += [n for n in podcast_candidates(article["title"], "")
-                    if n.lower() not in {x.lower() for x in subject}]
-
-        is_list = bool(LIST_HINT.search(article["title"]))
-        if is_list:
-            names = subject + article["names"] + podcast_candidates(article["title"], article["summary"])
-        elif subject:
-            names = subject          # recensie: alleen het onderwerp zelf
-        else:
-            continue                 # geen bewijs waar het stuk over gaat
-
-        for name in names:
-            if found >= (GUIDE_PER_ARTICLE if is_list else 1):
-                break
-            name = name.strip(" .,:;\u2013\u2014-")
-            if not looks_like_title(name) or name.lower() in seen_here:
-                continue
-            seen_here.add(name.lower())
-            if not mentioned_as_podcast(name):
-                continue
-            match = lookup_show(name, country)
-            if not match:
-                continue
-            # De podcast moet ook echt in het artikel besproken worden, niet
-            # alleen in een verwijzing naar een ander stuk.
-            found += 1
-            kept += 1
-            tips.append({
-                "outlet": outlet,
-                "headline": article["title"],
-                "summary": (about_window(plain, name) or article["summary"])[:300],
-                "url": article_url,
-                "date": article["date"],
-                **match,
-            })
+def read_guide_feed(country: str, outlet: str, feed_body: str,
+                    tips: list[dict], cutoff: str) -> int:
+    """
+    Dezelfde koppeling, maar de artikelen komen uit de RSS van het medium. Dat
+    is beter dan de indexpagina afzoeken: de feed geeft de kop, de datum en de
+    link zoals de redactie ze bedoeld heeft, en hij is verser.
+    """
+    kept = 0
+    for item in parse_feed(feed_body)[:GUIDE_ARTICLES]:
+        if item["date"] and item["date"] < cutoff:
+            continue
+        if not item["link"]:
+            continue
+        article = read_guide_article(item["link"])
+        if not article:
+            continue
+        # De feed weet het beter dan de paginakop.
+        article["title"] = item["title"] or article["title"]
+        article["date"] = item["date"] or article["date"]
+        if item["summary"]:
+            article["summary"] = item["summary"]
+        kept += couple_article(country, outlet, article, item["link"], tips)
     return kept
 
 
@@ -777,6 +869,11 @@ def collect_tips(country: str) -> list[dict]:
                     })
                     kept += 1
             print(f"    {outlet}: {kept} tips (alle feeds)", flush=True)
+            continue
+
+        if mode == "guide-feed":
+            kept = read_guide_feed(country, outlet, page[0], tips, cutoff)
+            print(f"    {outlet}: {kept} tips (uit de feed)", flush=True)
             continue
 
         if mode.startswith("guide:"):
