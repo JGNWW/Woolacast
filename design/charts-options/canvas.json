@@ -1,0 +1,99 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Origineel — zoals getekend"
+    },
+    {
+      "file": "OptieA.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A · Schakelaar"
+    },
+    {
+      "file": "OptieB.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "B · Kop met context"
+    },
+    {
+      "file": "OptieC.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "C · Podium"
+    },
+    {
+      "file": "OptieD.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "D · Donker paneel"
+    },
+    {
+      "file": "OptieE.dc.html",
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "E · Compact"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-orig",
+      "x": 0,
+      "y": -170,
+      "w": 390,
+      "text": "Links het origineel zoals getekend. Daarnaast vijf richtingen voor hetzelfde scherm — dezelfde tokens, lettertypen en rijen, alleen de kop en de filters verschillen."
+    },
+    {
+      "id": "n-a",
+      "x": 470,
+      "y": -110,
+      "w": 390,
+      "text": "A · Schakelaar: bron als één schakelaar, land en categorie als twee losse knoppen. Rustiger; werkt alleen zolang er twee bronnen zijn."
+    },
+    {
+      "id": "n-b",
+      "x": 940,
+      "y": -110,
+      "w": 390,
+      "text": "B · Kop met context: het land wordt de titel, bron en categorie de ondertitel; filters via het filtericoon. Meest editorial; instellen kost één tik extra."
+    },
+    {
+      "id": "n-c",
+      "x": 1410,
+      "y": -110,
+      "w": 390,
+      "text": "C · Podium: de top drie groot, daarna de lijst. Spannend bovenin; je ziet minder rijen in één keer."
+    },
+    {
+      "id": "n-d",
+      "x": 1880,
+      "y": -110,
+      "w": 390,
+      "text": "D · Donker paneel: alle filters in één inktkaart, grote cijfers in de lijst. Duidelijk één blok \"instellen\"; zwaardere kop."
+    },
+    {
+      "id": "n-e",
+      "x": 2350,
+      "y": -110,
+      "w": 390,
+      "text": "E · Compact: kleinere kop, drie kleine chips, rijen van 60 px — tien posities in beeld. Meest lijst, minst lucht."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
