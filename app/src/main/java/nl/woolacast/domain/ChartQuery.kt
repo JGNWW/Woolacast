@@ -3,9 +3,8 @@ package nl.woolacast.domain
 /** De drie hitlijsten die de app kent. */
 enum class SourceId(val label: String, val initial: String) {
     APPLE("Apple Podcasts", "A"),
-    FYYD("fyyd", "F"),
     SPOTIFY("Spotify", "S"),
-    YOUTUBE("YouTube", "Y")
+    FYYD("fyyd", "F")
 }
 
 /** Podcast- of afleveringniveau. */
@@ -20,7 +19,11 @@ data class Country(val code: String, val label: String, val flag: String)
  * Categorie. [appleGenreId] is het genre-id van de iTunes-catalogus; null betekent
  * "alle categorieen".
  */
-data class Category(val label: String, val appleGenreId: Int?) {
+data class Category(
+    val label: String,
+    val appleGenreId: Int?,
+    val spotifySlug: String? = null
+) {
     val isAll: Boolean get() = appleGenreId == null
 }
 
@@ -78,24 +81,24 @@ object Catalog {
     /** Genre-ids zoals de iTunes-catalogus ze gebruikt; alle 19 nagelopen op de live feed. */
     val categories = listOf(
         Category("Alle categorieen", null),
-        Category("Comedy", 1303),
-        Category("Nieuws", 1489),
-        Category("True crime", 1488),
-        Category("Maatschappij & cultuur", 1324),
-        Category("Sport", 1545),
-        Category("Zaken", 1321),
-        Category("Wetenschap", 1533),
-        Category("Geschiedenis", 1487),
-        Category("Gezondheid & fitness", 1512),
-        Category("Kunst", 1301),
-        Category("Educatie", 1304),
-        Category("Technologie", 1318),
-        Category("Muziek", 1310),
-        Category("Fictie", 1483),
-        Category("Vrije tijd", 1502),
+        Category("Comedy", 1303, "comedy"),
+        Category("Nieuws", 1489, "news"),
+        Category("True crime", 1488, "true-crime"),
+        Category("Maatschappij & cultuur", 1324, "society-culture"),
+        Category("Sport", 1545, "sports"),
+        Category("Zaken", 1321, "business"),
+        Category("Wetenschap", 1533, "science"),
+        Category("Geschiedenis", 1487, "history"),
+        Category("Gezondheid & fitness", 1512, "health-fitness"),
+        Category("Kunst", 1301, "arts"),
+        Category("Educatie", 1304, "education"),
+        Category("Technologie", 1318, "technology"),
+        Category("Muziek", 1310, "music"),
+        Category("Fictie", 1483, "fiction"),
+        Category("Vrije tijd", 1502, "leisure"),
         Category("Kinderen & gezin", 1305),
-        Category("Religie & spiritualiteit", 1314),
-        Category("TV & film", 1309),
+        Category("Religie & spiritualiteit", 1314, "religion-spirituality"),
+        Category("TV & film", 1309, "tv-film"),
         Category("Overheid", 1511)
     )
 

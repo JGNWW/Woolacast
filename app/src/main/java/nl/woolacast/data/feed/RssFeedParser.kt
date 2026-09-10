@@ -1,6 +1,7 @@
 package nl.woolacast.data.feed
 
 import android.util.Xml
+import nl.woolacast.data.Html
 import java.io.InputStream
 import java.time.Instant
 import java.time.ZoneId
@@ -105,7 +106,7 @@ class RssFeedParser {
         return ParsedFeed(
             title = channelTitle?.trim(),
             author = channelAuthor?.trim(),
-            description = channelDescription?.trim(),
+            description = Html.toPlainText(channelDescription),
             imageUrl = channelImage?.trim(),
             episodes = episodes
         )
@@ -127,8 +128,8 @@ class RssFeedParser {
             val heading = title ?: return null
             return ParsedEpisode(
                 guid = guid ?: audioUrl ?: heading,
-                title = heading,
-                description = description,
+                title = Html.toPlainText(heading) ?: heading,
+                description = Html.toPlainText(description),
                 audioUrl = audioUrl,
                 durationMillis = duration,
                 releaseDate = releaseDate,

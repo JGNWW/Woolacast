@@ -1,6 +1,7 @@
 package nl.woolacast.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import nl.woolacast.player.PlaybackState
 @Composable
 fun MiniPlayer(
     state: PlaybackState,
+    onExpand: () -> Unit,
     onTogglePlay: () -> Unit,
     onSkipForward: () -> Unit,
     modifier: Modifier = Modifier
@@ -39,6 +41,7 @@ fun MiniPlayer(
             .padding(horizontal = 12.dp)
             .clip(RoundedCornerShape(15.dp))
             .background(MaterialTheme.colorScheme.secondary)
+            .clickable(onClick = onExpand)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().height(60.dp).padding(horizontal = 8.dp),

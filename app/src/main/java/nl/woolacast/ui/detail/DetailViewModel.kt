@@ -23,6 +23,7 @@ class DetailViewModel(
     private val showId: String,
     private val countryCode: String,
     private val feedUrl: String?,
+    private val title: String?,
     private val repository: PodcastRepository,
     private val store: LocalStore
 ) : ViewModel() {
@@ -34,7 +35,7 @@ class DetailViewModel(
 
     init {
         viewModelScope.launch {
-            runCatching { repository.detail(showId, countryCode, feedUrl) }
+            runCatching { repository.detail(showId, countryCode, feedUrl, title) }
                 .onSuccess { detail ->
                     _state.value = DetailUiState(
                         loading = false,

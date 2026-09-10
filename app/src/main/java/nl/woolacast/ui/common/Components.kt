@@ -78,12 +78,16 @@ fun MovementBadge(movement: Movement, modifier: Modifier = Modifier) {
         when (movement) {
             is Movement.Up -> {
                 Icon(Icons.Filled.ArrowDropUp, null, tint = colors.rise, modifier = Modifier.size(16.dp))
-                Text("${movement.places}", color = colors.rise, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                movement.places?.let {
+                    Text("$it", color = colors.rise, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             is Movement.Down -> {
                 Icon(Icons.Filled.ArrowDropDown, null, tint = colors.fall, modifier = Modifier.size(16.dp))
-                Text("${movement.places}", color = colors.fall, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                movement.places?.let {
+                    Text("$it", color = colors.fall, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             Movement.New -> Text(

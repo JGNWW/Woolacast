@@ -6,8 +6,9 @@ sealed interface Movement {
     data object Unknown : Movement
     data object New : Movement
     data object Flat : Movement
-    data class Up(val places: Int) : Movement
-    data class Down(val places: Int) : Movement
+    /** [places] is null als de bron wel de richting geeft maar niet hoeveel. */
+    data class Up(val places: Int?) : Movement
+    data class Down(val places: Int?) : Movement
 }
 
 data class ChartEntry(
@@ -22,7 +23,8 @@ data class ChartEntry(
     /** Alleen gevuld op afleveringniveau. */
     val showId: String? = null,
     /** Bekend bij open bronnen; bij Apple pas na een lookup. */
-    val feedUrl: String? = null
+    val feedUrl: String? = null,
+    val description: String? = null
 )
 
 data class Chart(

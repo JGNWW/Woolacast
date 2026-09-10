@@ -35,7 +35,10 @@ class ChartRepository(
 
         val baseline = store.baseline(query.key)
         val entries = chart.entries.map { entry ->
-            entry.copy(movement = movement(entry, baseline))
+            // Eigen telling is preciezer; wat de bron zelf zei blijft staan
+            // zolang er nog geen momentopname van gisteren is.
+            val computed = movement(entry, baseline)
+            entry.copy(movement = if (computed == Movement.Unknown) entry.movement else computed)
         }
 
         store.record(query.key, chart.entries.associate { it.id to it.rank })

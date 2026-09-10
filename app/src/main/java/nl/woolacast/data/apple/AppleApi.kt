@@ -23,6 +23,15 @@ interface AppleCatalogApi {
     @GET
     suspend fun legacyTop(@Url url: String): LegacyFeedResponse
 
+    /** Zoekt een podcast op naam; de enige weg naar een feed voor een Spotify-vermelding. */
+    @GET("search")
+    suspend fun search(
+        @Query("term") term: String,
+        @Query("country") country: String,
+        @Query("entity") entity: String = "podcast",
+        @Query("limit") limit: Int = 1
+    ): LookupResponse
+
     @GET("lookup")
     suspend fun lookup(
         @Query("id") id: String,

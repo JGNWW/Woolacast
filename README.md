@@ -35,13 +35,12 @@ dat is, en die keuze is hier: open projecten zonder poortwachter.
 
 ## Bronnen
 
-| Bron | Open? | Sleutel? | Wat het geeft |
-| --- | --- | --- | --- |
-| Apple Podcasts | publieke feeds | nee | shows én afleveringen, 175 landen, per categorie |
-| fyyd.de | open API | nee | shows per taalgebied |
-| RSS van de podcast zelf | volledig open | nee | afleveringen, audio, omschrijvingen, artwork |
-| Spotify | — | — | geen open weg |
-| YouTube | — | — | geen open weg |
+| Bron | Sleutel? | Wat het geeft |
+| --- | --- | --- |
+| Apple Podcasts | nee | shows én afleveringen, 175 landen, per categorie |
+| Spotify | nee | shows én afleveringen in 26 landen, categorieen in zeven |
+| fyyd.de | nee | shows per taalgebied |
+| RSS van de podcast zelf | nee | afleveringen, audio, omschrijvingen, artwork |
 
 De podcastpagina leest de **RSS van de maker zelf** — daar staat alles in en er
 zit niemand tussen. Dat is dezelfde route die AntennaPod neemt. Alleen bij een
@@ -49,12 +48,45 @@ Apple-lijst is er één opzoeking nodig om de feed-URL te vinden, want Apple gee
 een catalogus-id in plaats van een feed. Bij fyyd komt de feed-URL meteen mee,
 dus daar is zelfs die stap niet nodig.
 
+### Over Spotify
+
+`podcastcharts.byspotify.com` laadt zijn lijsten uit een JSON-endpoint op de
+eigen site, zonder sleutel en zonder inlog:
+
+```
+GET https://podcastcharts.byspotify.com/api/charts/{categorie}?region={land}&limit={n}
+Accept: application/json
+```
+
+Dat is dezelfde aanroep die hun pagina zelf doet, en de app doet hem nu ook.
+Uitgemeten tegen de live API:
+
+| Lijst | Landen | Omvang |
+| --- | --- | --- |
+| `top-podcasts`, `top-episodes`, `trending` | 26 | 200 |
+| 16 categorieen (`comedy`, `news`, `true-crime`, …) | 7: us au br de mx se gb | 50 |
+
+België zit er niet bij, en categorieen bestaan níét voor Nederland. De app zegt
+dat in plaats van een lege lijst te tonen. `chartRankMove` geeft de richting van
+de beweging mee (UP/DOWN/UNCHANGED); het *aantal* plaatsen vult de app aan uit
+de eigen momentopnames.
+
+**Wat je moet weten:** dit endpoint is niet gedocumenteerd. Spotify kan het
+zonder aankondiging veranderen of dichtzetten, en het valt vrijwel zeker buiten
+hun gebruiksvoorwaarden om er data uit te halen voor een eigen app — zeker als
+je die verspreidt. Voor eigen gebruik is het risico dat het een keer stopt; ga
+je publiceren, kijk er dan eerst naar. De code faalt netjes als het wegvalt: je
+krijgt de uitleg en de lijst uit de cache.
+
+Spotify geeft geen feed-URL, alleen een `spotify:show:` uri. De podcastpagina
+zoekt de naam daarom op in de publieke Apple-catalogus om alsnog bij de RSS te
+komen.
+
 ### Over Podchaser
 
-Podchaser heeft de lijsten van Apple én Spotify, dus qua data zou het passen.
-Maar hun GraphQL-endpoint antwoordt `Invalid authorization request`: het is een
-commerciële data-API met sleutels en voorwaarden over hergebruik. Dat is precies
-het tegenovergestelde van geen-cloud-en-open-source. Daarom staat het er niet in.
+Podchaser heeft dezelfde lijsten, maar hun GraphQL-endpoint antwoordt
+`Invalid authorization request`: een commerciële data-API met sleutels en
+voorwaarden over hergebruik. Nu Spotify rechtstreeks werkt is dat niet nodig.
 
 ### Over AntennaPod en Pocket Casts
 
@@ -82,10 +114,11 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 
 | Onderdeel | Status |
 | --- | --- |
-| Hitlijsten: bron, land, categorie, niveau | werkt |
+| Hitlijsten: Apple, Spotify, fyyd | werkt |
 | Offline: laatst opgehaalde lijst | werkt |
 | Stijgers en dalers | werkt vanaf de tweede dag |
 | Podcastpagina uit RSS | werkt |
+| Speler: mini-balk die uitklapt naar volledig scherm | werkt |
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek | werkt |
 | Ontdek | ingang op de lijsten |
@@ -101,11 +134,13 @@ app/src/main/java/nl/woolacast/
   domain/     modellen, ChartQuery, ChartSource, catalogus van landen en categorieen
   data/
     apple/    de publieke Apple-feeds
+    spotify/  het chart-endpoint van podcastcharts.byspotify.com
     fyyd/     open API zonder sleutel
     feed/     RSS-parser en -client: de route zonder tussenpersoon
     local/    volgen, momentopnames en de offline cache in één JSON-bestand
   player/     Media3-service met een StateFlow-laag eromheen
   ui/         Compose-schermen, thema, navigatie
+              player/ het uitklapbare spelerscherm
 tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```

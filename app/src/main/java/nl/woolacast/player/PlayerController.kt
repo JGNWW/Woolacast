@@ -112,6 +112,12 @@ class PlayerController(private val context: Context) {
         if (player.isPlaying) player.pause() else player.play()
     }
 
+    fun seekTo(fraction: Float) {
+        val player = controller ?: return
+        val duration = player.duration.takeIf { it > 0L } ?: return
+        player.seekTo((duration * fraction.coerceIn(0f, 1f)).toLong())
+    }
+
     fun seekBy(deltaMs: Long) {
         val player = controller ?: return
         player.seekTo((player.currentPosition + deltaMs).coerceAtLeast(0L))

@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import nl.woolacast.data.apple.AppleCatalogApi
 import nl.woolacast.data.apple.AppleMarketingApi
 import nl.woolacast.data.fyyd.FyydApi
+import nl.woolacast.data.spotify.SpotifyChartsApi
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Interceptor
@@ -50,4 +51,7 @@ object Network {
 
     fun fyydApi(): FyydApi =
         retrofit("https://api.fyyd.de/").create(FyydApi::class.java)
+
+    fun spotifyChartsApi(): SpotifyChartsApi =
+        retrofit("https://podcastcharts.byspotify.com/").create(SpotifyChartsApi::class.java)
 }

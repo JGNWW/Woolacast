@@ -39,6 +39,9 @@ import nl.woolacast.ui.detail.DetailScreen
 import nl.woolacast.ui.detail.DetailViewModel
 import nl.woolacast.ui.discover.DiscoverScreen
 import nl.woolacast.ui.library.LibraryScreen
+import nl.woolacast.ui.player.PlayerScreen
+
+private const val PLAYER_ROUTE = "player"
 
 private enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     CHARTS("charts", "Hitlijsten", Icons.Filled.BarChart),
@@ -65,15 +68,18 @@ fun WoolacastNav(container: AppContainer) {
     Scaffold(
         bottomBar = {
             Column {
-                if (playback.hasEpisode) {
+                // Op het spelerscherm zelf hoeft de mini-speler er niet ook te staan.
+                val onPlayerRoute = currentRoute?.route == PLAYER_ROUTE
+                if (playback.hasEpisode && !onPlayerRoute) {
                     MiniPlayer(
                         state = playback,
+                        onExpand = { navController.navigate(PLAYER_ROUTE) },
                         onTogglePlay = container.player::togglePlayPause,
                         onSkipForward = { container.player.seekBy(30_000L) }
                     )
                     Spacer(Modifier.height(6.dp))
                 }
-                NavigationBar {
+                if (!onPlayerRoute) NavigationBar {
                     Tab.entries.forEach { tab ->
                         val selected = currentRoute?.hierarchy?.any { it.route == tab.route } == true
                         NavigationBarItem(
@@ -104,9 +110,12 @@ fun WoolacastNav(container: AppContainer) {
                 ChartsScreen(
                     viewModel = chartsViewModel,
                     repository = container.chartRepository,
-                    onOpenPodcast = { showId, feedUrl, countryCode ->
+                    onOpenPodcast = { showId, feedUrl, countryCode, title ->
                         navController.navigate(
-                            "podcast/$showId?feed=${Uri.encode(feedUrl.orEmpty())}&country=$countryCode"
+                            "podcast/${Uri.encode(showId)}" +
+                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
+                                "&country=$countryCode" +
+                                "&title=${Uri.encode(title)}"
                         )
                     }
                 )
@@ -127,18 +136,31 @@ fun WoolacastNav(container: AppContainer) {
             composable(Tab.LIBRARY.route) {
                 LibraryScreen(
                     store = container.store,
-                    onOpenPodcast = { showId, feedUrl ->
+                    onOpenPodcast = { showId, feedUrl, title ->
                         navController.navigate(
-                            "podcast/$showId?feed=${Uri.encode(feedUrl.orEmpty())}" +
-                                "&country=${Catalog.defaultCountry.code}"
+                            "podcast/${Uri.encode(showId)}" +
+                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
+                                "&country=${Catalog.defaultCountry.code}" +
+                                "&title=${Uri.encode(title)}"
                         )
                     }
                 )
             }
 
-            composable("podcast/{showId}?feed={feed}&country={country}") { entry ->
+            composable(PLAYER_ROUTE) {
+                PlayerScreen(
+                    state = playback,
+                    onCollapse = { navController.popBackStack() },
+                    onTogglePlay = container.player::togglePlayPause,
+                    onSeekTo = container.player::seekTo,
+                    onSeekBy = container.player::seekBy
+                )
+            }
+
+            composable("podcast/{showId}?feed={feed}&country={country}&title={title}") { entry ->
                 val showId = entry.arguments?.getString("showId").orEmpty()
                 val feedUrl = entry.arguments?.getString("feed")?.takeIf { it.isNotBlank() }
+                val showTitle = entry.arguments?.getString("title")?.takeIf { it.isNotBlank() }
                 val countryCode = entry.arguments?.getString("country")
                     ?: Catalog.defaultCountry.code
                 val detailViewModel: DetailViewModel = viewModel(
@@ -149,6 +171,7 @@ fun WoolacastNav(container: AppContainer) {
                                 showId = showId,
                                 countryCode = countryCode,
                                 feedUrl = feedUrl,
+                                title = showTitle,
                                 repository = container.podcastRepository,
                                 store = container.store
                             )
@@ -158,7 +181,10 @@ fun WoolacastNav(container: AppContainer) {
                 DetailScreen(
                     viewModel = detailViewModel,
                     onBack = { navController.popBackStack() },
-                    onPlay = container.player::play
+                    onPlay = { episode ->
+                        container.player.play(episode)
+                        navController.navigate(PLAYER_ROUTE)
+                    }
                 )
             }
         }

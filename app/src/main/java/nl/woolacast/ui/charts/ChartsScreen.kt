@@ -53,7 +53,7 @@ import nl.woolacast.ui.common.SourceChip
 fun ChartsScreen(
     viewModel: ChartsViewModel,
     repository: ChartRepository,
-    onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String) -> Unit,
+    onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String, title: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -181,7 +181,14 @@ fun ChartsScreen(
                 items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
                     ChartRow(entry) {
                         entry.showId?.let { id ->
-                            onOpenPodcast(id, entry.feedUrl, chart.query.country.code)
+                            // Op afleveringniveau is de titel die van de aflevering;
+                            // voor het opzoeken van een feed hebben we de show nodig.
+                            val showTitle = if (chart.query.level == ChartLevel.EPISODES) {
+                                entry.publisher
+                            } else {
+                                entry.title
+                            }
+                            onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
                         }
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

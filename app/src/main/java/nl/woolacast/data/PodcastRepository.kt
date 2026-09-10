@@ -1,5 +1,6 @@
 package nl.woolacast.data
 
+import nl.woolacast.data.Html
 import nl.woolacast.data.apple.AppleCatalogApi
 import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.domain.Episode
@@ -20,10 +21,12 @@ class PodcastRepository(
     suspend fun detail(
         showId: String,
         countryCode: String,
-        feedUrl: String? = null
+        feedUrl: String? = null,
+        title: String? = null
     ): PodcastDetail {
         val resolvedFeed = feedUrl?.takeIf { it.isNotBlank() }
             ?: lookupFeedUrl(showId, countryCode)
+            ?: searchFeedUrl(title, countryCode)
             ?: return lookupDetail(showId, countryCode)
 
         return runCatching { fromFeed(showId, resolvedFeed) }
@@ -71,8 +74,21 @@ class PodcastRepository(
         }.getOrNull()
     }
 
+    /**
+     * Spotify geeft een eigen uri, geen feed. De naam is wat we wel hebben, dus
+     * die zoeken we op in de publieke catalogus om alsnog bij de RSS te komen.
+     */
+    private suspend fun searchFeedUrl(title: String?, countryCode: String): String? {
+        val term = title?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+        return runCatching {
+            catalog.search(term = term, country = countryCode)
+                .results.firstOrNull()?.feedUrl
+        }.getOrNull()
+    }
+
     /** Terugval als de feed niet te lezen is: dan maar de catalogusgegevens. */
     private suspend fun lookupDetail(showId: String, countryCode: String): PodcastDetail {
+        require(showId.all { it.isDigit() }) { "Geen feed gevonden voor deze podcast." }
         val response = catalog.lookup(
             id = showId,
             country = countryCode,
@@ -88,7 +104,7 @@ class PodcastRepository(
             title = show.collectionName ?: show.trackName.orEmpty(),
             publisher = show.artistName.orEmpty(),
             artworkUrl = show.artworkUrl600 ?: show.artworkUrl100,
-            description = show.description,
+            description = Html.toPlainText(show.description),
             genre = show.primaryGenreName,
             episodeCount = show.trackCount,
             feedUrl = show.feedUrl
@@ -103,7 +119,7 @@ class PodcastRepository(
                     showId = showId,
                     showTitle = result.collectionName ?: podcast.title,
                     title = result.trackName ?: return@mapNotNull null,
-                    description = result.description,
+                    description = Html.toPlainText(result.description),
                     artworkUrl = result.artworkUrl600 ?: result.artworkUrl100,
                     audioUrl = result.episodeUrl,
                     durationMillis = result.trackTimeMillis,
