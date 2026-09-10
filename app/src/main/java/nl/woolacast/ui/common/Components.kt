@@ -345,28 +345,35 @@ fun TextPill(text: String, background: Color, foreground: Color, modifier: Modif
     }
 }
 
-/** Het vierkantje met de beginletter van een bron. */
+/** Kleurvlakje van een bron, dezelfde kleur als in de grafiek en de tegels. */
 @Composable
-fun SourceDot(source: SourceId, modifier: Modifier = Modifier, size: Dp = 18.dp, active: Boolean = true) {
+fun SourceDot(source: SourceId, modifier: Modifier = Modifier, size: Dp = 10.dp, active: Boolean = true) {
     val colors = LocalChartColors.current
     val bg = when {
         !active -> MaterialTheme.colorScheme.surfaceContainerHigh
         source == SourceId.APPLE -> colors.seriesApple
         else -> colors.seriesSpotify
     }
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(RoundedCornerShape(size / 3))
-            .background(bg),
-        contentAlignment = Alignment.Center
+    Box(modifier = modifier.size(size).clip(RoundedCornerShape(3.dp)).background(bg))
+}
+
+/** Kolomkoppen boven de landenrijen, zodat de kleur nooit het enige onderscheid is. */
+@Composable
+fun SourceColumnsHeader(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            source.initial,
-            fontSize = (size.value * 0.53f).sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = if (active) Color(0xFFFBF6EE) else colors.muted
-        )
+        Spacer(Modifier.weight(1f))
+        listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
+            Text(
+                source.label.substringBefore(' '),
+                fontSize = 10.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = LocalChartColors.current.muted,
+                modifier = Modifier.width(41.dp)
+            )
+        }
     }
 }
 
@@ -386,24 +393,10 @@ fun SourceChip(
             .background(if (selected) colors.panel else MaterialTheme.colorScheme.surfaceContainerLowest)
             .then(if (selected) Modifier else Modifier.border(1.dp, MaterialTheme.colorScheme.outline, shape))
             .clickable(onClick = onClick)
-            .padding(start = 11.dp, end = 15.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(RoundedCornerShape(7.dp))
-                .background(if (selected) MaterialTheme.colorScheme.primary else colors.muted),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                source.initial,
-                color = Color(0xFFFBF6EE),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
         Text(
             source.label,
             style = MaterialTheme.typography.labelLarge,

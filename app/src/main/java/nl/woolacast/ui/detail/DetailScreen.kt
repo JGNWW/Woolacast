@@ -51,6 +51,7 @@ import nl.woolacast.ui.common.Flag
 import nl.woolacast.ui.common.IconAction
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.PlayCircle
+import nl.woolacast.ui.common.SourceColumnsHeader
 import nl.woolacast.ui.common.SourceDot
 import nl.woolacast.ui.common.SquareIconButton
 import nl.woolacast.ui.common.TextPill
@@ -296,6 +297,7 @@ fun DetailScreen(
                         } else {
                             val byCountry = state.positions.groupBy { it.country }.toList()
                                 .sortedBy { it.second.minOf { p -> p.rank } }
+                            item { SourceColumnsHeader(Modifier.padding(top = 12.dp)) }
                             items(byCountry.size) { index ->
                                 val (country, ranks) = byCountry[index]
                                 PositionRow(country, ranks.associate { it.source to it.rank })

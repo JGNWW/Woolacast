@@ -106,8 +106,8 @@ class RssFeedParser {
         }
 
         return ParsedFeed(
-            title = channelTitle?.trim(),
-            author = channelAuthor?.trim(),
+            title = Html.toPlainText(channelTitle),
+            author = Html.toPlainText(channelAuthor),
             description = Html.toPlainText(channelDescription),
             imageUrl = channelImage?.trim(),
             episodes = episodes

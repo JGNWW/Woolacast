@@ -268,7 +268,7 @@ fun PlayerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SkipButton(WoolIcons.Back15, "15", "15 seconden terug") { onSeekBy(-15_000L) }
-                    TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 28.dp, onPrevious)
+                    TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
                     Box(
                         modifier = Modifier
                             .size(76.dp)
@@ -287,7 +287,7 @@ fun PlayerScreen(
                         )
                     }
                     TransportButton(
-                        WoolIcons.Next, "Volgende uit wachtrij", 28.dp, onNext,
+                        WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
                         enabled = queue.isNotEmpty()
                     )
                     SkipButton(WoolIcons.Forward30, "30", "30 seconden vooruit") { onSeekBy(30_000L) }
@@ -492,12 +492,13 @@ private fun SkipButton(icon: ImageVector, seconds: String, contentDescription: S
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription, modifier = Modifier.size(30.dp))
+        Icon(icon, contentDescription, modifier = Modifier.size(32.dp))
         Text(
             seconds,
-            fontSize = 9.sp,
+            fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 9.dp)
+            letterSpacing = (-0.3).sp,
+            modifier = Modifier.padding(top = 3.dp)
         )
     }
 }

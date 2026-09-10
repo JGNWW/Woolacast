@@ -139,7 +139,7 @@ fun DiscoverScreen(
                         val sources = sourceCount(country)
                         Column(
                             modifier = Modifier
-                                .width(112.dp)
+                                .width(136.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
@@ -161,6 +161,8 @@ fun DiscoverScreen(
                                     "Top 200 · $sources ${if (sources == 1) "bron" else "bronnen"}",
                                     fontSize = 11.5.sp,
                                     color = LocalChartColors.current.muted,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(top = 2.dp)
                                 )
                             }

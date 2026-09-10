@@ -70,8 +70,9 @@ object WoolIcons {
     val Pause = filled("pause", 24f, "M7 5h3.6v14H7z", "M13.4 5h3.6v14h-3.6z")
     val Previous = filled("previous", 24f, "M7 6h2.4v12H7z", "M19 6v12l-9-6z")
     val Next = filled("next", 24f, "M14.6 6H17v12h-2.4z", "M5 6v12l9-6z")
-    val Back15 = stroke("back-15", 1.7f, StrokeCap.Round, "M11.5 5.5L7 9l4.5 3.5", "M7 9h6.5a5.5 5.5 0 1 1 0 11H8")
-    val Forward30 = stroke("forward-30", 1.7f, StrokeCap.Round, "M12.5 5.5L17 9l-4.5 3.5", "M17 9h-6.5a5.5 5.5 0 1 0 0 11H16")
+    // Open cirkel (r 8.5 om 12,13) met een chevron op het uiteinde; het getal komt er als tekst in.
+    val Back15 = stroke("back-15", 1.8f, StrokeCap.Round, "M7.75 5.64A8.5 8.5 0 1 0 16.25 5.64", "M10.6 2.7L7.6 5.7l3 3")
+    val Forward30 = stroke("forward-30", 1.8f, StrokeCap.Round, "M16.25 5.64A8.5 8.5 0 1 1 7.75 5.64", "M13.4 2.7l3 3-3 3")
     val SkipForward = stroke("skip-forward", 1.9f, StrokeCap.Round, "M5 12h14", "M14 7l5 5-5 5")
     val Speed = stroke("speed", 1.8f, StrokeCap.Round, "M4 17a8 8 0 1 1 16 0", "M12 13l4-3")
     val Timer = stroke("timer", 1.8f, StrokeCap.Round, "M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z")
