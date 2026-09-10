@@ -197,14 +197,16 @@ Wat dat oplevert, gemeten:
 | Land | Tips | Media |
 | --- | --- | --- |
 | US | 32 | Podcast Review |
-| GB | 19 | The Guardian (Hear Here), Radio Times |
-| NL | 14 | VPRO Podcastgids, NOS |
-| CA | 5 | CBC |
+| IT | 19 | Corriere della Sera, Il Post, la Repubblica |
+| GB | 18 | The Guardian (Hear Here), Radio Times |
+| DE | 13 | WDR, BR, NDR, Der Spiegel, FAZ, Deutschlandfunk Kultur |
+| NL | 11 | VPRO Podcastgids, NOS |
+| BR | 9 | Folha de S.Paulo, G1 |
+| AU · ES | 5 | Guardian Australia · El Confidencial, La Vanguardia |
 | FR | 3 | Télérama |
-| BE | 2 | Humo, De Standaard |
-| IE | 2 | The Irish Times |
-| BR, IT | 1 | G1, Il Post |
-| DE, ES, SE, DK, NO, AU, MX, JP, IN | 0 | — |
+| NO | 2 | NRK |
+| BE | 1 | Humo |
+| SE, DK, IE, CA, MX, JP, IN | 0 | — |
 
 ### Zelf zoeken: de prospector
 
@@ -228,13 +230,20 @@ Google News heeft bijvoorbeeld een prima RSS-zoekfunctie die per land en taal
 werkt, maar hun `robots.txt` verbiedt `/rss/` voor iedereen, dus die route ligt
 dicht. Hetzelfde geldt voor de tagpagina's van DPG-titels en De Standaard.
 
-De verdeling is scheef en dat is geen bug: **alleen een echte podcastgids
+De verdeling is scheef en dat is geen bug: **alleen een echte podcastrubriek
 levert wat op.** Een gewone cultuurfeed uitkammen op het woord "podcast" gaf
-in vrijwel elk land nul bruikbare tips. Wat verder niet lukte: de tagpagina's
-van DPG-titels (Volkskrant, Parool, De Morgen, HLN) en die van De Standaard
-staan achter een firewall die automatische lezers weert (403), en voor
-Duitsland vond ik geen gids met een leesbare index. Dat is per land uit te
-breiden door een adapter toe te voegen aan `TIP_SOURCES`.
+in vrijwel elk land nul bruikbare tips; de prospector zoekt daarom naar de
+rubriek zelf. Wat niet lukte: de tagpagina's van DPG-titels (Volkskrant,
+Parool, De Morgen, HLN) staan achter een firewall die automatische lezers
+weert, en in Zweden, Denemarken, Ierland, Canada, Mexico, Japan en India had
+geen van de grote titels een rubriek op een vindbaar pad.
+
+Het koppelen is streng, want anders glipt van alles erdoor. Een kandidaat moet
+**exact** een show in Apple's catalogus zijn, met een vergelijking die letters
+uit elk schrift bewaart (anders valt "Подкаст Asia Pacific" samen met "Asia
+Pacific"). Een naam van één woord telt alleen als hij in het artikel binnen
+honderd tekens van het woord "podcast" staat — zo overleeft "Serial" wel, maar
+sneuvelt een rubriekskop als "Deutschland".
 
 ## Stijgers en dalers
 
