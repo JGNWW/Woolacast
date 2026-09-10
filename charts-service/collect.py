@@ -472,6 +472,52 @@ def lookup_show(name: str, country: str) -> dict | None:
 
 
 NRC_INDEX = "https://www.nrc.nl/index/podcast/"
+
+# Grote titels publiceren per rubriek een feed op een vast patroon. Ze allemaal
+# aflopen is een breed net: de opbrengst per feed is klein, maar het is
+# materiaal dat de uitgever zelf voor machines klaarzet.
+FEED_SLUGS = [
+    "voorpagina", "nieuws", "cultuur-media", "kunst-media", "cultuur", "media",
+    "show", "showbizz", "boeken", "muziek", "film", "tv", "podcasts", "radio-tv",
+    "kijkverder", "wetenschap", "tech", "lifestyle", "entertainment", "opinie",
+]
+FEED_PATHS = ["/rss.xml", "/rss", "/feed"]
+_feeds_cache: dict[str, list[str]] = {}
+
+
+def discover_feeds(host: str, limit: int = 14) -> list[str]:
+    """
+    Zoekt de publieke feeds van een titel: wat de homepage aankondigt, plus de
+    rubriekfeeds op het vaste patroon. Alleen wat echt items teruggeeft telt.
+    """
+    if host in _feeds_cache:
+        return _feeds_cache[host]
+
+    base = f"https://{host}"
+    candidates: list[str] = []
+    page = fetch(base, raw=True, tries=1, timeout=12, headers={"Accept": "text/html"})
+    if page:
+        for tag in re.finditer(r'<link[^>]+type="application/(?:rss|atom)\+xml"[^>]*>', page[0], re.I):
+            href = re.search(r'href="([^"]+)"', tag.group(0))
+            if href:
+                candidates.append(urllib.parse.urljoin(base, href.group(1)))
+    candidates += [base + p for p in FEED_PATHS]
+    candidates += [f"{base}/{slug}/rss.xml" for slug in FEED_SLUGS]
+
+    working, seen = [], set()
+
+    def probe(url: str) -> str | None:
+        got = fetch(url, raw=True, tries=1, timeout=10, headers={"Accept": "*/*"})
+        return url if got and ("<item" in got[0] or "<entry" in got[0]) else None
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for url in pool.map(probe, [c for c in candidates if not (c in seen or seen.add(c))]):
+            if url:
+                working.append(url)
+            if len(working) >= limit:
+                break
+    _feeds_cache[host] = working
+    return working
 GUIDE_ARTICLES = 14        # hoeveel artikelen van een gids we per run lezen
 GUIDE_PER_ARTICLE = 6      # een tiplijst noemt er vijf; meer is bijvangst
 
@@ -604,11 +650,39 @@ def collect_tips(country: str) -> list[dict]:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=TIP_DAYS)).strftime("%Y-%m-%d")
     tips = []
     for outlet, url, mode in TIP_SOURCES.get(country, []):
-        page = fetch(url, raw=True, headers={"User-Agent": BROWSER_UA, "Accept": "*/*"})
-        if not page:
-            print(f"    {outlet}: niet bereikbaar", flush=True)
-            continue
+        page = None
+        if mode != "feeds":
+            page = fetch(url, raw=True, headers={"Accept": "*/*"})
+            if not page:
+                print(f"    {outlet}: niet bereikbaar", flush=True)
+                continue
         kept = 0
+        if mode == "feeds":
+            for feed_url in discover_feeds(url.replace("https://", "").strip("/")):
+                got = fetch(feed_url, raw=True, tries=1, timeout=12, headers={"Accept": "*/*"})
+                if not got:
+                    continue
+                for item in parse_feed(got[0]):
+                    if "podcast" not in (item["title"] + " " + item["summary"]).lower():
+                        continue
+                    if item["date"] and item["date"] < cutoff:
+                        continue
+                    match = None
+                    for name in podcast_candidates(item["title"], item["summary"]):
+                        match = lookup_show(name, country)
+                        if match:
+                            break
+                    if not match:
+                        continue
+                    tips.append({
+                        "outlet": outlet, "headline": item["title"],
+                        "summary": item["summary"][:300], "url": item["link"],
+                        "date": item["date"], **match,
+                    })
+                    kept += 1
+            print(f"    {outlet}: {kept} tips (alle feeds)", flush=True)
+            continue
+
         if mode.startswith("guide:"):
             kept = read_guide(country, outlet, url, page[0], mode.split(":", 1)[1], tips, cutoff)
             print(f"    {outlet}: {kept} tips", flush=True)
