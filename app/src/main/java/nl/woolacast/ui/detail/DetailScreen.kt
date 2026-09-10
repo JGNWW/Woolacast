@@ -20,18 +20,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +67,10 @@ fun DetailScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
+    val queued by viewModel.queued.collectAsStateWithLifecycle()
+    val stored by viewModel.stored.collectAsStateWithLifecycle()
+    var tab by remember { mutableStateOf(DetailTab.EPISODES) }
     val podcast = state.podcast
     val isFollowed = podcast != null && follows.any { it.id == podcast.id }
 
@@ -148,44 +162,128 @@ fun DetailScreen(
                     }
                 }
 
-                podcast.description?.takeIf { it.isNotBlank() }?.let { description ->
-                    item {
-                        Text(
-                            description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 4,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        )
+
+
+                item {
+                    TabRow(
+                        selectedTabIndex = DetailTab.entries.indexOf(tab),
+                        containerColor = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        DetailTab.entries.forEach { entry ->
+                            Tab(
+                                selected = entry == tab,
+                                onClick = { tab = entry },
+                                text = {
+                                    Text(entry.label, style = MaterialTheme.typography.titleMedium)
+                                }
+                            )
+                        }
                     }
                 }
 
-                item {
-                    Text(
-                        "AFLEVERINGEN",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 20.dp, top = 22.dp, bottom = 8.dp)
-                    )
-                }
+                when (tab) {
+                    DetailTab.EPISODES -> items(state.episodes.size) { index ->
+                        val episode = state.episodes[index]
+                        EpisodeRow(
+                            episode = episode,
+                            positionMs = progress[episode.id],
+                            inQueue = queued.any { it.id == episode.id },
+                            isSaved = stored.any { it.id == episode.id },
+                            onPlay = { onPlay(episode) },
+                            onQueue = { viewModel.toggleQueue(episode) },
+                            onSave = { viewModel.toggleSaved(episode) }
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
 
-                items(state.episodes.size) { index ->
-                    EpisodeRow(state.episodes[index]) { onPlay(state.episodes[index]) }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    DetailTab.CHARTS -> {
+                        if (state.positions.isEmpty()) {
+                            item {
+                                Text(
+                                    "Deze show staat nog niet in de vastgelegde lijsten.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(20.dp)
+                                )
+                            }
+                        } else {
+                            items(state.positions.size) { index ->
+                                val position = state.positions[index]
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp)
+                                        .height(46.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(Catalog.country(position.country).flag, fontSize = 17.sp)
+                                    Text(
+                                        Catalog.country(position.country).label,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        position.source.label,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        "#${position.rank}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                            }
+                        }
+                    }
+
+                    DetailTab.ABOUT -> item {
+                        Column(Modifier.padding(20.dp)) {
+                            Text(
+                                podcast.description ?: "Geen omschrijving in de feed.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            podcast.feedUrl?.let { feed ->
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    "FEED",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(feed, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+private enum class DetailTab(val label: String) {
+    EPISODES("Afleveringen"), CHARTS("Noteringen"), ABOUT("Over")
+}
+
 @Composable
-private fun EpisodeRow(episode: Episode, onPlay: () -> Unit) {
+private fun EpisodeRow(
+    episode: Episode,
+    positionMs: Long?,
+    inQueue: Boolean,
+    isSaved: Boolean,
+    onPlay: () -> Unit,
+    onQueue: () -> Unit,
+    onSave: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onPlay)
-            .padding(horizontal = 20.dp, vertical = 13.dp),
+            .padding(start = 20.dp, end = 8.dp, top = 13.dp, bottom = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top
     ) {
@@ -200,22 +298,52 @@ private fun EpisodeRow(episode: Episode, onPlay: () -> Unit) {
             Spacer(Modifier.height(7.dp))
             Text(
                 listOfNotNull(
-                    episode.releaseDate?.take(10),
+                    episode.releaseDate,
                     episode.durationMillis?.let(::formatDuration),
                     if (episode.audioUrl == null) "geen audio" else null
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Waar je gebleven bent, maar alleen als je echt begonnen bent.
+            val duration = episode.durationMillis
+            if (positionMs != null && duration != null && duration > 0L) {
+                Spacer(Modifier.height(9.dp))
+                LinearProgressIndicator(
+                    progress = { (positionMs.toFloat() / duration).coerceIn(0f, 1f) },
+                    modifier = Modifier.fillMaxWidth().height(3.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    "nog ${formatDuration(duration - positionMs)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .clickable(onClick = onPlay),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Filled.PlayArrow, contentDescription = "Afspelen")
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            IconButton(onClick = onPlay) {
+                Icon(Icons.Filled.PlayArrow, contentDescription = "Afspelen")
+            }
+            IconButton(onClick = onQueue) {
+                Icon(
+                    if (inQueue) Icons.Filled.PlaylistAddCheck else Icons.Filled.PlaylistAdd,
+                    contentDescription = if (inQueue) "Uit wachtrij" else "In wachtrij",
+                    tint = if (inQueue) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = onSave) {
+                Icon(
+                    if (isSaved) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                    contentDescription = if (isSaved) "Niet meer bewaren" else "Bewaren",
+                    tint = if (isSaved) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

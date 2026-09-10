@@ -36,7 +36,12 @@ data class PlaybackState(
  * Dunne laag om de MediaController: de UI leest een StateFlow en hoeft niets
  * van Media3 te weten.
  */
-class PlayerController(private val context: Context) {
+class PlayerController(
+    private val context: Context,
+    /** Waar je gebleven bent, zodat de podcastpagina dat kan tonen. */
+    private val onProgress: suspend (episodeId: String, positionMs: Long, durationMs: Long) -> Unit =
+        { _, _, _ -> }
+) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var controller: MediaController? = null
@@ -71,7 +76,7 @@ class PlayerController(private val context: Context) {
         controller = null
     }
 
-    fun play(episode: Episode) {
+    fun play(episode: Episode, resumeAtMs: Long = 0L) {
         val audioUrl = episode.audioUrl ?: return
         val player = controller ?: return
 
@@ -104,12 +109,22 @@ class PlayerController(private val context: Context) {
 
         player.setMediaItem(item)
         player.prepare()
+        if (resumeAtMs > 0L) player.seekTo(resumeAtMs)
         player.play()
     }
 
     fun togglePlayPause() {
         val player = controller ?: return
-        if (player.isPlaying) player.pause() else player.play()
+        if (player.isPlaying) {
+            player.pause()
+            // Bij pauzeren is de plek het interessantst om te onthouden.
+            val snapshot = _state.value
+            snapshot.episodeId?.let { id ->
+                scope.launch { onProgress(id, snapshot.positionMs, snapshot.durationMs) }
+            }
+        } else {
+            player.play()
+        }
     }
 
     fun seekTo(fraction: Float) {
@@ -125,9 +140,21 @@ class PlayerController(private val context: Context) {
 
     private fun startTicking() {
         scope.launch {
+            var sinceSave = 0
             while (true) {
                 delay(500)
-                if (_state.value.isPlaying) syncFromPlayer()
+                if (!_state.value.isPlaying) continue
+                syncFromPlayer()
+
+                // Elke tien seconden vastleggen; vaker heeft geen zin en
+                // schrijft alleen maar naar schijf.
+                if (++sinceSave >= 20) {
+                    sinceSave = 0
+                    val snapshot = _state.value
+                    snapshot.episodeId?.let { id ->
+                        onProgress(id, snapshot.positionMs, snapshot.durationMs)
+                    }
+                }
             }
         }
     }

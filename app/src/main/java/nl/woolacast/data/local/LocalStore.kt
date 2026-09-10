@@ -45,10 +45,26 @@ data class CachedChart(
 )
 
 @Serializable
+data class SavedEpisode(
+    val id: String,
+    val showId: String,
+    val showTitle: String,
+    val title: String,
+    val artworkUrl: String? = null,
+    val audioUrl: String? = null,
+    val durationMillis: Long? = null,
+    val releaseDate: String? = null
+)
+
+@Serializable
 private data class StoreData(
     val follows: List<FollowedShow> = emptyList(),
     val snapshots: Map<String, List<DaySnapshot>> = emptyMap(),
-    val charts: Map<String, CachedChart> = emptyMap()
+    val charts: Map<String, CachedChart> = emptyMap(),
+    val queue: List<SavedEpisode> = emptyList(),
+    val saved: List<SavedEpisode> = emptyList(),
+    /** Waar je gebleven bent, per aflevering, in milliseconden. */
+    val progress: Map<String, Long> = emptyMap()
 )
 
 /**
@@ -70,12 +86,21 @@ class LocalStore(private val file: File) {
     private val _follows = MutableStateFlow<List<FollowedShow>>(emptyList())
     val follows: StateFlow<List<FollowedShow>> = _follows.asStateFlow()
 
+    private val _queue = MutableStateFlow<List<SavedEpisode>>(emptyList())
+    val queue: StateFlow<List<SavedEpisode>> = _queue.asStateFlow()
+
+    private val _saved = MutableStateFlow<List<SavedEpisode>>(emptyList())
+    val saved: StateFlow<List<SavedEpisode>> = _saved.asStateFlow()
+
+    private val _progress = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val progress: StateFlow<Map<String, Long>> = _progress.asStateFlow()
+
     suspend fun load() = withContext(Dispatchers.IO) {
         mutex.withLock {
             data = runCatching {
                 if (file.exists()) json.decodeFromString(StoreData.serializer(), file.readText()) else StoreData()
             }.getOrElse { StoreData() }
-            _follows.value = data.follows
+            publish()
         }
     }
 
@@ -87,6 +112,30 @@ class LocalStore(private val file: File) {
         val existing = it.follows.any { followed -> followed.id == show.id }
         val follows = if (existing) it.follows.filterNot { f -> f.id == show.id } else it.follows + show
         it.copy(follows = follows)
+    }
+
+    /* ---- wachtrij en bewaard ---- */
+
+    suspend fun toggleQueue(episode: SavedEpisode) = mutate {
+        val present = it.queue.any { queued -> queued.id == episode.id }
+        it.copy(queue = if (present) it.queue.filterNot { q -> q.id == episode.id }
+                        else it.queue + episode)
+    }
+
+    suspend fun toggleSaved(episode: SavedEpisode) = mutate {
+        val present = it.saved.any { stored -> stored.id == episode.id }
+        it.copy(saved = if (present) it.saved.filterNot { q -> q.id == episode.id }
+                        else it.saved + episode)
+    }
+
+    /** Alleen bewaren als er iets te onthouden valt; anders groeit dit eindeloos. */
+    suspend fun rememberProgress(episodeId: String, positionMs: Long, durationMs: Long) {
+        if (positionMs < 30_000L) return
+        val finished = durationMs > 0L && positionMs > durationMs - 60_000L
+        mutate { data ->
+            data.copy(progress = if (finished) data.progress - episodeId
+                                 else data.progress + (episodeId to positionMs))
+        }
     }
 
     /* ---- momentopnames ---- */
@@ -123,13 +172,20 @@ class LocalStore(private val file: File) {
     private suspend fun mutate(block: (StoreData) -> StoreData) = withContext(Dispatchers.IO) {
         mutex.withLock {
             data = block(data)
-            _follows.value = data.follows
+            publish()
             runCatching {
                 file.parentFile?.mkdirs()
                 file.writeText(json.encodeToString(StoreData.serializer(), data))
             }
         }
         Unit
+    }
+
+    private fun publish() {
+        _follows.value = data.follows
+        _queue.value = data.queue
+        _saved.value = data.saved
+        _progress.value = data.progress
     }
 
     private companion object {

@@ -40,11 +40,15 @@ import nl.woolacast.ui.detail.DetailViewModel
 import nl.woolacast.ui.discover.DiscoverScreen
 import nl.woolacast.ui.discover.DiscoverViewModel
 import nl.woolacast.ui.library.LibraryScreen
+import nl.woolacast.ui.library.LibraryViewModel
+import nl.woolacast.ui.search.SearchScreen
+import nl.woolacast.ui.search.SearchViewModel
 import nl.woolacast.ui.player.PlayerScreen
 import nl.woolacast.ui.tracker.TrackerScreen
 import nl.woolacast.ui.tracker.TrackerViewModel
 
 private const val PLAYER_ROUTE = "player"
+private const val SEARCH_ROUTE = "search"
 
 private enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     CHARTS("charts", "Hitlijsten", Icons.Filled.BarChart),
@@ -69,6 +73,20 @@ fun WoolacastNav(container: AppContainer) {
     )
     val chartsState by chartsViewModel.state.collectAsStateWithLifecycle()
     val chartsCountry = chartsState.query.country.code
+
+    val openPodcast: (String, String?, String) -> Unit = { showId, feedUrl, title ->
+        navController.navigate(
+            "podcast/${Uri.encode(showId)}" +
+                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
+                "&country=$chartsCountry&title=${Uri.encode(title)}"
+        )
+    }
+    val listened by container.store.progress.collectAsStateWithLifecycle()
+    val playAndOpen: (nl.woolacast.domain.Episode) -> Unit = { episode ->
+        // Verder waar je gebleven was.
+        container.player.play(episode, listened[episode.id] ?: 0L)
+        navController.navigate(PLAYER_ROUTE)
+    }
 
     Scaffold(
         bottomBar = {
@@ -115,13 +133,9 @@ fun WoolacastNav(container: AppContainer) {
                 ChartsScreen(
                     viewModel = chartsViewModel,
                     repository = container.chartRepository,
-                    onOpenPodcast = { showId, feedUrl, countryCode, title ->
-                        navController.navigate(
-                            "podcast/${Uri.encode(showId)}" +
-                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
-                                "&country=$countryCode" +
-                                "&title=${Uri.encode(title)}"
-                        )
+                    onSearch = { navController.navigate(SEARCH_ROUTE) },
+                    onOpenPodcast = { showId, feedUrl, _, title ->
+                        openPodcast(showId, feedUrl, title)
                     }
                 )
             }
@@ -133,13 +147,8 @@ fun WoolacastNav(container: AppContainer) {
                 DiscoverScreen(
                     viewModel = discoverViewModel,
                     countryCode = chartsCountry,
-                    onOpenPodcast = { showId, feedUrl, title ->
-                        navController.navigate(
-                            "podcast/${Uri.encode(showId)}" +
-                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
-                                "&country=$chartsCountry&title=${Uri.encode(title)}"
-                        )
-                    },
+                    onOpenPodcast = openPodcast,
+                    onSearch = { navController.navigate(SEARCH_ROUTE) },
                     onPick = { country, category ->
                         chartsViewModel.pick(country, category)
                         navController.navigate(Tab.CHARTS.route) {
@@ -151,16 +160,31 @@ fun WoolacastNav(container: AppContainer) {
             }
 
             composable(Tab.LIBRARY.route) {
-                LibraryScreen(
-                    store = container.store,
-                    onOpenPodcast = { showId, feedUrl, title ->
-                        navController.navigate(
-                            "podcast/${Uri.encode(showId)}" +
-                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
-                                "&country=${Catalog.defaultCountry.code}" +
-                                "&title=${Uri.encode(title)}"
-                        )
+                val libraryViewModel: LibraryViewModel = viewModel(
+                    factory = viewModelFactory {
+                        initializer { LibraryViewModel(container.store, container.dataset) }
                     }
+                )
+                LibraryScreen(
+                    viewModel = libraryViewModel,
+                    countryCode = chartsCountry,
+                    onOpenPodcast = openPodcast,
+                    onPlay = playAndOpen
+                )
+            }
+
+            composable(SEARCH_ROUTE) {
+                val searchViewModel: SearchViewModel = viewModel(
+                    key = "search-$chartsCountry",
+                    factory = viewModelFactory {
+                        initializer { SearchViewModel(container.searchRepository, chartsCountry) }
+                    }
+                )
+                SearchScreen(
+                    viewModel = searchViewModel,
+                    onBack = { navController.popBackStack() },
+                    onOpenPodcast = openPodcast,
+                    onPlay = playAndOpen
                 )
             }
 
@@ -233,10 +257,7 @@ fun WoolacastNav(container: AppContainer) {
                         )
                     },
                     onBack = { navController.popBackStack() },
-                    onPlay = { episode ->
-                        container.player.play(episode)
-                        navController.navigate(PLAYER_ROUTE)
-                    }
+                    onPlay = playAndOpen
                 )
             }
         }

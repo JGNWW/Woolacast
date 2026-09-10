@@ -11,6 +11,7 @@ import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.ShowPosition
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.LocalStore
+import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.Podcast
 
@@ -38,6 +39,23 @@ class DetailViewModel(
     val state: StateFlow<DetailUiState> = _state.asStateFlow()
 
     val follows: StateFlow<List<FollowedShow>> = store.follows
+    val progress: StateFlow<Map<String, Long>> = store.progress
+    val queued: StateFlow<List<SavedEpisode>> = store.queue
+    val stored: StateFlow<List<SavedEpisode>> = store.saved
+
+    fun toggleQueue(episode: Episode) = viewModelScope.launch {
+        store.toggleQueue(episode.toSaved())
+    }
+
+    fun toggleSaved(episode: Episode) = viewModelScope.launch {
+        store.toggleSaved(episode.toSaved())
+    }
+
+    private fun Episode.toSaved() = SavedEpisode(
+        id = id, showId = showId, showTitle = showTitle, title = title,
+        artworkUrl = artworkUrl, audioUrl = audioUrl,
+        durationMillis = durationMillis, releaseDate = releaseDate
+    )
 
     init {
         viewModelScope.launch {

@@ -50,13 +50,17 @@ interface AppleCatalogApi {
         @Query("cc") cc: String
     ): Map<String, GenreNode>
 
-    /** Zoekt een podcast op naam; de enige weg naar een feed voor een Spotify-vermelding. */
+    /**
+     * Zoekt in de catalogus. Ook de weg naar een feed voor een vermelding die
+     * er zelf geen meegeeft, zoals die van Spotify.
+     */
     @GET("search")
     suspend fun search(
         @Query("term") term: String,
         @Query("country") country: String,
         @Query("entity") entity: String = "podcast",
-        @Query("limit") limit: Int = 1
+        @Query("limit") limit: Int = 1,
+        @Query("media") media: String = "podcast"
     ): LookupResponse
 
     @GET("lookup")

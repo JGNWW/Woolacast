@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import nl.woolacast.data.ChartRepository
 import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
+import nl.woolacast.data.SearchRepository
 import nl.woolacast.data.apple.AppleChartSource
 import nl.woolacast.data.apple.AppleGenreTree
 import nl.woolacast.data.dataset.ChartsDataset
@@ -49,9 +50,13 @@ class AppContainer(context: Context) {
 
     val podcastRepository = PodcastRepository(catalogApi, feedClient)
 
+    val searchRepository = SearchRepository(catalogApi)
+
     val dataset: ChartsDataset get() = chartsDataset
 
-    val player = PlayerController(context)
+    val player = PlayerController(context) { episodeId, positionMs, durationMs ->
+        store.rememberProgress(episodeId, positionMs, durationMs)
+    }
 }
 
 class WoolacastApp : Application() {

@@ -21,7 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +53,7 @@ fun DiscoverScreen(
     viewModel: DiscoverViewModel,
     countryCode: String,
     onPick: (Country?, Category?) -> Unit,
+    onSearch: () -> Unit,
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -70,8 +74,34 @@ fun DiscoverScreen(
             Text(
                 "Ontdek",
                 style = MaterialTheme.typography.displaySmall,
-                modifier = Modifier.padding(start = 20.dp, top = 6.dp, bottom = 18.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 6.dp, bottom = 16.dp)
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                    .clickable(onClick = onSearch)
+                    .padding(horizontal = 15.dp)
+                    .height(50.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    "Zoek podcasts en afleveringen",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.height(24.dp))
         }
 
         if (state.movers.isNotEmpty()) {

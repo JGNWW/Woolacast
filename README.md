@@ -172,11 +172,15 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek | werkt |
 | Ontdek: stijgers, landen, categorieen | werkt |
+| Zoeken in podcasts en afleveringen | werkt |
+| Bibliotheek: gevolgd, wachtrij, bewaard | werkt |
+| Chart-alerts op shows die je volgt | werkt zodra er twee dagen historie is |
+| Podcastpagina: afleveringen, noteringen, over | werkt |
+| Luistervoortgang onthouden en hervatten | werkt |
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
 | Grootste stijgers op Ontdek | werkt zodra er twee dagen historie is |
 | Chart-tracker: één show over bronnen, landen en tijd | werkt |
 | Noteringsbalk op de podcastpagina | werkt |
-| Afleveringen downloaden voor offline luisteren | nog niet |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -208,9 +212,8 @@ historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
 - Lettertypen: Bricolage Grotesque en Instrument Sans staan in het ontwerp maar
   nog niet in `res/font/`; de maatvoering in `Type.kt` klopt al wel.
 - Afleveringen downloaden, zodat luisteren ook zonder verbinding kan.
-- Zoeken.
-- Bibliotheek: tabbladen voor wachtrij en bewaard, plus chart-alerts.
-- Podcastpagina: tabbladen voor noteringen en over.
+- Afleveringen downloaden voor echt offline luisteren.
+- Draaien op een echt toestel: de speler is nog nooit hoorbaar getest.
 - Afhankelijkheden zijn gepind op versies van eind 2024 en werken; lint meldt
   dat er nieuwere zijn (AGP 9.4 inmiddels).
 - `applicationId` staat op `nl.woolacast` — aanpassen naar een domein dat je

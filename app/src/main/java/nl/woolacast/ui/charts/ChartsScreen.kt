@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,6 +55,7 @@ fun ChartsScreen(
     viewModel: ChartsViewModel,
     repository: ChartRepository,
     onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String, title: String) -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -74,8 +76,13 @@ fun ChartsScreen(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
-            IconButton(onClick = viewModel::refresh) {
-                Icon(Icons.Filled.Refresh, contentDescription = "Vernieuwen")
+            Row {
+                IconButton(onClick = onSearch) {
+                    Icon(Icons.Filled.Search, contentDescription = "Zoeken")
+                }
+                IconButton(onClick = viewModel::refresh) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "Vernieuwen")
+                }
             }
         }
 
