@@ -1,0 +1,54 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Trending — vierde tabblad"
+    },
+    {
+      "file": "Nieuw.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Nieuw — nieuwe binnenkomers"
+    },
+    {
+      "file": "Ontdek.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Alternatief — secties op Ontdek"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-trend",
+      "x": 0,
+      "y": -150,
+      "w": 390,
+      "text": "Trending als vierde tabblad. Bron: Spotify publiceert een echte trending-lijst (26 landen). Apple niet — bij Apple toont het tabblad de snelste stijgers uit onze eigen dagelijkse metingen, met dezelfde opmaak."
+    },
+    {
+      "id": "n-new",
+      "x": 470,
+      "y": -150,
+      "w": 390,
+      "text": "Nieuw als tabblad: alles wat sinds gisteren de Top 200 binnenkwam, gegroepeerd per dag, met de plek waarop het binnenkwam. Werkt voor Apple én Spotify, omdat het uit onze eigen metingen komt."
+    },
+    {
+      "id": "n-disc",
+      "x": 940,
+      "y": -150,
+      "w": 390,
+      "text": "Alternatief: geen extra tabbladen, maar twee secties op Ontdek — Trending als kaarten, Nieuw binnen als lijstje. Hitlijsten blijft dan zoals hij is."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
