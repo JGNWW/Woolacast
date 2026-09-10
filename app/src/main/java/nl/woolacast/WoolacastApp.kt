@@ -12,6 +12,8 @@ import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.UnsupportedChartSource
 import nl.woolacast.data.apple.AppleChartSource
+import nl.woolacast.data.feed.FeedClient
+import nl.woolacast.data.fyyd.FyydChartSource
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.player.PlayerController
 
@@ -23,19 +25,22 @@ class AppContainer(context: Context) {
 
     private val marketingApi = Network.marketingApi()
     private val catalogApi = Network.catalogApi()
+    private val fyydApi = Network.fyydApi()
+    private val feedClient = FeedClient(Network.client)
 
     val store = LocalStore(File(context.filesDir, "woolacast-store.json"))
 
     val chartRepository = ChartRepository(
         sources = listOf(
             AppleChartSource(marketingApi, catalogApi),
+            FyydChartSource(fyydApi),
             UnsupportedChartSource.spotify(),
             UnsupportedChartSource.youtube()
         ),
         store = store
     )
 
-    val podcastRepository = PodcastRepository(catalogApi)
+    val podcastRepository = PodcastRepository(catalogApi, feedClient)
 
     val player = PlayerController(context)
 }

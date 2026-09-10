@@ -20,13 +20,17 @@ data class ChartEntry(
     val storeUrl: String?,
     val movement: Movement = Movement.Unknown,
     /** Alleen gevuld op afleveringniveau. */
-    val showId: String? = null
+    val showId: String? = null,
+    /** Bekend bij open bronnen; bij Apple pas na een lookup. */
+    val feedUrl: String? = null
 )
 
 data class Chart(
     val query: ChartQuery,
     val entries: List<ChartEntry>,
-    val updatedLabel: String?
+    val updatedLabel: String?,
+    /** Gezet als deze lijst uit de lokale cache komt in plaats van van het net. */
+    val cachedAt: String? = null
 )
 
 data class Podcast(

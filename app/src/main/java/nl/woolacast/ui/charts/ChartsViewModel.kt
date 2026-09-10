@@ -58,6 +58,10 @@ class ChartsViewModel(private val repository: ChartRepository) : ViewModel() {
 
     fun clearCategory() = update { it.copy(category = Catalog.defaultCategory) }
 
+    /** Laat land of categorie ongemoeid als er null binnenkomt. */
+    fun pick(country: Country?, category: Category?) =
+        update { it.copy(country = country ?: it.country, category = category ?: it.category) }
+
     fun refresh() = load()
 
     private fun update(transform: (ChartQuery) -> ChartQuery) {

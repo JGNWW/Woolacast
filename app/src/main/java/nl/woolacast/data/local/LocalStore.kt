@@ -20,13 +20,35 @@ data class FollowedShow(
     val id: String,
     val title: String,
     val publisher: String,
-    val artworkUrl: String? = null
+    val artworkUrl: String? = null,
+    val feedUrl: String? = null
+)
+
+@Serializable
+data class CachedEntry(
+    val rank: Int,
+    val id: String,
+    val title: String,
+    val publisher: String,
+    val artworkUrl: String? = null,
+    val genre: String? = null,
+    val storeUrl: String? = null,
+    val showId: String? = null,
+    val feedUrl: String? = null
+)
+
+@Serializable
+data class CachedChart(
+    val fetchedAt: String,
+    val updatedLabel: String? = null,
+    val entries: List<CachedEntry> = emptyList()
 )
 
 @Serializable
 private data class StoreData(
     val follows: List<FollowedShow> = emptyList(),
-    val snapshots: Map<String, List<DaySnapshot>> = emptyMap()
+    val snapshots: Map<String, List<DaySnapshot>> = emptyMap(),
+    val charts: Map<String, CachedChart> = emptyMap()
 )
 
 /**
@@ -88,6 +110,14 @@ class LocalStore(private val file: File) {
             .sortedByDescending { it.date }
             .take(HISTORY_DAYS)
         current.copy(snapshots = current.snapshots + (queryKey to updated))
+    }
+
+    /* ---- lijsten offline ---- */
+
+    fun cachedChart(queryKey: String): CachedChart? = data.charts[queryKey]
+
+    suspend fun cacheChart(queryKey: String, chart: CachedChart) = mutate {
+        it.copy(charts = it.charts + (queryKey to chart))
     }
 
     private suspend fun mutate(block: (StoreData) -> StoreData) = withContext(Dispatchers.IO) {

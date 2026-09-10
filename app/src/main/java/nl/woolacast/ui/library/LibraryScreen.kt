@@ -28,7 +28,7 @@ import nl.woolacast.ui.common.NoticePanel
 @Composable
 fun LibraryScreen(
     store: LocalStore,
-    onOpenPodcast: (String) -> Unit,
+    onOpenPodcast: (showId: String, feedUrl: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val follows by store.follows.collectAsStateWithLifecycle()
@@ -65,7 +65,7 @@ fun LibraryScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onOpenPodcast(show.id) },
+                        .clickable { onOpenPodcast(show.id, show.feedUrl) },
                     horizontalAlignment = Alignment.Start
                 ) {
                     Artwork(show.artworkUrl, 102.dp, corner = 13.dp)

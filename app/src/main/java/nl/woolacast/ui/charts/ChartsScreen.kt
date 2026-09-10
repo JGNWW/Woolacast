@@ -53,7 +53,7 @@ import nl.woolacast.ui.common.SourceChip
 fun ChartsScreen(
     viewModel: ChartsViewModel,
     repository: ChartRepository,
-    onOpenPodcast: (showId: String) -> Unit,
+    onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -164,18 +164,26 @@ fun ChartsScreen(
             chart != null -> LazyColumn(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp)
             ) {
-                chart.updatedLabel?.let { label ->
-                    item {
-                        Text(
-                            label,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
+                item {
+                    val cachedAt = chart.cachedAt
+                    Text(
+                        text = if (cachedAt != null) {
+                            "Geen verbinding · lijst van $cachedAt"
+                        } else {
+                            chart.updatedLabel.orEmpty()
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (cachedAt != null) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
                 }
                 items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
-                    ChartRow(entry) { entry.showId?.let(onOpenPodcast) }
+                    ChartRow(entry) {
+                        entry.showId?.let { id ->
+                            onOpenPodcast(id, entry.feedUrl, chart.query.country.code)
+                        }
+                    }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }

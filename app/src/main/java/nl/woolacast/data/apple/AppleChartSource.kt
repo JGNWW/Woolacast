@@ -54,7 +54,8 @@ class AppleChartSource(
                 artworkUrl = result.artworkUrl100?.let(::upscaleArtwork),
                 genre = result.genres.firstOrNull()?.name,
                 storeUrl = result.url,
-                showId = if (feed == "podcast-episodes") result.url?.let(::showIdFromUrl) else result.id
+                showId = if (feed == "podcast-episodes") result.url?.let(::showIdFromUrl) else result.id,
+                feedUrl = null
             )
         }
         return Chart(query, entries, response.feed.updated)

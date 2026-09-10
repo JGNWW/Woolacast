@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import android.net.Uri
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -30,6 +31,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import nl.woolacast.AppContainer
+import nl.woolacast.domain.Catalog
 import nl.woolacast.ui.charts.ChartsScreen
 import nl.woolacast.ui.charts.ChartsViewModel
 import nl.woolacast.ui.common.MiniPlayer
@@ -102,18 +104,18 @@ fun WoolacastNav(container: AppContainer) {
                 ChartsScreen(
                     viewModel = chartsViewModel,
                     repository = container.chartRepository,
-                    onOpenPodcast = { showId -> navController.navigate("podcast/$showId") }
+                    onOpenPodcast = { showId, feedUrl, countryCode ->
+                        navController.navigate(
+                            "podcast/$showId?feed=${Uri.encode(feedUrl.orEmpty())}&country=$countryCode"
+                        )
+                    }
                 )
             }
 
             composable(Tab.DISCOVER.route) {
                 DiscoverScreen(
                     onPick = { country, category ->
-                        val query = chartsViewModel.state.value.query
-                        chartsViewModel.setFilters(
-                            country ?: query.country,
-                            category ?: query.category
-                        )
+                        chartsViewModel.pick(country, category)
                         navController.navigate(Tab.CHARTS.route) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
@@ -125,13 +127,20 @@ fun WoolacastNav(container: AppContainer) {
             composable(Tab.LIBRARY.route) {
                 LibraryScreen(
                     store = container.store,
-                    onOpenPodcast = { showId -> navController.navigate("podcast/$showId") }
+                    onOpenPodcast = { showId, feedUrl ->
+                        navController.navigate(
+                            "podcast/$showId?feed=${Uri.encode(feedUrl.orEmpty())}" +
+                                "&country=${Catalog.defaultCountry.code}"
+                        )
+                    }
                 )
             }
 
-            composable("podcast/{showId}") { entry ->
+            composable("podcast/{showId}?feed={feed}&country={country}") { entry ->
                 val showId = entry.arguments?.getString("showId").orEmpty()
-                val countryCode = chartsViewModel.state.value.query.country.code
+                val feedUrl = entry.arguments?.getString("feed")?.takeIf { it.isNotBlank() }
+                val countryCode = entry.arguments?.getString("country")
+                    ?: Catalog.defaultCountry.code
                 val detailViewModel: DetailViewModel = viewModel(
                     key = showId,
                     factory = viewModelFactory {
@@ -139,6 +148,7 @@ fun WoolacastNav(container: AppContainer) {
                             DetailViewModel(
                                 showId = showId,
                                 countryCode = countryCode,
+                                feedUrl = feedUrl,
                                 repository = container.podcastRepository,
                                 store = container.store
                             )
