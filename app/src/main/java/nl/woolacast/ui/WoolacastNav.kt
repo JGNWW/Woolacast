@@ -23,6 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,14 +38,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import nl.woolacast.AppContainer
 import nl.woolacast.data.local.toSaved
 import nl.woolacast.domain.Catalog
@@ -64,14 +71,28 @@ import nl.woolacast.ui.tracker.TrackerScreen
 import nl.woolacast.ui.tracker.TrackerViewModel
 
 private const val PLAYER_ROUTE = "player"
-private const val SEARCH_ROUTE = "search"
 
 private enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     CHARTS("charts", "Hitlijsten", WoolIcons.Charts),
     DISCOVER("discover", "Ontdek", WoolIcons.Discover),
-    LIBRARY("library", "Bibliotheek", WoolIcons.Library)
+    LIBRARY("library", "Bibliotheek", WoolIcons.Library);
+
+    /** Het startscherm van dit tabblad; de rest van de stapel staat eronder. */
+    val home get() = "$route/home"
+
+    companion object {
+        /** Het tabblad waar een bestemming onder valt, of null voor de speler. */
+        fun of(destination: NavDestination?): Tab? =
+            entries.firstOrNull { tab -> destination?.hierarchy?.any { it.route == tab.route } == true }
+    }
 }
 
+/**
+ * Elk tabblad heeft zijn eigen stapel (podcastpagina, tracker, zoeken), zodat
+ * wisselen en terugkomen je precies daar terugzet waar je was. Op het actieve
+ * tabblad tikken brengt je naar zijn startscherm. Alleen de speler staat
+ * erbuiten: die hoort bij geen enkel tabblad.
+ */
 @Composable
 fun WoolacastNav(container: AppContainer) {
     val navController = rememberNavController()
@@ -83,6 +104,10 @@ fun WoolacastNav(container: AppContainer) {
     val queue by container.store.queue.collectAsStateWithLifecycle()
     val saved by container.store.saved.collectAsStateWithLifecycle()
 
+    // Het tabblad waar we (het laatst) op stonden; op het spelerscherm is er geen.
+    var currentTab by remember { mutableStateOf(Tab.CHARTS) }
+    LaunchedEffect(currentRoute) { Tab.of(currentRoute)?.let { currentTab = it } }
+
     // Eén instantie voor de hele app, zodat Ontdek de lijst kan instellen die
     // het hitlijstenscherm daarna toont.
     val chartsViewModel: ChartsViewModel = viewModel(
@@ -93,21 +118,27 @@ fun WoolacastNav(container: AppContainer) {
     val chartsState by chartsViewModel.state.collectAsStateWithLifecycle()
     val chartsCountry = chartsState.query.country.code
 
-    val switchTab: (Tab) -> Unit = { tab ->
-        navController.navigate(tab.route) {
-            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
+    val selectTab: (Tab) -> Unit = { tab ->
+        if (Tab.of(currentRoute) == tab) {
+            // Al op dit tabblad: terug naar zijn startscherm.
+            navController.popBackStack(tab.home, inclusive = false)
+        } else {
+            navController.navigate(tab.route) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
 
     val openPodcast: (String, String?, String) -> Unit = { showId, feedUrl, title ->
         navController.navigate(
-            "podcast/${Uri.encode(showId)}" +
+            "${currentTab.route}/podcast/${Uri.encode(showId)}" +
                 "?feed=${Uri.encode(feedUrl.orEmpty())}" +
                 "&country=$chartsCountry&title=${Uri.encode(title)}"
         )
     }
+    val openSearch = { navController.navigate("${currentTab.route}/search") }
     val openPlayer = { navController.navigate(PLAYER_ROUTE) { launchSingleTop = true } }
     val playAndOpen: (Episode, String?) -> Unit = { episode, label ->
         container.player.play(episode, label)
@@ -137,12 +168,7 @@ fun WoolacastNav(container: AppContainer) {
                     )
                     Spacer(Modifier.height(6.dp))
                 }
-                BottomNav(
-                    selected = Tab.entries.firstOrNull { tab ->
-                        currentRoute?.hierarchy?.any { it.route == tab.route } == true
-                    },
-                    onSelect = switchTab
-                )
+                BottomNav(selected = Tab.of(currentRoute), onSelect = selectTab)
             }
         }
     ) { padding ->
@@ -151,96 +177,62 @@ fun WoolacastNav(container: AppContainer) {
             startDestination = Tab.CHARTS.route,
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
-            composable(Tab.CHARTS.route) {
-                ChartsScreen(
-                    viewModel = chartsViewModel,
-                    repository = container.chartRepository,
-                    playingId = playback.episodeId,
-                    onSearch = { navController.navigate(SEARCH_ROUTE) },
-                    onAlerts = { switchTab(Tab.LIBRARY) },
-                    onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) }
-                )
+            navigation(startDestination = Tab.CHARTS.home, route = Tab.CHARTS.route) {
+                composable(Tab.CHARTS.home) {
+                    ChartsScreen(
+                        viewModel = chartsViewModel,
+                        repository = container.chartRepository,
+                        playingId = playback.episodeId,
+                        onSearch = openSearch,
+                        onAlerts = { selectTab(Tab.LIBRARY) },
+                        onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) }
+                    )
+                }
+                tabScreens(Tab.CHARTS, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
             }
 
-            composable(Tab.DISCOVER.route) {
-                val discoverViewModel: DiscoverViewModel = viewModel(
-                    factory = viewModelFactory { initializer { DiscoverViewModel(container.dataset) } }
-                )
-                DiscoverScreen(
-                    viewModel = discoverViewModel,
-                    countryCode = chartsCountry,
-                    sourceCount = { country ->
-                        container.chartRepository.allSources().count { it.covers(country.code) }
-                    },
-                    onOpenPodcast = openPodcast,
-                    onSearch = { navController.navigate(SEARCH_ROUTE) },
-                    onAlerts = { switchTab(Tab.LIBRARY) },
-                    onPick = { country, category ->
-                        chartsViewModel.pick(country, category)
-                        switchTab(Tab.CHARTS)
-                    }
-                )
-            }
-
-            composable(Tab.LIBRARY.route) {
-                val libraryViewModel: LibraryViewModel = viewModel(
-                    factory = viewModelFactory {
-                        initializer {
-                            LibraryViewModel(container.store, container.dataset, container.podcastRepository)
+            navigation(startDestination = Tab.DISCOVER.home, route = Tab.DISCOVER.route) {
+                composable(Tab.DISCOVER.home) {
+                    val discoverViewModel: DiscoverViewModel = viewModel(
+                        factory = viewModelFactory { initializer { DiscoverViewModel(container.dataset) } }
+                    )
+                    DiscoverScreen(
+                        viewModel = discoverViewModel,
+                        countryCode = chartsCountry,
+                        sourceCount = { country ->
+                            container.chartRepository.allSources().count { it.covers(country.code) }
+                        },
+                        onOpenPodcast = openPodcast,
+                        onSearch = openSearch,
+                        onAlerts = { selectTab(Tab.LIBRARY) },
+                        onPick = { country, category ->
+                            chartsViewModel.pick(country, category)
+                            selectTab(Tab.CHARTS)
                         }
-                    }
-                )
-                LibraryScreen(
-                    viewModel = libraryViewModel,
-                    countryCode = chartsCountry,
-                    playingId = playback.episodeId,
-                    onOpenPodcast = openPodcast,
-                    onSearch = { navController.navigate(SEARCH_ROUTE) },
-                    onPlay = { episode -> playAndOpen(episode, null) }
-                )
+                    )
+                }
+                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
             }
 
-            composable(SEARCH_ROUTE) {
-                val searchViewModel: SearchViewModel = viewModel(
-                    key = "search-$chartsCountry",
-                    factory = viewModelFactory {
-                        initializer { SearchViewModel(container.searchRepository, chartsCountry) }
-                    }
-                )
-                SearchScreen(
-                    viewModel = searchViewModel,
-                    onBack = { navController.popBackStack() },
-                    onOpenPodcast = openPodcast,
-                    onPlay = { episode -> playAndOpen(episode, null) }
-                )
-            }
-
-            composable("tracker/{showId}?country={country}&title={title}&publisher={publisher}&art={art}&genre={genre}&feed={feed}") { entry ->
-                val arguments = entry.arguments
-                val showId = arguments?.getString("showId").orEmpty()
-                val trackerViewModel: TrackerViewModel = viewModel(
-                    key = "tracker-$showId",
-                    factory = viewModelFactory {
-                        initializer {
-                            TrackerViewModel(
-                                dataset = container.dataset,
-                                store = container.store,
-                                showId = showId,
-                                countryCode = arguments?.getString("country")
-                                    ?: Catalog.defaultCountry.code,
-                                title = arguments?.getString("title").orEmpty(),
-                                publisher = arguments?.getString("publisher").orEmpty(),
-                                artworkUrl = arguments?.getString("art")?.takeIf { it.isNotBlank() },
-                                genre = arguments?.getString("genre")?.takeIf { it.isNotBlank() },
-                                feedUrl = arguments?.getString("feed")?.takeIf { it.isNotBlank() }
-                            )
+            navigation(startDestination = Tab.LIBRARY.home, route = Tab.LIBRARY.route) {
+                composable(Tab.LIBRARY.home) {
+                    val libraryViewModel: LibraryViewModel = viewModel(
+                        factory = viewModelFactory {
+                            initializer {
+                                LibraryViewModel(container.store, container.dataset, container.podcastRepository)
+                            }
                         }
-                    }
-                )
-                TrackerScreen(
-                    viewModel = trackerViewModel,
-                    onBack = { navController.popBackStack() }
-                )
+                    )
+                    LibraryScreen(
+                        viewModel = libraryViewModel,
+                        countryCode = chartsCountry,
+                        playingId = playback.episodeId,
+                        onOpenPodcast = openPodcast,
+                        onSearch = openSearch,
+                        onPlay = { episode -> playAndOpen(episode, null) }
+                    )
+                }
+                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
             }
 
             composable(PLAYER_ROUTE) {
@@ -266,54 +258,108 @@ fun WoolacastNav(container: AppContainer) {
                     },
                     onRemoveQueued = { id -> scope.launch { container.store.removeFromQueue(id) } },
                     onOpenPodcast = {
-                        episode?.let { openPodcast(it.showId, null, it.showTitle) }
+                        episode?.let {
+                            navController.popBackStack()
+                            openPodcast(it.showId, null, it.showTitle)
+                        }
                     },
                     onDismissError = container.player::clearError
                 )
             }
-
-            composable("podcast/{showId}?feed={feed}&country={country}&title={title}") { entry ->
-                val showId = entry.arguments?.getString("showId").orEmpty()
-                val feedUrl = entry.arguments?.getString("feed")?.takeIf { it.isNotBlank() }
-                val showTitle = entry.arguments?.getString("title")?.takeIf { it.isNotBlank() }
-                val countryCode = entry.arguments?.getString("country")
-                    ?: Catalog.defaultCountry.code
-                val detailViewModel: DetailViewModel = viewModel(
-                    key = showId,
-                    factory = viewModelFactory {
-                        initializer {
-                            DetailViewModel(
-                                showId = showId,
-                                countryCode = countryCode,
-                                feedUrl = feedUrl,
-                                title = showTitle,
-                                repository = container.podcastRepository,
-                                store = container.store,
-                                dataset = container.dataset,
-                                charts = container.chartRepository
-                            )
-                        }
-                    }
-                )
-                val podcast = detailViewModel.state.collectAsStateWithLifecycle().value.podcast
-                DetailScreen(
-                    viewModel = detailViewModel,
-                    playingId = playback.episodeId,
-                    onOpenTracker = {
-                        navController.navigate(
-                            "tracker/${Uri.encode(showId)}?country=$countryCode" +
-                                "&title=${Uri.encode(podcast?.title ?: showTitle.orEmpty())}" +
-                                "&publisher=${Uri.encode(podcast?.publisher.orEmpty())}" +
-                                "&art=${Uri.encode(podcast?.artworkUrl.orEmpty())}" +
-                                "&genre=${Uri.encode(podcast?.genre.orEmpty())}" +
-                                "&feed=${Uri.encode(podcast?.feedUrl.orEmpty())}"
-                        )
-                    },
-                    onBack = { navController.popBackStack() },
-                    onPlay = playAndOpen
-                )
-            }
         }
+    }
+}
+
+/** De schermen die elk tabblad onder zich kan hebben: zoeken, podcastpagina, tracker. */
+private fun NavGraphBuilder.tabScreens(
+    tab: Tab,
+    navController: NavHostController,
+    container: AppContainer,
+    chartsCountry: String,
+    playingId: String?,
+    openPodcast: (String, String?, String) -> Unit,
+    playAndOpen: (Episode, String?) -> Unit
+) {
+    val prefix = tab.route
+
+    composable("$prefix/search") {
+        val searchViewModel: SearchViewModel = viewModel(
+            key = "search-$chartsCountry",
+            factory = viewModelFactory {
+                initializer { SearchViewModel(container.searchRepository, chartsCountry) }
+            }
+        )
+        SearchScreen(
+            viewModel = searchViewModel,
+            onBack = { navController.popBackStack() },
+            onOpenPodcast = openPodcast,
+            onPlay = { episode -> playAndOpen(episode, null) }
+        )
+    }
+
+    composable("$prefix/podcast/{showId}?feed={feed}&country={country}&title={title}") { entry ->
+        val showId = entry.arguments?.getString("showId").orEmpty()
+        val feedUrl = entry.arguments?.getString("feed")?.takeIf { it.isNotBlank() }
+        val showTitle = entry.arguments?.getString("title")?.takeIf { it.isNotBlank() }
+        val countryCode = entry.arguments?.getString("country") ?: Catalog.defaultCountry.code
+        val detailViewModel: DetailViewModel = viewModel(
+            key = showId,
+            factory = viewModelFactory {
+                initializer {
+                    DetailViewModel(
+                        showId = showId,
+                        countryCode = countryCode,
+                        feedUrl = feedUrl,
+                        title = showTitle,
+                        repository = container.podcastRepository,
+                        store = container.store,
+                        dataset = container.dataset,
+                        charts = container.chartRepository
+                    )
+                }
+            }
+        )
+        val podcast = detailViewModel.state.collectAsStateWithLifecycle().value.podcast
+        DetailScreen(
+            viewModel = detailViewModel,
+            playingId = playingId,
+            onOpenTracker = {
+                navController.navigate(
+                    "$prefix/tracker/${Uri.encode(showId)}?country=$countryCode" +
+                        "&title=${Uri.encode(podcast?.title ?: showTitle.orEmpty())}" +
+                        "&publisher=${Uri.encode(podcast?.publisher.orEmpty())}" +
+                        "&art=${Uri.encode(podcast?.artworkUrl.orEmpty())}" +
+                        "&genre=${Uri.encode(podcast?.genre.orEmpty())}" +
+                        "&feed=${Uri.encode(podcast?.feedUrl.orEmpty())}"
+                )
+            },
+            onBack = { navController.popBackStack() },
+            onPlay = playAndOpen
+        )
+    }
+
+    composable("$prefix/tracker/{showId}?country={country}&title={title}&publisher={publisher}&art={art}&genre={genre}&feed={feed}") { entry ->
+        val arguments = entry.arguments
+        val showId = arguments?.getString("showId").orEmpty()
+        val trackerViewModel: TrackerViewModel = viewModel(
+            key = "tracker-$showId",
+            factory = viewModelFactory {
+                initializer {
+                    TrackerViewModel(
+                        dataset = container.dataset,
+                        store = container.store,
+                        showId = showId,
+                        countryCode = arguments?.getString("country") ?: Catalog.defaultCountry.code,
+                        title = arguments?.getString("title").orEmpty(),
+                        publisher = arguments?.getString("publisher").orEmpty(),
+                        artworkUrl = arguments?.getString("art")?.takeIf { it.isNotBlank() },
+                        genre = arguments?.getString("genre")?.takeIf { it.isNotBlank() },
+                        feedUrl = arguments?.getString("feed")?.takeIf { it.isNotBlank() }
+                    )
+                }
+            }
+        )
+        TrackerScreen(viewModel = trackerViewModel, onBack = { navController.popBackStack() })
     }
 }
 

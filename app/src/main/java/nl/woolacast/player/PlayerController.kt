@@ -103,6 +103,7 @@ class PlayerController(
             {
                 controller = runCatching { future.get() }.getOrNull()?.also {
                     it.addListener(listener)
+                    restoreFromPlayer(it)
                     syncFromPlayer()
                 }
                 startTicking()
@@ -257,6 +258,29 @@ class PlayerController(
         if (!next()) {
             _state.value = _state.value.copy(isPlaying = false, isBuffering = false)
         }
+    }
+
+    /**
+     * De service kan doorspelen terwijl de app weg was; dan kent deze laag de
+     * aflevering niet meer. Genoeg staat in de metadata om hem terug te bouwen.
+     */
+    private fun restoreFromPlayer(player: Player) {
+        if (_state.value.episode != null) return
+        val item = player.currentMediaItem ?: return
+        val meta = item.mediaMetadata
+        _state.value = _state.value.copy(
+            episode = Episode(
+                id = item.mediaId,
+                showId = "",
+                showTitle = meta.artist?.toString().orEmpty(),
+                title = meta.title?.toString().orEmpty(),
+                description = null,
+                artworkUrl = meta.artworkUri?.toString(),
+                audioUrl = item.localConfiguration?.uri?.toString(),
+                durationMillis = player.duration.takeIf { it > 0L },
+                releaseDate = null
+            )
+        )
     }
 
     private fun rememberWhereWeAre() {

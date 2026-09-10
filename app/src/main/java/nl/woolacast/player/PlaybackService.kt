@@ -1,5 +1,7 @@
 package nl.woolacast.player
 
+import android.app.PendingIntent
+import android.content.Intent
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
@@ -26,9 +28,19 @@ class PlaybackService : MediaSessionService() {
                 /* handleAudioFocus = */ true
             )
             .setHandleAudioBecomingNoisy(true)
+            // Anders valt het streamen stil zodra het scherm uitgaat.
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
 
-        mediaSession = MediaSession.Builder(this, player).build()
+        // Tikken op de melding opent de app weer.
+        val openApp = PendingIntent.getActivity(
+            this, 0,
+            packageManager.getLaunchIntentForPackage(packageName) ?: Intent(),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        mediaSession = MediaSession.Builder(this, player)
+            .setSessionActivity(openApp)
+            .build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
