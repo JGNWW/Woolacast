@@ -1,0 +1,364 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+:root{
+  --bg:#FAF6F0; --surf:#FFFDFA; --surf2:#F2EBE0; --surf3:#E8DFD1;
+  --line:#E4DACA; --line2:#F0E8DC;
+  --ink:#211D17; --ink2:#6E6458; --ink3:#988C7A;
+  --pri:#C4542B; --priInk:#FFFDFA; --priC:#FBE3D4; --priOn:#5A2110;
+  --up:#0E8A4E; --down:#C03A24;
+  --appl:#C4542B; --spot:#0E8A4E; --yout:#1B6FE0;
+}
+*{box-sizing:border-box}
+body{margin:0}
+a{color:var(--pri);text-decoration:none}
+a:hover{color:var(--priOn)}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;background:var(--bg);
+  font-family:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;color:var(--ink);
+  font-size:14px;line-height:1.35;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.dsp{font-family:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif}
+.sa{height:48px;flex:none}
+.col{display:flex;flex-direction:column}
+.body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.body>*{flex:none}
+.pad{padding-left:20px;padding-right:20px}
+.row{display:flex;align-items:center}
+
+/* ---- top app bar ---- */
+.appbar{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 12px 0 20px;flex:none}
+.mark{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pri)}
+.ibtn{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);flex:none}
+.ibtn:hover{background:var(--surf2)}
+.h1{font-size:32px;font-weight:700;letter-spacing:-.022em;line-height:1.05;margin:0}
+.h2{font-size:19px;font-weight:700;letter-spacing:-.014em;margin:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+
+/* ---- source chips ---- */
+.srcrow{display:flex;gap:8px;overflow:hidden}
+.src{display:flex;align-items:center;gap:8px;height:44px;padding:0 15px 0 11px;border-radius:12px;
+  background:var(--surf);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink2);
+  white-space:nowrap;flex:none;cursor:pointer}
+.src .dot{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#FFFDFA;background:var(--ink3);flex:none}
+.src.on{background:var(--ink);border-color:var(--ink);color:#FBF6EE}
+.src.on .dot{background:var(--pri)}
+.src.off{opacity:.42}
+
+/* ---- context / filter bar ---- */
+.ctx{display:flex;align-items:center;gap:8px;height:46px;padding:0 8px 0 12px;border-radius:14px;
+  background:var(--surf2);border:1px solid var(--line2);cursor:pointer}
+.ctx .lbl{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.ctx .sep{color:var(--ink3)}
+.flag{width:20px;height:14px;border-radius:3px;overflow:hidden;flex:none;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(33,29,23,.12) inset}
+.flag i{flex:1;display:block}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:24px;height:46px;align-items:center}
+.tab{font-size:15px;font-weight:600;color:var(--ink3);height:46px;display:flex;align-items:center;
+  position:relative;cursor:pointer}
+.tab.on{color:var(--ink)}
+.tab.on:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--pri)}
+
+/* ---- chart rows ---- */
+.list{display:flex;flex-direction:column}
+.lrow{display:flex;align-items:center;gap:12px;height:72px;border-bottom:1px solid var(--line2)}
+.rank{width:26px;text-align:right;font-size:19px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);flex:none}
+.rank.top{color:var(--pri)}
+.art{width:52px;height:52px;border-radius:11px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.t1{font-size:14.5px;font-weight:600;letter-spacing:-.008em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:700;
+  font-variant-numeric:tabular-nums;flex:none;width:38px;justify-content:flex-end}
+.mv.new{font-size:10px;letter-spacing:.08em;color:var(--pri)}
+.mv.flat{color:var(--ink3)}
+
+/* ---- artwork ---- */
+.a1{background-color:#B5482A;background-image:radial-gradient(circle at 70% 32%,#F4E3CE 0 24%,rgba(0,0,0,0) 24%)}
+.a2{background-color:#14504E;background-image:linear-gradient(115deg,rgba(0,0,0,0) 40%,#E9D9B8 40% 57%,rgba(0,0,0,0) 57%)}
+.a3{background-color:#DFA83A;background-image:radial-gradient(circle at 50% 106%,#25201A 0 46%,rgba(0,0,0,0) 46%)}
+.a4{background-color:#332F63;background-image:repeating-linear-gradient(90deg,#EDE2CE 0 5px,rgba(0,0,0,0) 5px 15px)}
+.a5{background-color:#7E3149;background-image:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 0 21%,#F0DCC6 21% 33%,rgba(0,0,0,0) 33%)}
+.a6{background-color:#3C5A2B;background-image:conic-gradient(from 200deg at 28% 72%,#DCE8C4 0 25%,rgba(0,0,0,0) 25%)}
+.a7{background-color:#1E1B16;background-image:radial-gradient(circle at 50% 50%,#D9683C 0 17%,rgba(0,0,0,0) 17%);background-size:24px 24px}
+.a8{background-color:#D2825A;background-image:conic-gradient(from 0deg at 100% 0%,#2A241D 0 25%,rgba(0,0,0,0) 25%)}
+.a9{background-color:#2B4C7E;background-image:linear-gradient(0deg,#E7D8BE 0 33%,rgba(0,0,0,0) 33%)}
+.a10{background-color:#7E5AA0;background-image:radial-gradient(circle at 24% 24%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%),radial-gradient(circle at 76% 76%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%)}
+
+/* ---- buttons & chips ---- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:13px;
+  font-size:14.5px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.btn-p{background:var(--pri);color:var(--priInk)}
+.btn-o{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-t{background:var(--surf2);color:var(--ink)}
+.chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;
+  background:var(--surf);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.chip.on{background:var(--priC);border-color:#EFC7AF;color:var(--priOn)}
+.chip.dis{opacity:.38}
+
+/* ---- mini player + bottom nav ---- */
+.mini{display:flex;align-items:center;gap:12px;height:60px;margin:0 12px 6px;padding:0 8px 0 8px;border-radius:15px;
+  background:var(--ink);color:#F6EFE5;box-shadow:0 6px 20px rgba(33,29,23,.22);flex:none}
+.mini .art{width:44px;height:44px;border-radius:9px;box-shadow:none}
+.nav{display:flex;align-items:center;justify-content:space-around;height:64px;flex:none;
+  border-top:1px solid var(--line2);background:var(--bg)}
+.navi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:96px;height:64px;
+  color:var(--ink3);font-size:11px;font-weight:600}
+.navi.on{color:var(--pri)}
+.gest{height:22px;flex:none;display:flex;align-items:center;justify-content:center}
+.gest i{width:120px;height:4px;border-radius:2px;background:var(--line);display:block}
+
+/* ---- misc ---- */
+.card{background:var(--surf);border:1px solid var(--line2);border-radius:16px}
+.sect{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.hr{height:1px;background:var(--line2)}
+.note{font-size:11.5px;color:var(--ink3);line-height:1.4}
+.scroll-fade{position:absolute;left:0;right:0;height:44px;pointer-events:none}
+.lbl2{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:14px 0 9px}
+.ebody{flex:1 1 auto;min-width:0}
+
+/* ---- episode rows ---- */
+.erow{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+.erank{width:24px;text-align:right;font-size:18px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);padding-top:3px;flex:none}
+.erank.top{color:var(--pri)}
+.eart{width:56px;height:56px;border-radius:12px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.etitle{font-size:14.5px;font-weight:600;letter-spacing:-.008em;line-height:1.28;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.eshow{font-size:12.5px;color:var(--ink2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emeta{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11.5px;color:var(--ink3);font-weight:500}
+.pill{display:flex;align-items:center;gap:3px;height:19px;padding:0 7px;border-radius:6px;
+  font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.pbtn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);display:flex;
+  align-items:center;justify-content:center;color:var(--ink);flex:none;margin-top:6px}
+.sdot{width:18px;height:18px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:800;color:#FBF6EE;flex:none}
+</style>
+</helmet>
+<div class="ph col">
+  <div class="sa"></div>
+
+  <div class="appbar">
+    <div class="mark">Woolacast</div>
+    <div class="row" style="gap:0">
+      <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></div>
+      <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M13.7 20a2 2 0 01-3.4 0"></path></svg></div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="pad" style="padding-top:2px;padding-bottom:14px">
+      <h1 class="h1 dsp">Hitlijsten</h1>
+    </div>
+
+    <div class="pad srcrow" style="margin-bottom:14px">
+      <sc-for list="{{sources}}" as="s" hint-placeholder-count="3">
+        <div class="src {{s.cls}}" onClick="{{s.pick}}"><span class="dot">{{s.initial}}</span>{{s.name}}</div>
+      </sc-for>
+    </div>
+
+    <div class="pad" style="margin-bottom:2px">
+      <div class="ctx">
+        <span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span>
+        <span class="lbl">{{ctx.country}}</span>
+        <span class="sep">·</span>
+        <span class="lbl" style="{{ctx.catStyle}}">{{ctx.cat}}</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#988C7A"><path d="M6 9l6 6 6-6"></path></svg>
+        <span style="flex:1 1 auto"></span>
+        <span class="note" style="padding-right:10px">{{ctx.updated}}</span>
+      </div>
+    </div>
+
+    <div class="pad tabs">
+      <sc-for list="{{levels}}" as="l" hint-placeholder-count="2">
+        <div class="tab {{l.cls}}" onClick="{{l.pick}}">{{l.name}}</div>
+      </sc-for>
+    </div>
+    <div class="hr"></div>
+
+    <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+      <div class="pad" style="padding-top:34px">
+        <div class="card" style="padding:22px 20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C4542B" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16.2v.1"></path></svg>
+          <div class="h2">Geen afleveringenlijst</div>
+          <div style="font-size:13.5px;color:#6E6458;line-height:1.45">YouTube publiceert alleen een wekelijkse lijst met shows, niet met losse afleveringen.</div>
+          <div class="btn btn-t" style="height:44px;margin-top:4px" onClick="{{toApple}}">Toon Apple Podcasts-afleveringen</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <div class="pad list">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+        <div class="lrow">
+          <div class="rank {{r.rankCls}}">{{r.rank}}</div>
+          <div class="art {{r.art}}"></div>
+          <div class="meta">
+            <div class="t1">{{r.title}}</div>
+            <div class="t2">{{r.sub}}</div>
+          </div>
+          <div class="mv {{r.mvCls}}" style="color:{{r.mvColor}}">
+            <sc-if value="{{r.up}}" hint-placeholder-val="{{true}}"><svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg></sc-if>
+            <sc-if value="{{r.down}}" hint-placeholder-val="{{false}}"><svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L1.5 3h9z"></path></svg></sc-if>
+            {{r.mvText}}
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path><path d="M14 12H5"></path></svg></div>
+  </div>
+
+  <div class="nav">
+    <div class="navi on">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>
+      Hitlijsten
+    </div>
+    <div class="navi">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>
+      Ontdek
+    </div>
+    <div class="navi">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>
+      Bibliotheek
+    </div>
+  </div>
+  <div class="gest"><i></i></div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { source: 'apple', level: 'shows' };
+  }
+
+  data() {
+    return {
+      apple: {
+        name: 'Apple Podcasts', initial: 'A',
+        updated: 'Bijgewerkt 06:00', cat: 'Alle categorieën', catOn: true,
+        shows: [
+          ['De Deadline', 'Bureau Kruit', 'a1', 1],
+          ['Koud Spoor', 'Podium Audio', 'a7', -1],
+          ['Nachtdienst', 'VRIJDAG Media', 'a2', 4],
+          ['Tafel voor Twee', 'Roos & Van Dijk', 'a3', 0],
+          ['Vandaag in Zeven', 'Dagblad Noord', 'a9', 2],
+          ['Het Vijfde Kwartier', 'Sportcast NL', 'a6', 'new'],
+          ['Lange Adem', 'Studio Hemel', 'a5', -3]
+        ],
+        episodes: [
+          ['De laatste getuige (deel 3)', 'Koud Spoor · 54 min · 9 sep', 'a7', 'new'],
+          ['Wat er misging in Den Haag', 'Vandaag in Zeven · 22 min · 10 sep', 'a9', 3],
+          ['Live vanuit Paradiso', 'De Deadline · 71 min · 8 sep', 'a1', -1],
+          ['Zes maanden nachtploeg', 'Nachtdienst · 46 min · 7 sep', 'a2', 2],
+          ['Het duurste half uur', 'Kade 12 · 33 min · 9 sep', 'a10', 0],
+          ['Aflevering 88: thuiskomen', 'Tafel voor Twee · 58 min · 6 sep', 'a3', -2]
+        ]
+      },
+      spotify: {
+        name: 'Spotify', initial: 'S',
+        updated: 'Bijgewerkt 05:30', cat: 'Alle categorieën', catOn: true,
+        shows: [
+          ['Nachtdienst', 'VRIJDAG Media', 'a2', 0],
+          ['De Deadline', 'Bureau Kruit', 'a1', 2],
+          ['Ondergronds', 'Kelderwerk', 'a4', 5],
+          ['Zwart op Wit', 'Concept Media', 'a8', -2],
+          ['Koud Spoor', 'Podium Audio', 'a7', -1],
+          ['Het Vijfde Kwartier', 'Sportcast NL', 'a6', 9],
+          ['Kade 12', 'Kade Media', 'a10', 'new']
+        ],
+        episodes: [
+          ['Nachtploeg #212: de brug', 'Nachtdienst · 41 min · 10 sep', 'a2', 4],
+          ['Waarom niemand meer belt', 'Ondergronds · 29 min · 9 sep', 'a4', 'new'],
+          ['De laatste getuige (deel 3)', 'Koud Spoor · 54 min · 9 sep', 'a7', -1],
+          ['Het duurste half uur', 'Kade 12 · 33 min · 9 sep', 'a10', 6],
+          ['Wie betaalt de rekening?', 'Zwart op Wit · 37 min · 8 sep', 'a8', -2],
+          ['Seizoensfinale', 'De Deadline · 64 min · 5 sep', 'a1', -3]
+        ]
+      },
+      youtube: {
+        name: 'YouTube', initial: 'Y',
+        updated: 'Week 37 · wo 8 sep', cat: 'Geen categorieën', catOn: false,
+        shows: [
+          ['De Deadline', 'Bureau Kruit', 'a1', 0],
+          ['Het Vijfde Kwartier', 'Sportcast NL', 'a6', 3],
+          ['Ondergronds', 'Kelderwerk', 'a4', 1],
+          ['Tafel voor Twee', 'Roos & Van Dijk', 'a3', -2],
+          ['Nachtdienst', 'VRIJDAG Media', 'a2', -1],
+          ['Zwart op Wit', 'Concept Media', 'a8', 'new']
+        ],
+        episodes: null
+      }
+    };
+  }
+
+  move(m) {
+    if (m === 'new') return { mvText: 'NIEUW', mvCls: 'new', mvColor: '#C4542B', up: false, down: false };
+    if (m > 0) return { mvText: String(m), mvCls: '', mvColor: '#0E8A4E', up: true, down: false };
+    if (m < 0) return { mvText: String(-m), mvCls: '', mvColor: '#C03A24', up: false, down: true };
+    return { mvText: '–', mvCls: 'flat', mvColor: '#988C7A', up: false, down: false };
+  }
+
+  renderVals() {
+    const d = this.data();
+    const cur = d[this.state.source];
+    const list = this.state.level === 'shows' ? cur.shows : cur.episodes;
+
+    const sources = ['apple', 'spotify', 'youtube'].map((k) => ({
+      name: d[k].name,
+      initial: d[k].initial,
+      cls: this.state.source === k ? 'on' : '',
+      pick: () => this.setState({ source: k })
+    }));
+
+    const levels = [['shows', 'Podcasts'], ['episodes', 'Afleveringen']].map(([k, label]) => ({
+      name: label,
+      cls: this.state.level === k ? 'on' : '',
+      pick: () => this.setState({ level: k })
+    }));
+
+    const rows = (list || []).map((r, i) => Object.assign({
+      rank: i + 1,
+      rankCls: i < 3 ? 'top' : '',
+      title: r[0],
+      sub: r[1],
+      art: r[2]
+    }, this.move(r[3])));
+
+    return {
+      sources,
+      levels,
+      rows,
+      empty: !list,
+      ctx: {
+        country: 'Nederland',
+        cat: cur.cat,
+        catStyle: cur.catOn ? 'color:#6E6458' : 'color:#988C7A;text-decoration:line-through',
+        updated: cur.updated
+      },
+      toApple: () => this.setState({ source: 'apple' })
+    };
+  }
+}
+</script>
+</body>
+</html>

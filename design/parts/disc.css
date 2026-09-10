@@ -1,0 +1,15 @@
+.search{display:flex;align-items:center;gap:10px;height:50px;padding:0 15px;border-radius:14px;
+  background:var(--surf);border:1px solid var(--line);color:var(--ink3);font-size:14.5px}
+.hscroll{display:flex;gap:12px;overflow:hidden}
+.mcard{width:124px;flex:none}
+.mcard .art{width:124px;height:124px;border-radius:14px}
+.mrank{display:flex;align-items:center;gap:5px;margin-top:9px;font-size:11.5px;font-weight:700;color:#0B6E3E}
+.mtitle{font-size:13.5px;font-weight:600;letter-spacing:-.008em;margin-top:4px;line-height:1.25;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.msub{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.ccard{width:112px;flex:none;padding:11px 12px;border-radius:14px;background:var(--surf);
+  border:1px solid var(--line2);display:flex;flex-direction:column;gap:7px}
+.ccard .flag{width:30px;height:21px;border-radius:5px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cat{height:62px;border-radius:14px;padding:0 14px;display:flex;align-items:center;
+  font-size:14px;font-weight:700;letter-spacing:-.01em;color:#FBF6EE}

@@ -1,0 +1,118 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Hitlijsten (interactief)",
+      "is_interactive": true
+    },
+    {
+      "file": "ChartsEpisodes.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Top afleveringen"
+    },
+    {
+      "file": "Filters.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Lijst instellen"
+    },
+    {
+      "file": "PodcastDetail.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Podcastpagina"
+    },
+    {
+      "file": "Tracker.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Chart-tracker"
+    },
+    {
+      "file": "NowPlaying.dc.html",
+      "x": 0,
+      "y": 1010,
+      "w": 390,
+      "h": 844,
+      "title": "Speler"
+    },
+    {
+      "file": "Discover.dc.html",
+      "x": 470,
+      "y": 1010,
+      "w": 390,
+      "h": 844,
+      "title": "Ontdek"
+    },
+    {
+      "file": "Library.dc.html",
+      "x": 940,
+      "y": 1010,
+      "w": 390,
+      "h": 844,
+      "title": "Bibliotheek"
+    },
+    {
+      "file": "ChartsDark.dc.html",
+      "x": 1410,
+      "y": 1010,
+      "w": 390,
+      "h": 844,
+      "title": "Hitlijsten — donker"
+    },
+    {
+      "file": "System.dc.html",
+      "x": 0,
+      "y": 2020,
+      "w": 1240,
+      "h": 980,
+      "title": "Bouwstenen"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-kern",
+      "x": 0,
+      "y": -210,
+      "w": 390,
+      "text": "De kern van de app: elke lijst is bron × land × categorie × niveau.\nOp dit artboard werken de bronchips en de tabs Podcasts/Afleveringen echt — probeer YouTube + Afleveringen."
+    },
+    {
+      "id": "n-filter",
+      "x": 940,
+      "y": -210,
+      "w": 390,
+      "text": "Niet elke bron kan alles. De sheet zegt per bron wat er beschikbaar is, zodat je nooit op een lege lijst uitkomt."
+    },
+    {
+      "id": "n-track",
+      "x": 1880,
+      "y": -210,
+      "w": 390,
+      "text": "Het echte onderscheid: één show, alle bronnen, alle landen, over tijd. Van hieruit kunnen chart-alerts lopen."
+    },
+    {
+      "id": "n-data",
+      "x": 0,
+      "y": 1880,
+      "w": 500,
+      "text": "Alle shows, afleveringen en noteringen in deze mockup zijn verzonnen — plausibel maar niet echt, zodat er geen valse cijfers over bestaande podcasts rondgaan."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

@@ -1,0 +1,14 @@
+/* dark scheme override */
+:root{
+  --bg:#15120E; --surf:#1E1A15; --surf2:#262119; --surf3:#332C22;
+  --line:#3B3227; --line2:#2C261E;
+  --ink:#F3ECE1; --ink2:#A99C8B; --ink3:#7C7264;
+  --pri:#F0895B; --priInk:#2A1006; --priC:#4A2113; --priOn:#FBD9C6;
+  --up:#4CBE7E; --down:#E9755C;
+}
+.mini{background:var(--surf3);color:var(--ink);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.src{background:var(--surf2)}
+.src.on{background:var(--pri);border-color:var(--pri);color:#2A1006}
+.src.on .dot{background:#2A1006;color:var(--pri)}
+.art{box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.flag i{box-shadow:none}
