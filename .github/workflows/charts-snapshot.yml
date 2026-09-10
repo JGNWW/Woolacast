@@ -1,0 +1,55 @@
+name: Hitlijsten vastleggen (goedkoop)
+
+# Twee aanroepen per lijst. Voor achttien landen is dat een paar honderd
+# aanroepen en zo'n tien minuten. Dit is de klus die het waard is om dagelijks
+# te draaien: stijgers en de tracker kunnen niet met terugwerkende kracht — wie
+# gisteren niet heeft vastgelegd, heeft gisteren niet.
+#
+# Haal de cron uit het commentaar om hem aan te zetten.
+on:
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Landcodes, door komma's gescheiden"
+        default: "nl,be,de,gb,us,fr,es,it,se,dk,no,ie,ca,au,br,mx,jp,in"
+      limit:
+        description: "Diepte per lijst"
+        default: "100"
+  # schedule:
+  #   - cron: "20 5 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: charts
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Vastleggen
+        working-directory: charts-service
+        run: |
+          python3 collect.py snapshot \
+            --countries "${{ inputs.countries || 'nl,be,de,gb,us,fr,es,it,se,dk,no,ie,ca,au,br,mx,jp,in' }}" \
+            --limit "${{ inputs.limit || '100' }}" \
+            --out charts
+
+      - name: Wegschrijven als er iets veranderd is
+        run: |
+          git config user.name  "woolacast-charts"
+          git config user.email "actions@users.noreply.github.com"
+          git add charts-service/charts
+          git diff --cached --quiet || {
+            git commit -m "Hitlijsten van $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash
+            git push
+          }

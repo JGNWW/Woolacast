@@ -31,13 +31,16 @@ class AppContainer(context: Context) {
 
     val store = LocalStore(File(context.filesDir, "woolacast-store.json"))
 
+    private val chartsDataset = ChartsDataset(Network.chartsDatasetApi())
+
     val chartRepository = ChartRepository(
+        dataset = chartsDataset,
         sources = listOf(
             AppleChartSource(
                 marketing = marketingApi,
                 catalog = catalogApi,
                 genreTree = AppleGenreTree(catalogApi),
-                dataset = ChartsDataset(Network.chartsDatasetApi())
+                dataset = chartsDataset
             ),
             SpotifyChartSource(spotifyApi)
         ),
@@ -45,6 +48,8 @@ class AppContainer(context: Context) {
     )
 
     val podcastRepository = PodcastRepository(catalogApi, feedClient)
+
+    val dataset: ChartsDataset get() = chartsDataset
 
     val player = PlayerController(context)
 }

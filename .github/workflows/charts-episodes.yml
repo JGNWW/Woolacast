@@ -1,0 +1,54 @@
+name: Afleveringen per categorie (duur)
+
+# Dit is het enige wat de app echt niet zelf kan: Apple's afleveringenlijst per
+# categorie bestaat wel publiek, maar geeft alleen ids, en elk id kost een eigen
+# aanroep. Twintig categorieën van vijftig is duizend aanroepen per land.
+#
+# Daarom handmatig, en daarom één land tegelijk. Zet je hier een cron op, houd
+# het dan bij één of twee landen: meer landen is lineair meer verkeer richting
+# Apple, en dat is verkeer dat zij niet gevraagd hebben.
+on:
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Landcodes — houd het kort"
+        default: "nl"
+      limit:
+        description: "Afleveringen per categorie (max 200)"
+        default: "50"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: charts
+  cancel-in-progress: false
+
+jobs:
+  episodes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ophalen
+        working-directory: charts-service
+        run: |
+          python3 collect.py episodes \
+            --countries "${{ inputs.countries || 'nl' }}" \
+            --limit "${{ inputs.limit || '50' }}" \
+            --out charts
+
+      - name: Wegschrijven als er iets veranderd is
+        run: |
+          git config user.name  "woolacast-charts"
+          git config user.email "actions@users.noreply.github.com"
+          git add charts-service/charts
+          git diff --cached --quiet || {
+            git commit -m "Afleveringen per categorie van $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash
+            git push
+          }

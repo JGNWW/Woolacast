@@ -1,9 +1,13 @@
 package nl.woolacast.data.dataset
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.Serializable
 import nl.woolacast.domain.Chart
 import nl.woolacast.domain.ChartEntry
+import nl.woolacast.domain.ChartLevel
 import nl.woolacast.domain.ChartQuery
+import nl.woolacast.domain.SourceId
 import retrofit2.http.GET
 import retrofit2.http.Url
 
@@ -12,58 +16,123 @@ data class DatasetEntry(
     val rank: Int = 0,
     val id: String = "",
     val title: String = "",
-    val showId: String? = null,
-    val showTitle: String? = null,
-    val publisher: String? = null,
+    val publisher: String = "",
     val artworkUrl: String? = null,
     val feedUrl: String? = null,
+    val showId: String? = null,
     val durationMs: Long? = null,
-    val releaseDate: String? = null
+    val releaseDate: String? = null,
+    val previousRank: Int? = null,
+    val move: Int? = null
 )
 
 @Serializable
 data class DatasetChart(
+    val source: String = "",
+    val level: String = "",
     val country: String = "",
     val genreId: Int = 0,
     val genreLabel: String = "",
     val updated: String? = null,
-    val resolved: Int = 0,
+    val count: Int = 0,
     val entries: List<DatasetEntry> = emptyList()
+)
+
+@Serializable
+data class DatasetMover(
+    val id: String = "",
+    val title: String = "",
+    val publisher: String = "",
+    val artworkUrl: String? = null,
+    val feedUrl: String? = null,
+    val showId: String? = null,
+    val rank: Int = 0,
+    val previousRank: Int? = null,
+    val move: Int = 0,
+    val source: String = "",
+    val level: String = "",
+    val genreLabel: String = ""
+)
+
+@Serializable
+data class DatasetMovers(
+    val country: String = "",
+    val updated: String? = null,
+    val entries: List<DatasetMover> = emptyList()
+)
+
+/** Rang per dag per id: {"2026-09-10": {"1513807137": 3}}. */
+@Serializable
+data class DatasetHistory(
+    val source: String = "",
+    val country: String = "",
+    val genreId: Int = 0,
+    val level: String = "",
+    val days: Map<String, Map<String, Int>> = emptyMap()
 )
 
 interface ChartsDatasetApi {
     @GET
     suspend fun chart(@Url url: String): DatasetChart
+
+    @GET
+    suspend fun movers(@Url url: String): DatasetMovers
+
+    @GET
+    suspend fun history(@Url url: String): DatasetHistory
 }
 
 /**
- * Apple's afleveringenlijst per categorie is publiek, maar alleen als losse ids:
- * elk id kost een eigen aanroep, en dat zijn er tweehonderd per lijst. Te veel
- * voor een telefoon, prima voor een klusje dat af en toe draait.
+ * Leest wat een klusje heeft verzameld: Apple's afleveringenlijst per categorie
+ * (die de app zelf niet kan ophalen — elk id kost een aanroep) en de historie
+ * die stijgers en de tracker mogelijk maakt. Historie kun je niet met
+ * terugwerkende kracht bepalen; wie hem niet elke dag vastlegt, heeft hem niet.
  *
- * Die verzamelde lijsten staan als platte JSON in een publieke repo. De app
- * leest daar alleen van — geen sleutel, geen account, geen server die draait.
- * Staat er niets, dan valt [nl.woolacast.data.apple.AppleChartSource] terug op
- * schiften uit de algemene top honderd.
+ * Alles is platte JSON in een publieke repo. Geen server, geen sleutel, geen
+ * account. Staat er niets, dan werkt de app gewoon zonder.
  *
- * De verzamelaar zelf staat in charts-service/ in deze repo.
+ * De verzamelaar staat in charts-service/.
  */
 class ChartsDataset(
     private val api: ChartsDatasetApi,
     private val baseUrl: String = DEFAULT_BASE_URL
 ) {
 
-    suspend fun episodes(query: ChartQuery, genreId: Int): Chart? {
-        val url = "$baseUrl/${query.country.code}/$genreId/episodes.json"
-        val dataset = runCatching { api.chart(url) }.getOrNull() ?: return null
-        if (dataset.entries.isEmpty()) return null
+    private val mutex = Mutex()
+    private val charts = mutableMapOf<String, DatasetChart?>()
+    private val histories = mutableMapOf<String, DatasetHistory?>()
+    private val movers = mutableMapOf<String, DatasetMovers?>()
 
+    private fun ChartQuery.datasetPath(): String {
+        val source = if (this.source == SourceId.SPOTIFY) "spotify" else "apple"
+        val genre = category.appleGenreId ?: 26
+        val level = if (this.level == ChartLevel.EPISODES) "episodes" else "shows"
+        return "$source/${country.code}/$genre/$level"
+    }
+
+    private suspend fun chartFor(query: ChartQuery): DatasetChart? {
+        val path = query.datasetPath()
+        return mutex.withLock {
+            if (charts.containsKey(path)) charts[path]
+            else runCatching { api.chart("$baseUrl/$path.json") }
+                .getOrNull()
+                .takeIf { it != null && it.entries.isNotEmpty() }
+                .also { charts[path] = it }
+        }
+    }
+
+    /**
+     * Apple's echte afleveringenlijst per categorie, als die verzameld is.
+     * Null betekent simpelweg: nog niet beschikbaar.
+     */
+    suspend fun episodesByCategory(query: ChartQuery): Chart? {
+        val dataset = chartFor(query) ?: return null
         val entries = dataset.entries.map { entry ->
             ChartEntry(
                 rank = entry.rank,
                 id = entry.id,
                 title = entry.title,
-                publisher = entry.showTitle ?: entry.publisher.orEmpty(),
+                publisher = entry.publisher,
                 artworkUrl = entry.artworkUrl,
                 genre = dataset.genreLabel,
                 storeUrl = null,
@@ -71,13 +140,48 @@ class ChartsDataset(
                 feedUrl = entry.feedUrl
             )
         }
-
-        val day = dataset.updated?.take(10)
         return Chart(
             query = query,
             entries = entries,
-            updatedLabel = "Apple's eigen categorielijst · verzameld ${day.orEmpty()}".trim()
+            updatedLabel = "Apple's eigen categorielijst · ${dataset.updated?.take(10).orEmpty()}".trim()
         )
+    }
+
+    /**
+     * Beweging per id, om de eigen metingen aan te vullen zolang die er nog niet
+     * zijn. Komt uit de twee laatste vastgelegde dagen; met één dag valt er nog
+     * niets te zeggen.
+     */
+    suspend fun moves(query: ChartQuery): Map<String, Int> {
+        val days = history(query)?.days ?: return emptyMap()
+        if (days.size < 2) return emptyMap()
+
+        val ordered = days.keys.sorted()
+        val today = days.getValue(ordered.last())
+        val before = days.getValue(ordered[ordered.size - 2])
+
+        return today.mapNotNull { (id, rank) ->
+            before[id]?.let { previous -> id to (previous - rank) }
+        }.toMap()
+    }
+
+    suspend fun movers(countryCode: String): List<DatasetMover> = mutex.withLock {
+        val cached = movers[countryCode]
+        if (movers.containsKey(countryCode)) return@withLock cached?.entries.orEmpty()
+        runCatching { api.movers("$baseUrl/movers/$countryCode.json") }
+            .getOrNull()
+            .also { movers[countryCode] = it }
+            ?.entries.orEmpty()
+    }
+
+    suspend fun history(query: ChartQuery): DatasetHistory? {
+        val path = query.datasetPath()
+        return mutex.withLock {
+            if (histories.containsKey(path)) histories[path]
+            else runCatching { api.history("$baseUrl/$path.history.json") }
+                .getOrNull()
+                .also { histories[path] = it }
+        }
     }
 
     companion object {

@@ -172,7 +172,8 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek | werkt |
 | Ontdek | ingang op de lijsten |
-| Afleveringen per categorie, Apple's echte volgorde | via charts-service, handmatig te draaien |
+| Afleveringen per categorie, Apple's echte volgorde | via charts-service |
+| Grootste stijgers op Ontdek | werkt zodra er twee dagen historie is |
 | Chart-tracker | nog niet |
 | Afleveringen downloaden voor offline luisteren | nog niet |
 
@@ -191,7 +192,8 @@ app/src/main/java/nl/woolacast/
   player/     Media3-service met een StateFlow-laag eromheen
   ui/         Compose-schermen, thema, navigatie
               player/ het uitklapbare spelerscherm
-charts-service/  verzamelt Apple's afleveringenlijst per categorie als JSON
+charts-service/  legt dagelijks de ranglijsten vast (historie) en haalt op
+              wat de app niet zelf kan: Apple's afleveringen per categorie
 tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```

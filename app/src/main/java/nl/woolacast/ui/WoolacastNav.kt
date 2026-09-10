@@ -38,6 +38,7 @@ import nl.woolacast.ui.common.MiniPlayer
 import nl.woolacast.ui.detail.DetailScreen
 import nl.woolacast.ui.detail.DetailViewModel
 import nl.woolacast.ui.discover.DiscoverScreen
+import nl.woolacast.ui.discover.DiscoverViewModel
 import nl.woolacast.ui.library.LibraryScreen
 import nl.woolacast.ui.player.PlayerScreen
 
@@ -64,6 +65,8 @@ fun WoolacastNav(container: AppContainer) {
             initializer { ChartsViewModel(container.chartRepository) }
         }
     )
+    val chartsState by chartsViewModel.state.collectAsStateWithLifecycle()
+    val chartsCountry = chartsState.query.country.code
 
     Scaffold(
         bottomBar = {
@@ -122,7 +125,19 @@ fun WoolacastNav(container: AppContainer) {
             }
 
             composable(Tab.DISCOVER.route) {
+                val discoverViewModel: DiscoverViewModel = viewModel(
+                    factory = viewModelFactory { initializer { DiscoverViewModel(container.dataset) } }
+                )
                 DiscoverScreen(
+                    viewModel = discoverViewModel,
+                    countryCode = chartsCountry,
+                    onOpenPodcast = { showId, feedUrl, title ->
+                        navController.navigate(
+                            "podcast/${Uri.encode(showId)}" +
+                                "?feed=${Uri.encode(feedUrl.orEmpty())}" +
+                                "&country=$chartsCountry&title=${Uri.encode(title)}"
+                        )
+                    },
                     onPick = { country, category ->
                         chartsViewModel.pick(country, category)
                         navController.navigate(Tab.CHARTS.route) {

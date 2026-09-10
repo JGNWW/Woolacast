@@ -3,6 +3,7 @@ package nl.woolacast.data
 import java.time.LocalDate
 import nl.woolacast.data.local.CachedChart
 import nl.woolacast.data.local.CachedEntry
+import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.domain.Chart
 import nl.woolacast.domain.ChartEntry
@@ -13,7 +14,8 @@ import nl.woolacast.domain.SourceId
 
 class ChartRepository(
     private val sources: List<ChartSource>,
-    private val store: LocalStore
+    private val store: LocalStore,
+    private val dataset: ChartsDataset? = null
 ) {
 
     fun source(id: SourceId): ChartSource =
@@ -34,11 +36,24 @@ class ChartRepository(
         }
 
         val baseline = store.baseline(query.key)
+
+        // Op dag één is er nog niets eigen gemeten. Dan telt wat het klusje
+        // gisteren heeft vastgelegd, en anders wat de bron zelf meegaf.
+        val published = if (baseline == null) {
+            dataset?.moves(query).orEmpty()
+        } else {
+            emptyMap()
+        }
+
         val entries = chart.entries.map { entry ->
-            // Eigen telling is preciezer; wat de bron zelf zei blijft staan
-            // zolang er nog geen momentopname van gisteren is.
             val computed = movement(entry, baseline)
-            entry.copy(movement = if (computed == Movement.Unknown) entry.movement else computed)
+            entry.copy(
+                movement = when {
+                    computed != Movement.Unknown -> computed
+                    published.containsKey(entry.id) -> published.getValue(entry.id).asMovement()
+                    else -> entry.movement
+                }
+            )
         }
 
         store.record(query.key, chart.entries.associate { it.id to it.rank })
@@ -77,6 +92,12 @@ class ChartRepository(
             )
         }
     )
+
+    private fun Int.asMovement(): Movement = when {
+        this > 0 -> Movement.Up(this)
+        this < 0 -> Movement.Down(-this)
+        else -> Movement.Flat
+    }
 
     private fun movement(entry: ChartEntry, baseline: Map<String, Int>?): Movement {
         if (baseline == null) return Movement.Unknown

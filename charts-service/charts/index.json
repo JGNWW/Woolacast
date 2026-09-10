@@ -1,185 +1,5505 @@
 {
- "updated": "2026-09-10T12:35:24Z",
+ "updated": "2026-09-10T12:57:10Z",
  "charts": [
   {
-   "country": "nl",
+   "source": "apple",
+   "country": "au",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "au",
    "genreId": 26,
    "genreLabel": "Alle categorieen",
    "level": "episodes",
-   "path": "nl/26/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:31:59Z"
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/26/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "au",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/au/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "be",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/be/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "br",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/br/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 94,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "ca",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ca/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 94,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "de",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/de/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 96,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 92,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "dk",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/dk/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 94,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "es",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/es/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 96,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "fr",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/fr/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "gb",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/gb/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "ie",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/ie/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 94,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "in",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/in/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "it",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/it/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 92,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "jp",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/jp/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 94,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "mx",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/mx/26/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1301,
    "genreLabel": "Kunst",
    "level": "episodes",
-   "path": "nl/1301/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:09Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1301/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1301/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1303,
    "genreLabel": "Comedy",
    "level": "episodes",
-   "path": "nl/1303/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:28Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1303/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1303/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1304,
    "genreLabel": "Educatie",
    "level": "episodes",
-   "path": "nl/1304/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:40Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1304/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1304/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1305,
    "genreLabel": "Kinderen & gezin",
    "level": "episodes",
-   "path": "nl/1305/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:29Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1305/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1305/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1309,
    "genreLabel": "TV & film",
    "level": "episodes",
-   "path": "nl/1309/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:35:05Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1309/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1309/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1310,
    "genreLabel": "Muziek",
    "level": "episodes",
-   "path": "nl/1310/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:46Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1310/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1310/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1314,
    "genreLabel": "Religie & spiritualiteit",
    "level": "episodes",
-   "path": "nl/1314/episodes.json",
-   "resolved": 47,
-   "updated": "2026-09-10T12:34:26Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1314/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1314/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1318,
    "genreLabel": "Technologie",
    "level": "episodes",
-   "path": "nl/1318/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:35:14Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1318/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1318/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1321,
    "genreLabel": "Zaken",
    "level": "episodes",
-   "path": "nl/1321/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:18Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1321/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1321/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1324,
    "genreLabel": "Maatschappij & cultuur",
    "level": "episodes",
-   "path": "nl/1324/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:34:46Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1324/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1324/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1483,
    "genreLabel": "Fictie",
    "level": "episodes",
-   "path": "nl/1483/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:50Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1483/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1483/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1487,
    "genreLabel": "Geschiedenis",
    "level": "episodes",
-   "path": "nl/1487/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:19Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1487/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1487/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1488,
    "genreLabel": "True crime",
    "level": "episodes",
-   "path": "nl/1488/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:35:24Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1488/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1488/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1489,
    "genreLabel": "Nieuws",
    "level": "episodes",
-   "path": "nl/1489/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:55Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1489/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1489/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1502,
    "genreLabel": "Vrije tijd",
    "level": "episodes",
-   "path": "nl/1502/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:37Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1502/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1502/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1511,
    "genreLabel": "Overheid",
    "level": "episodes",
-   "path": "nl/1511/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:32:59Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1511/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1511/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1512,
    "genreLabel": "Gezondheid & fitness",
    "level": "episodes",
-   "path": "nl/1512/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:33:09Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1512/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1512/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1533,
    "genreLabel": "Wetenschap",
    "level": "episodes",
-   "path": "nl/1533/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:34:37Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1533/episodes.json"
   },
   {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1533/shows.json"
+  },
+  {
+   "source": "apple",
    "country": "nl",
    "genreId": 1545,
    "genreLabel": "Sport",
    "level": "episodes",
-   "path": "nl/1545/episodes.json",
-   "resolved": 50,
-   "updated": "2026-09-10T12:34:56Z"
+   "count": 50,
+   "updated": "2026-09-10T12:57:10Z",
+   "path": "apple/nl/1545/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "nl",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/nl/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 96,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 96,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 92,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "no",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/no/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 98,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "se",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/se/26/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1301/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1303/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1304/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1305,
+   "genreLabel": "Kinderen & gezin",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1305/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1309/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 95,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1310/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1314/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1318/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1321/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1324/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1483/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1487/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1488/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 99,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1489/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1502/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1511,
+   "genreLabel": "Overheid",
+   "level": "shows",
+   "count": 97,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1511/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1512/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1533/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/1545/shows.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/26/episodes.json"
+  },
+  {
+   "source": "apple",
+   "country": "us",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 100,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "apple/us/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "au",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/au/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "br",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/br/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "ca",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/ca/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "ca",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/ca/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "de",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/de/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "dk",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/dk/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "dk",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/dk/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "es",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/es/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "es",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/es/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "fr",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/fr/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "fr",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/fr/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "gb",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/gb/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "ie",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/ie/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "ie",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/ie/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "in",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/in/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "in",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/in/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "it",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/it/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "it",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/it/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "jp",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/jp/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "jp",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/jp/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "mx",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/mx/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "nl",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/nl/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "nl",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/nl/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "no",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/no/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "no",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/no/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "se",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/se/26/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1301,
+   "genreLabel": "Kunst",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1301/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1303,
+   "genreLabel": "Comedy",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1303/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1304,
+   "genreLabel": "Educatie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1304/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1309,
+   "genreLabel": "TV & film",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1309/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1310,
+   "genreLabel": "Muziek",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1310/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1314,
+   "genreLabel": "Religie & spiritualiteit",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1314/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1318,
+   "genreLabel": "Technologie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1318/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1321,
+   "genreLabel": "Zaken",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1321/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1324,
+   "genreLabel": "Maatschappij & cultuur",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1324/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1483,
+   "genreLabel": "Fictie",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1483/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1487,
+   "genreLabel": "Geschiedenis",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1487/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1488,
+   "genreLabel": "True crime",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1488/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1489,
+   "genreLabel": "Nieuws",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1489/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1502,
+   "genreLabel": "Vrije tijd",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1502/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1512,
+   "genreLabel": "Gezondheid & fitness",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1512/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1533,
+   "genreLabel": "Wetenschap",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1533/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 1545,
+   "genreLabel": "Sport",
+   "level": "shows",
+   "count": 50,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/1545/shows.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "episodes",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/26/episodes.json"
+  },
+  {
+   "source": "spotify",
+   "country": "us",
+   "genreId": 26,
+   "genreLabel": "Alle categorieen",
+   "level": "shows",
+   "count": 200,
+   "updated": "2026-09-10T12:48:04Z",
+   "path": "spotify/us/26/shows.json"
   }
  ]
 }

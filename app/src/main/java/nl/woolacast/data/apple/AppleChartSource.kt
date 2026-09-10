@@ -99,7 +99,7 @@ class AppleChartSource(
             ?: throw ChartUnavailable("Deze categorie heeft geen genre-id.")
 
         // Is de lijst al ergens verzameld, dan is dat Apple's echte volgorde.
-        dataset?.episodes(query, genreId)?.let { return it }
+        dataset?.episodesByCategory(query)?.let { return it }
 
         val response = marketing.top(query.country.code, MAX_FEED, EPISODES_FEED)
         val names = genreTree.topLevelByName(query.country.code)

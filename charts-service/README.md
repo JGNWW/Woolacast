@@ -1,14 +1,33 @@
 # charts-service
 
-Apple's echte afleveringen-ranglijst per categorie, als platte JSON.
+Verzamelt alleen wat de app niet zelf kan ophalen. Twee klussen, met heel
+verschillende kosten.
 
-Deze repo bestaat om één reden: die lijst is publiek, maar niet in bulk op te
-halen. De ranglijst geeft alleen ids, en een afleverings-id is nergens
-massaal op te lossen — elk id kost een eigen aanroep. Een telefoon kan dat niet
-per lijst doen. Een klusje dat af en toe draait wel.
+## snapshot — goedkoop, mag overal draaien
 
-De app leest hier alleen van. Er draait geen server, er is geen sleutel en er is
-geen account nodig.
+Legt de ranglijsten van Apple en Spotify vast. Twee aanroepen per lijst;
+achttien landen kost een paar honderd aanroepen en zo'n tien minuten.
+
+Dit bestaat **niet** om de lijst zelf — die haalt de app in één of twee
+aanroepen op. Het bestaat om de **historie**: stijgers, dalers en de tracker
+kun je niet met terugwerkende kracht bepalen. Wie gisteren niet vastlegde,
+heeft gisteren niet.
+
+Er wordt daarom ook alleen bewaard wat onherhaalbaar is: de rangen per dag, en
+een lijstje met de grootste stijgers. Geen titels of artwork — die weet de app
+zelf al.
+
+## episodes — duur, houd het klein
+
+Apple's afleveringenlijst per categorie. Die is publiek, maar geeft alleen ids,
+en een afleverings-id is nergens massaal op te lossen: elk id kost een eigen
+aanroep. Twintig categorieën van vijftig is duizend aanroepen per land.
+
+Dit is het enige waar de volledige lijst wél wordt bewaard, want de app kan hem
+niet zelf ophalen.
+
+De app leest alleen. Er draait geen server, er is geen sleutel en er is geen
+account nodig.
 
 ## Hoe je erbij komt
 
@@ -19,7 +38,15 @@ https://raw.githubusercontent.com/JGNWW/Woolacast/claude/android-podcast-app-moc
 
 De repo moet publiek zijn; raw geeft privérepo's niet zonder token vrij.
 
-`index.json` noemt alles wat er staat. De lijstbestanden zien er zo uit:
+`index.json` noemt alles wat er staat, met per lijst welke dagen er zijn
+vastgelegd. De bestanden:
+
+- `{bron}/{land}/{genre}/{niveau}.history.json` — rang per id per dag
+- `{bron}/{land}/{genre}/{niveau}.json` — de volledige lijst, alleen waar de
+  app hem niet zelf kan ophalen
+- `movers/{land}.json` — de grootste stijgers van vandaag, klaar om te tonen
+
+Een lijstbestand ziet er zo uit:
 
 ```json
 {
@@ -61,14 +88,17 @@ Alleen de standaardbibliotheek, geen installatie nodig.
 
 ## Wat dit kost
 
-Elke aflevering is één aanroep naar `podcasts.apple.com`. Met zes tegelijk kost
-een categorie van vijftig ongeveer vijftien seconden; twintig categorieën voor
-één land dus zo'n vijf minuten en duizend aanroepen.
+| Klus | Aanroepen | Duur | Dagelijks draaien? |
+| --- | --- | --- | --- |
+| `snapshot`, 18 landen | ~800 | ~10 min | ja, dat is waar hij voor is |
+| `episodes`, 1 land | ~1000 | ~4 min | kan, maar houd het bij één of twee landen |
 
-Daarom staat de workflow **op handmatig**. Zet de cron pas aan als je die
-afweging bewust maakt, en houd het bescheiden — één land, top vijftig, één keer
-per dag. Meer landen erbij betekent lineair meer verkeer richting Apple, en dat
-is verkeer dat zij niet gevraagd hebben.
+Beide workflows staan **op handmatig**. Bij `snapshot` staat de cron als
+commentaar klaar; dat is de klus die het waard is om aan te zetten. Bij
+`episodes` staat er bewust geen: meer landen is lineair meer verkeer richting
+Apple, en dat is verkeer dat zij niet gevraagd hebben.
+
+De eerste run levert nog geen stijgers op — er is dan nog geen gisteren.
 
 De ranglijst zelf is openbaar en vraagt geen sleutel, maar geautomatiseerd
 ophalen is niet iets waar Apple's voorwaarden om staan te springen. Voor een

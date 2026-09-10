@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,15 +20,26 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.Category
 import nl.woolacast.domain.Country
+import nl.woolacast.data.dataset.DatasetMover
+import nl.woolacast.ui.common.Artwork
+import nl.woolacast.ui.theme.LocalChartColors
 
 /**
  * Ontdek is in deze eerste versie een snelle ingang op de hitlijsten: kies een
@@ -34,9 +47,15 @@ import nl.woolacast.domain.Country
  */
 @Composable
 fun DiscoverScreen(
+    viewModel: DiscoverViewModel,
+    countryCode: String,
     onPick: (Country?, Category?) -> Unit,
+    onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(countryCode) { viewModel.load(countryCode) }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 20.dp)
@@ -55,11 +74,41 @@ fun DiscoverScreen(
             )
         }
 
+        if (state.movers.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text("Grootste stijgers", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        "Sinds gisteren",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.movers.take(20), key = { it.source + it.id }) { mover ->
+                        MoverCard(mover) {
+                            mover.showId?.let { onOpenPodcast(it, mover.feedUrl, mover.title) }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+            }
+        }
+
         item {
             Text(
                 "Lijsten uit andere landen",
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(start = 20.dp, bottom = 10.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 10.dp)
             )
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 20.dp),
@@ -114,5 +163,51 @@ fun DiscoverScreen(
                 if (pair.size == 1) Box(Modifier.weight(1f))
             }
         }
+    }
+}
+
+@Composable
+private fun MoverCard(mover: DatasetMover, onClick: () -> Unit) {
+    val colors = LocalChartColors.current
+    Column(
+        modifier = Modifier
+            .width(136.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+    ) {
+        Artwork(mover.artworkUrl, 136.dp, corner = 14.dp)
+        Spacer(Modifier.height(9.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                Icons.Filled.ArrowDropUp,
+                contentDescription = null,
+                tint = colors.rise,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                "${mover.move} → #${mover.rank}",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = colors.rise
+            )
+        }
+        Spacer(Modifier.height(3.dp))
+        Text(
+            mover.title,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            listOfNotNull(
+                mover.publisher.takeIf { it.isNotBlank() },
+                mover.genreLabel.takeIf { it.isNotBlank() && it != "Alle categorieen" }
+            ).joinToString(" · "),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
