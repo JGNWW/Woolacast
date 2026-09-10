@@ -75,6 +75,11 @@ data class LegacyLink(val attributes: LegacyLinkAttributes? = null)
 @Serializable
 data class LegacyLinkAttributes(val href: String? = null)
 
+/* ---- MZStoreServices : de echte ranglijst per categorie, alleen ids ---- */
+
+@kotlinx.serialization.Serializable
+data class ChartIdsResponse(val resultIds: List<String> = emptyList())
+
 /* ---- itunes.apple.com/lookup : podcast plus afleveringen ---- */
 
 @Serializable

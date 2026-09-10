@@ -37,12 +37,24 @@ dat is, en die keuze is hier: open projecten zonder poortwachter.
 
 | Bron | Sleutel? | Wat het geeft |
 | --- | --- | --- |
-| Apple Podcasts | nee | shows én afleveringen, 175 landen, alle categorieen |
+| Apple Podcasts | nee | shows 200 diep per categorie, afleveringen 100, 175 landen |
 | Spotify | nee | shows én afleveringen in 26 landen, categorieen in zeven |
 | RSS van de podcast zelf | nee | afleveringen, audio, omschrijvingen, artwork |
 
-Beide feeds van Apple lopen vast boven de honderd vermeldingen, dus honderd is
-het maximum per lijst.
+Voor shows gebruikt de app de ranglijst van de winkel zelf:
+
+```
+GET https://itunes.apple.com/WebObjects/MZStoreServices.woa/ws/charts
+      ?cc={land}&g={genre-id}&name=Podcasts&limit=200
+```
+
+Die geeft alleen ids, maar gaat 200 diep, kent elke categorie (26 = alle samen)
+en vraagt geen sleutel. Eén batch-lookup maakt er volledige vermeldingen van,
+mét `feedUrl` — zodat de podcastpagina meteen naar de RSS kan zonder extra
+aanroep. Getest: NL alle 200/200, NL Comedy 196/200, DE True crime 192/200.
+
+De marketing-feed blijft in gebruik voor afleveringen en loopt vast boven de
+honderd.
 
 De podcastpagina leest de **RSS van de maker zelf** — daar staat alles in en er
 zit niemand tussen. Dat is dezelfde route die AntennaPod neemt. Alleen bij een
@@ -50,17 +62,20 @@ Apple-lijst is er één opzoeking nodig om de feed-URL te vinden, want Apple gee
 een catalogus-id in plaats van een feed. Spotify geeft alleen een
 `spotify:show:` uri, dus daar zoekt de app de naam op in diezelfde catalogus.
 
-### Over de categorielijsten van Apple
+### Afleveringen per categorie
 
-Apple toont op `podcasts.apple.com/{land}/charts` wél afleveringen per
-categorie, maar die lijst komt van `amp-api.podcasts.apple.com` en die geeft
-zonder bearer token een 401. De oude rss-generator heeft een endpoint
-`toppodcastepisodes` dat een genre accepteert, maar dat levert al jaren een lege
-feed op; `?genre=` op de marketing-feed wordt genegeerd (getest: dezelfde
-uitslag voor drie verschillende genres).
+Apple heeft die lijst. `MZStoreServices.../charts?name=PodcastEpisodes` geeft de
+echte ranglijst per categorie, 200 diep, zonder sleutel. Alleen: het zijn ids,
+en **afleverings-ids zijn nergens publiek op te lossen**. De lookup-API kent
+alleen show-ids (getest, `resultCount: 0`), `amp-api` geeft zonder bearer token
+een 401, en de oude `toppodcastepisodes`-feed is leeg.
 
-Wat wel keyless kan, en wat de app doet: de top 100 afleveringen ophalen en zelf
-op categorie schiften. Elke aflevering draagt één genre — soms een hoofdgenre
+Dat is precies waar een dienst als Podchaser het verschil maakt: die draait
+servers die dat id-voor-id ophalen, opslaan en opnieuw serveren. Een app op een
+telefoon kan geen 200 losse aanroepen doen per lijst.
+
+Wat de app daarom doet: de top 100 afleveringen ophalen en zelf op categorie
+schiften. Elke aflevering draagt één genre — soms een hoofdgenre
 met id, soms alleen een subgenrenaam als "Nieuwscommentaar". De genreboom van de
 winkel knoopt die aan hun hoofdgenre, in de taal van die winkel:
 

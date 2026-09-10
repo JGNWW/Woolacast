@@ -31,7 +31,7 @@ data class ChartQuery(
     val country: Country,
     val category: Category,
     val level: ChartLevel,
-    val limit: Int = 100
+    val limit: Int = 200
 ) {
     /** Stabiele sleutel om momentopnames onder te bewaren. */
     val key: String

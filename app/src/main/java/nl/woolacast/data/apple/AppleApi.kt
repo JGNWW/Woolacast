@@ -23,6 +23,26 @@ interface AppleCatalogApi {
     @GET
     suspend fun legacyTop(@Url url: String): LegacyFeedResponse
 
+    /**
+     * De ranglijst van de winkel zelf. Geeft alleen ids, maar gaat 200 diep en
+     * werkt voor elke categorie — ook voor afleveringen ([name] = "PodcastEpisodes").
+     * [g] is het genre-id; 26 is de wortel "Podcasts", oftewel alle categorieen.
+     */
+    @GET("WebObjects/MZStoreServices.woa/ws/charts")
+    suspend fun charts(
+        @Query("cc") country: String,
+        @Query("g") genreId: Int,
+        @Query("name") name: String,
+        @Query("limit") limit: Int
+    ): ChartIdsResponse
+
+    /** Lost tot een paar honderd show-ids in één keer op, met feed-URL en al. */
+    @GET("lookup")
+    suspend fun lookupMany(
+        @Query("id") ids: String,
+        @Query("country") country: String
+    ): LookupResponse
+
     /** De genreboom van een winkel, in de taal van die winkel. */
     @GET("WebObjects/MZStoreServices.woa/ws/genres")
     suspend fun genres(

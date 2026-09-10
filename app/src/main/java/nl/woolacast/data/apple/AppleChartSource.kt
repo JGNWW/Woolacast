@@ -39,11 +39,49 @@ class AppleChartSource(
         summary = "Shows en afleveringen · 175 landen · alle categorieen"
     )
 
-    override suspend fun load(query: ChartQuery): Chart = when {
-        query.level == ChartLevel.EPISODES && !query.category.isAll -> episodesByCategory(query)
-        query.level == ChartLevel.EPISODES -> marketingChart(query, feed = EPISODES_FEED)
-        query.category.isAll -> marketingChart(query, feed = SHOWS_FEED)
-        else -> legacyChart(query)
+    override suspend fun load(query: ChartQuery): Chart = when (query.level) {
+        ChartLevel.SHOWS -> showsChart(query)
+        ChartLevel.EPISODES ->
+            if (query.category.isAll) marketingChart(query, feed = EPISODES_FEED)
+            else episodesByCategory(query)
+    }
+
+    /**
+     * De winkel-ranglijst geeft alleen ids, maar gaat 200 diep en kent elke
+     * categorie. Eén batch-lookup maakt er volledige vermeldingen van — mét
+     * feed-URL, zodat de podcastpagina meteen naar de RSS kan.
+     */
+    private suspend fun showsChart(query: ChartQuery): Chart {
+        val genreId = query.category.appleGenreId ?: ROOT_GENRE
+        val ids = catalog.charts(
+            country = query.country.code,
+            genreId = genreId,
+            name = "Podcasts",
+            limit = query.limit.coerceAtMost(MAX_CHART)
+        ).resultIds
+
+        if (ids.isEmpty()) throw ChartUnavailable("Apple heeft geen lijst voor deze combinatie.")
+
+        val byId = catalog.lookupMany(ids.joinToString(","), query.country.code)
+            .results.associateBy { it.collectionId?.toString() }
+
+        // De lookup laat er soms een paar vallen; de volgorde van de lijst is leidend.
+        val entries = ids.mapNotNull { byId[it] }.mapIndexed { index, result ->
+            ChartEntry(
+                rank = index + 1,
+                id = result.collectionId?.toString() ?: return@mapIndexed null,
+                title = result.collectionName ?: result.trackName.orEmpty(),
+                publisher = result.artistName.orEmpty(),
+                artworkUrl = result.artworkUrl600 ?: result.artworkUrl100,
+                genre = result.primaryGenreName,
+                storeUrl = null,
+                showId = result.collectionId?.toString(),
+                feedUrl = result.feedUrl,
+                description = Html.toPlainText(result.description)
+            )
+        }.filterNotNull()
+
+        return Chart(query, entries, updatedLabel = "Apple Podcasts · dagelijks bijgewerkt")
     }
 
     private suspend fun marketingChart(query: ChartQuery, feed: String): Chart {
@@ -83,6 +121,7 @@ class AppleChartSource(
         )
     }
 
+    @Suppress("unused")
     private suspend fun legacyChart(query: ChartQuery): Chart {
         val genreId = query.category.appleGenreId
             ?: throw ChartUnavailable("Deze categorie heeft geen genre-id.")
@@ -121,6 +160,12 @@ class AppleChartSource(
     private companion object {
         const val SHOWS_FEED = "podcasts"
         const val EPISODES_FEED = "podcast-episodes"
+
+        /** Het genre-id van de wortel: alle podcastcategorieen samen. */
+        const val ROOT_GENRE = 26
+
+        /** De winkel-ranglijst gaat minstens zo diep; verder heeft weinig zin. */
+        const val MAX_CHART = 200
 
         /** Boven de honderd geeft de feed een serverfout. */
         const val MAX_FEED = 100
