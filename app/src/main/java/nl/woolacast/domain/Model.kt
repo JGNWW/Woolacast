@@ -59,5 +59,7 @@ data class Episode(
     /** Directe audio-URL uit de catalogus; null betekent niet afspeelbaar. */
     val audioUrl: String?,
     val durationMillis: Long?,
-    val releaseDate: String?
+    val releaseDate: String?,
+    /** Webpagina van de aflevering uit de feed, om te delen; anders de audio-URL. */
+    val link: String? = null
 )

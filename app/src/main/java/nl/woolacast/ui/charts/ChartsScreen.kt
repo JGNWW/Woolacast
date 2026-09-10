@@ -1,6 +1,7 @@
 package nl.woolacast.ui.charts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,19 +19,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,179 +38,173 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.data.ChartRepository
 import nl.woolacast.domain.ChartEntry
 import nl.woolacast.domain.ChartLevel
 import nl.woolacast.ui.common.Artwork
+import nl.woolacast.ui.common.Flag
+import nl.woolacast.ui.common.IconAction
+import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.MovementBadge
+import nl.woolacast.ui.common.MovementPill
 import nl.woolacast.ui.common.NoticePanel
+import nl.woolacast.ui.common.PageTitle
+import nl.woolacast.ui.common.PlayCircle
 import nl.woolacast.ui.common.RankNumber
 import nl.woolacast.ui.common.SourceChip
+import nl.woolacast.ui.common.UnderlineTabs
+import nl.woolacast.ui.common.WoolIcons
+import nl.woolacast.ui.common.minutes
+import nl.woolacast.ui.common.shortDate
+import nl.woolacast.ui.theme.LocalChartColors
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChartsScreen(
     viewModel: ChartsViewModel,
     repository: ChartRepository,
+    playingId: String?,
     onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String, title: String) -> Unit,
     onSearch: () -> Unit,
+    onAlerts: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var filtersOpen by remember { mutableStateOf(false) }
+    val snackbar = remember { SnackbarHostState() }
 
-    Column(modifier = modifier.fillMaxSize()) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 8.dp)
-                .height(52.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "WOOLACAST",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Row {
-                IconButton(onClick = onSearch) {
-                    Icon(Icons.Filled.Search, contentDescription = "Zoeken")
-                }
-                IconButton(onClick = viewModel::refresh) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Vernieuwen")
-                }
-            }
+    LaunchedEffect(state.toast) {
+        state.toast?.let {
+            snackbar.showSnackbar(it)
+            viewModel.dismissToast()
         }
+    }
 
-        Text(
-            "Hitlijsten",
-            style = MaterialTheme.typography.displaySmall,
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 14.dp)
-        )
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
 
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(repository.allSources(), key = { it.id.name }) { source ->
-                SourceChip(
-                    source = source.id,
-                    selected = source.id == state.query.source,
-                    onClick = { viewModel.setSource(source.id) }
-                )
+            MarkBar {
+                IconAction(WoolIcons.Search, "Zoeken", onSearch)
+                IconAction(WoolIcons.Bell, "Chart-alerts", onAlerts)
             }
-        }
 
-        Spacer(Modifier.height(14.dp))
+            PageTitle("Hitlijsten")
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .clickable { filtersOpen = true }
-                .padding(start = 12.dp, end = 12.dp)
-                .height(46.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(state.query.country.flag)
-            Text(state.query.country.label, style = MaterialTheme.typography.labelLarge)
-            Text("·", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                state.query.category.label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-            Icon(
-                Icons.Filled.ExpandMore,
-                contentDescription = "Lijst instellen",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(Modifier.weight(1f))
-            if (state.loading) {
-                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-            }
-        }
-
-        val levels = ChartLevel.entries
-        TabRow(
-            selectedTabIndex = levels.indexOf(state.query.level),
-            containerColor = MaterialTheme.colorScheme.background,
-            modifier = Modifier.padding(top = 4.dp)
-        ) {
-            levels.forEach { level ->
-                Tab(
-                    selected = level == state.query.level,
-                    onClick = { viewModel.setLevel(level) },
-                    text = { Text(level.label, style = MaterialTheme.typography.titleMedium) }
-                )
-            }
-        }
-
-        val notice = state.notice
-        val chart = state.chart
-
-        when {
-            notice != null -> NoticePanel(
-                title = notice.title,
-                message = notice.message,
-                actionLabel = notice.suggestion?.label(),
-                onAction = notice.suggestion?.let { { viewModel.applySuggestion(it) } }
-            )
-
-            chart != null -> LazyColumn(
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
-                    val cachedAt = chart.cachedAt
-                    Text(
-                        text = if (cachedAt != null) {
-                            "Geen verbinding · lijst van $cachedAt"
-                        } else {
-                            chart.updatedLabel.orEmpty()
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (cachedAt != null) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                items(repository.allSources(), key = { it.id.name }) { source ->
+                    SourceChip(
+                        source = source.id,
+                        selected = source.id == state.query.source,
+                        onClick = { viewModel.setSource(source.id) }
                     )
                 }
-                items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
-                    val open = {
-                        entry.showId?.let { id ->
-                            // Op afleveringniveau is de titel die van de aflevering;
-                            // voor het opzoeken van een feed hebben we de show nodig.
-                            val showTitle = if (chart.query.level == ChartLevel.EPISODES) {
-                                entry.publisher
-                            } else {
-                                entry.title
-                            }
-                            onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
-                        }
-                        Unit
-                    }
-                    if (chart.query.level == ChartLevel.EPISODES) {
-                        EpisodeChartRow(entry, open)
-                    } else {
-                        ChartRow(entry, open)
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                }
             }
 
-            else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (state.loading) CircularProgressIndicator()
+            Spacer(Modifier.height(14.dp))
+
+            ContextBar(
+                state = state,
+                categoriesAllowed = repository.source(state.query.source).capabilities
+                    .supportsCategories(state.query.level),
+                onOpen = { filtersOpen = true },
+                onClearCategory = viewModel::clearCategory
+            )
+
+            Spacer(Modifier.height(2.dp))
+
+            val levels = ChartLevel.entries
+            UnderlineTabs(
+                labels = levels.map { it.label },
+                selected = levels.indexOf(state.query.level),
+                onSelect = { viewModel.setLevel(levels[it]) }
+            )
+
+            val notice = state.notice
+            val chart = state.chart
+
+            PullToRefreshBox(
+                isRefreshing = state.loading && chart != null,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when {
+                    notice != null -> NoticePanel(
+                        title = notice.title,
+                        message = notice.message,
+                        actionLabel = notice.suggestion?.label(),
+                        onAction = notice.suggestion?.let { { viewModel.applySuggestion(it) } }
+                    )
+
+                    chart != null -> LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 12.dp)
+                    ) {
+                        item {
+                            val cachedAt = chart.cachedAt
+                            Text(
+                                text = listOfNotNull(
+                                    "Top ${chart.entries.size}",
+                                    if (cachedAt != null) "geen verbinding · lijst van ${shortDate(cachedAt)}"
+                                    else chart.updatedLabel?.takeIf { it.isNotBlank() }
+                                ).joinToString(" · "),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (cachedAt != null) MaterialTheme.colorScheme.primary
+                                else LocalChartColors.current.muted,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.height(30.dp).padding(top = 6.dp)
+                            )
+                        }
+                        items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
+                            val open = {
+                                entry.showId?.let { id ->
+                                    // Op afleveringniveau is de titel die van de aflevering;
+                                    // voor het opzoeken van een feed hebben we de show nodig.
+                                    val showTitle = if (chart.query.level == ChartLevel.EPISODES) {
+                                        entry.publisher
+                                    } else {
+                                        entry.title
+                                    }
+                                    onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
+                                }
+                                Unit
+                            }
+                            if (chart.query.level == ChartLevel.EPISODES) {
+                                EpisodeChartRow(
+                                    entry = entry,
+                                    resolving = state.resolvingId == entry.id,
+                                    onClick = open,
+                                    onPlay = { viewModel.play(entry) }
+                                )
+                            } else {
+                                ChartRow(entry, open)
+                            }
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                    }
+
+                    else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        if (state.loading) CircularProgressIndicator()
+                    }
+                }
             }
+        }
+
+        SnackbarHost(hostState = snackbar, modifier = Modifier.align(Alignment.BottomCenter)) { data ->
+            Snackbar(
+                snackbarData = data,
+                containerColor = LocalChartColors.current.panel,
+                contentColor = LocalChartColors.current.onPanel,
+                shape = RoundedCornerShape(12.dp)
+            )
         }
     }
 
@@ -225,6 +219,70 @@ fun ChartsScreen(
                 viewModel.setFilters(country, category)
             }
         )
+    }
+}
+
+/** De balk met land · categorie die de filtersheet opent (.ctx). */
+@Composable
+private fun ContextBar(
+    state: ChartsUiState,
+    categoriesAllowed: Boolean,
+    onOpen: () -> Unit,
+    onClearCategory: () -> Unit
+) {
+    val muted = LocalChartColors.current.muted
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
+            .clickable(onClick = onOpen)
+            .height(46.dp)
+            .padding(start = 12.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Flag(state.query.country.code)
+        Text(state.query.country.label, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+        Text("·", color = muted)
+        Text(
+            state.query.category.label,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (categoriesAllowed || state.query.category.isAll) MaterialTheme.colorScheme.onSurfaceVariant else muted,
+            textDecoration = if (!categoriesAllowed && !state.query.category.isAll) TextDecoration.LineThrough else null,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f, fill = false)
+        )
+        if (!state.query.category.isAll) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(onClick = onClearCategory),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(WoolIcons.Close, "Categorie wissen", tint = muted, modifier = Modifier.size(14.dp))
+            }
+        } else {
+            Icon(WoolIcons.ChevronDown, "Lijst instellen", tint = muted, modifier = Modifier.size(18.dp))
+        }
+        Spacer(Modifier.weight(1f))
+        if (state.loading) {
+            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+            Spacer(Modifier.width(6.dp))
+        } else {
+            Text(
+                state.chart?.updatedLabel?.substringBefore(" · ")?.take(22).orEmpty(),
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                color = muted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(end = 6.dp)
+            )
+        }
     }
 }
 
@@ -257,16 +315,20 @@ private fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
             )
         }
         MovementBadge(entry.movement)
-        Spacer(Modifier.width(4.dp))
     }
 }
 
 /**
  * Een aflevering heeft meer te vertellen dan een show: twee regels titel, van
- * welke podcast hij komt, en hoe lang en hoe oud hij is.
+ * welke podcast hij komt, hoe lang en hoe oud hij is — en hij speelt direct.
  */
 @Composable
-private fun EpisodeChartRow(entry: ChartEntry, onClick: () -> Unit) {
+private fun EpisodeChartRow(
+    entry: ChartEntry,
+    resolving: Boolean,
+    onClick: () -> Unit,
+    onPlay: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -275,7 +337,7 @@ private fun EpisodeChartRow(entry: ChartEntry, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top
     ) {
-        RankNumber(entry.rank, modifier = Modifier.padding(top = 3.dp))
+        RankNumber(entry.rank, modifier = Modifier.padding(top = 3.dp), size = 24.dp)
         Artwork(entry.artworkUrl, 56.dp, corner = 12.dp)
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -292,30 +354,29 @@ private fun EpisodeChartRow(entry: ChartEntry, onClick: () -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(7.dp)
             ) {
-                val facts = listOfNotNull(
-                    entry.durationMillis?.let { "${it / 60000} min" },
-                    entry.releaseDate
-                ).joinToString(" · ")
+                val facts = listOfNotNull(minutes(entry.durationMillis), shortDate(entry.releaseDate))
+                    .joinToString(" · ")
                 if (facts.isNotEmpty()) {
                     Text(
                         facts,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                        color = LocalChartColors.current.muted
                     )
                 }
-                MovementBadge(entry.movement, modifier = Modifier.width(40.dp))
+                MovementPill(entry.movement)
             }
         }
+        PlayCircle(onClick = onPlay, loading = resolving, modifier = Modifier.padding(top = 6.dp))
     }
 }
 
 private fun Suggestion.label(): String = when (this) {
-    Suggestion.ALL_CATEGORIES -> "Toon alle categorieen"
-    Suggestion.SWITCH_TO_APPLE -> "Wissel naar Apple Podcasts"
+    Suggestion.ALL_CATEGORIES -> "Toon alle categorieën"
+    Suggestion.SWITCH_TO_APPLE -> "Toon Apple Podcasts-lijst"
     Suggestion.SWITCH_TO_SHOWS -> "Toon podcasts"
 }

@@ -16,12 +16,37 @@ data class ChartColors(
     val rise: Color,
     val fall: Color,
     val muted: Color,
-    val rankAccent: Color
+    val rankAccent: Color,
+    /** Het donkere paneel: mini-speler, noteringenstrip, chart-alerts. */
+    val panel: Color,
+    val onPanel: Color,
+    val onPanelMuted: Color,
+    val riseContainer: Color,
+    val onRiseContainer: Color,
+    val fallContainer: Color,
+    val onFallContainer: Color,
+    /** Bronkleuren in grafieken; getoetst op kleurenblindheid tegen beide achtergronden. */
+    val seriesApple: Color,
+    val seriesSpotify: Color
 )
 
-val LocalChartColors = staticCompositionLocalOf {
-    ChartColors(RiseLight, FallLight, Ink3, Ember)
-}
+val LightChartColors = ChartColors(
+    rise = RiseLight, fall = FallLight, muted = Ink3, rankAccent = Ember,
+    panel = Ink, onPanel = Color(0xFFF6EFE5), onPanelMuted = Color(0xFFB3A695),
+    riseContainer = Color(0xFFDCF0E4), onRiseContainer = Color(0xFF0B6E3E),
+    fallContainer = Color(0xFFF7DED8), onFallContainer = Color(0xFF8E2C1B),
+    seriesApple = Color(0xFFC4542B), seriesSpotify = Color(0xFF0E8A4E)
+)
+
+val DarkChartColors = ChartColors(
+    rise = RiseDark, fall = FallDark, muted = NightInk3, rankAccent = EmberLight,
+    panel = NightSurface3, onPanel = NightInk, onPanelMuted = NightInk2,
+    riseContainer = Color(0xFF1E3A2B), onRiseContainer = Color(0xFF7FD9A4),
+    fallContainer = Color(0xFF3F241C), onFallContainer = Color(0xFFF0A87F),
+    seriesApple = Color(0xFFDE7047), seriesSpotify = Color(0xFF35A05F)
+)
+
+val LocalChartColors = staticCompositionLocalOf { LightChartColors }
 
 private val LightScheme = lightColorScheme(
     primary = Ember,
@@ -72,11 +97,7 @@ fun WoolacastTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val chartColors = if (darkTheme) {
-        ChartColors(RiseDark, FallDark, NightInk3, EmberLight)
-    } else {
-        ChartColors(RiseLight, FallLight, Ink3, Ember)
-    }
+    val chartColors = if (darkTheme) DarkChartColors else LightChartColors
 
     CompositionLocalProvider(LocalChartColors provides chartColors) {
         MaterialTheme(

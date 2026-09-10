@@ -174,25 +174,30 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 
 ## Stand van zaken
 
+De schermen volgen de mockup in `design/` — dezelfde maatvoering, kleuren,
+lijniconen en lettertypen (Bricolage Grotesque voor titels en noteringen,
+Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
+
 | Onderdeel | Status |
 | --- | --- |
-| Hitlijsten: Apple en Spotify | werkt |
+| Hitlijsten: Apple en Spotify, land × categorie × niveau | werkt |
+| Afleveringen direct uit een lijst afspelen (audio via de feed van de show) | werkt |
 | Offline: laatst opgehaalde lijst | werkt |
 | Stijgers en dalers | werkt vanaf de tweede dag |
-| Podcastpagina uit RSS | werkt |
-| Speler: mini-balk die uitklapt naar volledig scherm | werkt |
+| Podcastpagina uit RSS: kop, cadans, noteringsbalk, uitklapbare omschrijving | werkt |
+| Afleveringen: voortgang, "#3 NL"-pilletje, wachtrij / hierna / bewaren / delen | werkt |
+| Speler: artwork, bron-chip, balk met handvat, −15 / +30, vorige / volgende | werkt |
+| Speler: snelheid, slaaptimer, wachtrij, delen, bewaren | werkt |
+| Wachtrij speelt vanzelf door na de huidige aflevering | werkt |
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
-| Volgen + bibliotheek | werkt |
-| Ontdek: stijgers, landen, categorieen | werkt |
-| Zoeken in podcasts en afleveringen | werkt |
-| Bibliotheek: gevolgd, wachtrij, bewaard | werkt |
+| Volgen + bibliotheek: "2 nieuw" / "bijgewerkt di" per gevolgde show | werkt (leest de feeds) |
 | Chart-alerts op shows die je volgt | werkt zodra er twee dagen historie is |
-| Podcastpagina: afleveringen, noteringen, over | werkt |
+| Chart-tracker: tegels, grafiek met assen, hoogste notering, landen | werkt |
+| Ontdek: stijgers, andere landen (met aantal bronnen), categorieën | werkt |
+| Zoeken in podcasts en afleveringen | werkt |
 | Luistervoortgang onthouden en hervatten | werkt |
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
-| Grootste stijgers op Ontdek | werkt zodra er twee dagen historie is |
-| Chart-tracker: één show over bronnen, landen en tijd | werkt |
-| Noteringsbalk op de podcastpagina | werkt |
+| Donker thema | werkt |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -208,6 +213,7 @@ app/src/main/java/nl/woolacast/
     local/    volgen, momentopnames en de offline cache in één JSON-bestand
   player/     Media3-service met een StateFlow-laag eromheen
   ui/         Compose-schermen, thema, navigatie
+              common/ bouwstenen uit de mockup: iconen, vlaggen, tabs, knoppen
               player/ het uitklapbare spelerscherm
 charts-service/  legt dagelijks de ranglijsten vast (historie) en haalt op
               wat de app niet zelf kan: Apple's afleveringen per categorie
@@ -221,10 +227,7 @@ historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
 
 ## Nog te doen
 
-- Lettertypen: Bricolage Grotesque en Instrument Sans staan in het ontwerp maar
-  nog niet in `res/font/`; de maatvoering in `Type.kt` klopt al wel.
 - Afleveringen downloaden, zodat luisteren ook zonder verbinding kan.
-- Afleveringen downloaden voor echt offline luisteren.
 - Draaien op een echt toestel: de speler is nog nooit hoorbaar getest.
 - Afhankelijkheden zijn gepind op versies van eind 2024 en werken; lint meldt
   dat er nieuwere zijn (AGP 9.4 inmiddels).

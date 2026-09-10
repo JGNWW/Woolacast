@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import nl.woolacast.domain.Episode
 
 @Serializable
 data class DaySnapshot(val date: String, val ranks: Map<String, Int>)
@@ -21,7 +22,9 @@ data class FollowedShow(
     val title: String,
     val publisher: String,
     val artworkUrl: String? = null,
-    val feedUrl: String? = null
+    val feedUrl: String? = null,
+    /** Datum waarop je de podcastpagina voor het laatst opende; nieuwer is 'nieuw'. */
+    val lastOpened: String? = null
 )
 
 @Serializable
@@ -53,7 +56,20 @@ data class SavedEpisode(
     val artworkUrl: String? = null,
     val audioUrl: String? = null,
     val durationMillis: Long? = null,
-    val releaseDate: String? = null
+    val releaseDate: String? = null,
+    val link: String? = null
+) {
+    fun toEpisode() = Episode(
+        id = id, showId = showId, showTitle = showTitle, title = title,
+        description = null, artworkUrl = artworkUrl, audioUrl = audioUrl,
+        durationMillis = durationMillis, releaseDate = releaseDate, link = link
+    )
+}
+
+fun Episode.toSaved() = SavedEpisode(
+    id = id, showId = showId, showTitle = showTitle, title = title,
+    artworkUrl = artworkUrl, audioUrl = audioUrl,
+    durationMillis = durationMillis, releaseDate = releaseDate, link = link
 )
 
 @Serializable
@@ -114,7 +130,30 @@ class LocalStore(private val file: File) {
         it.copy(follows = follows)
     }
 
+    /** Onthoudt wanneer je een gevolgde show voor het laatst bekeek. */
+    suspend fun markOpened(showId: String) = mutate { data ->
+        if (data.follows.none { it.id == showId }) return@mutate data
+        val today = LocalDate.now().toString()
+        data.copy(follows = data.follows.map { if (it.id == showId) it.copy(lastOpened = today) else it })
+    }
+
     /* ---- wachtrij en bewaard ---- */
+
+    fun isQueued(id: String) = _queue.value.any { it.id == id }
+    fun isSaved(id: String) = _saved.value.any { it.id == id }
+
+    suspend fun removeFromQueue(episodeId: String) = mutate {
+        it.copy(queue = it.queue.filterNot { q -> q.id == episodeId })
+    }
+
+    suspend fun removeSaved(episodeId: String) = mutate {
+        it.copy(saved = it.saved.filterNot { q -> q.id == episodeId })
+    }
+
+    /** Verplaatst een aflevering naar de kop van de wachtrij (of zet hem erin). */
+    suspend fun playNext(episode: SavedEpisode) = mutate {
+        it.copy(queue = listOf(episode) + it.queue.filterNot { q -> q.id == episode.id })
+    }
 
     suspend fun toggleQueue(episode: SavedEpisode) = mutate {
         val present = it.queue.any { queued -> queued.id == episode.id }

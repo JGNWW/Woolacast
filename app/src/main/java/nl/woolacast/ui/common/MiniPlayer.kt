@@ -8,25 +8,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Forward30
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import nl.woolacast.player.PlaybackState
+import nl.woolacast.ui.theme.LocalChartColors
 
+/** De donkere kaart boven de navigatie (.mini): tikken klapt de speler uit. */
 @Composable
 fun MiniPlayer(
     state: PlaybackState,
@@ -35,57 +30,52 @@ fun MiniPlayer(
     onSkipForward: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    val colors = LocalChartColors.current
+    val shape = RoundedCornerShape(15.dp)
+    Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(MaterialTheme.colorScheme.secondary)
+            .shadow(6.dp, shape, clip = false)
+            .clip(shape)
+            .background(colors.panel)
             .clickable(onClick = onExpand)
+            .height(60.dp)
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().height(60.dp).padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Artwork(state.artworkUrl, 44.dp, corner = 9.dp)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    state.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    state.showTitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            IconButton(onClick = onTogglePlay) {
-                Icon(
-                    if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (state.isPlaying) "Pauzeren" else "Afspelen",
-                    tint = MaterialTheme.colorScheme.onSecondary
-                )
-            }
-            IconButton(onClick = onSkipForward) {
-                Icon(
-                    Icons.Filled.Forward30,
-                    contentDescription = "30 seconden vooruit",
-                    tint = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
+        Artwork(state.artworkUrl, 44.dp, corner = 9.dp, elevation = 0.dp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                state.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onPanel,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                listOfNotNull(
+                    state.showTitle.takeIf { it.isNotBlank() },
+                    when {
+                        state.isBuffering && state.durationMs == 0L -> "laden…"
+                        state.durationMs > 0L -> remaining(state.remainingMs)
+                        else -> null
+                    }
+                ).joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onPanelMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-        LinearProgressIndicator(
-            progress = { state.progress },
-            modifier = Modifier.fillMaxWidth().height(3.dp),
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.2f)
+        IconAction(
+            if (state.isPlaying) WoolIcons.Pause else WoolIcons.Play,
+            if (state.isPlaying) "Pauzeren" else "Afspelen",
+            onTogglePlay,
+            tint = colors.onPanel,
+            iconSize = 24.dp
         )
+        IconAction(WoolIcons.SkipForward, "30 seconden vooruit", onSkipForward, tint = colors.onPanel, iconSize = 24.dp)
     }
 }

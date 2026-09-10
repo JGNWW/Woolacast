@@ -17,6 +17,9 @@ interface ChartSource {
     val id: SourceId
     val capabilities: SourceCapabilities
 
+    /** Of deze bron een lijst voor dit land publiceert. */
+    fun covers(countryCode: String): Boolean = true
+
     /** Levert de lijst zonder beweging; die vult [nl.woolacast.data.ChartRepository] aan. */
     suspend fun load(query: ChartQuery): Chart
 }

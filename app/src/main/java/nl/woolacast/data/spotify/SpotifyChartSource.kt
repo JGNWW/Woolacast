@@ -24,6 +24,8 @@ class SpotifyChartSource(private val api: SpotifyChartsApi) : ChartSource {
         summary = "Top 200 shows en afleveringen in 26 landen · categorieen in zeven daarvan"
     )
 
+    override fun covers(countryCode: String) = countryCode.lowercase() in CHART_MARKETS
+
     override suspend fun load(query: ChartQuery): Chart {
         val region = query.country.code
 

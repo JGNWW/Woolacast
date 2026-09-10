@@ -15,7 +15,8 @@ data class ParsedEpisode(
     val audioUrl: String?,
     val durationMillis: Long?,
     val releaseDate: String?,
-    val imageUrl: String?
+    val imageUrl: String?,
+    val link: String?
 )
 
 data class ParsedFeed(
@@ -88,6 +89,7 @@ class RssFeedParser {
                     "itunes:duration" -> if (item != null) item.duration = parseDuration(text(parser))
                     "pubdate" -> if (item != null) item.releaseDate = parseDate(text(parser))
                     "guid" -> if (item != null) item.guid = text(parser)
+                    "link" -> if (item != null && item.link == null) item.link = text(parser)
                 }
             } else if (event == XmlPullParser.END_TAG) {
                 when (name) {
@@ -123,6 +125,7 @@ class RssFeedParser {
         var duration: Long? = null
         var releaseDate: String? = null
         var imageUrl: String? = null
+        var link: String? = null
 
         fun build(): ParsedEpisode? {
             val heading = title ?: return null
@@ -133,7 +136,8 @@ class RssFeedParser {
                 audioUrl = audioUrl,
                 durationMillis = duration,
                 releaseDate = releaseDate,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                link = link?.takeIf { it.startsWith("http") }
             )
         }
     }

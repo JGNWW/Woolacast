@@ -2,12 +2,15 @@ package nl.woolacast.ui.library
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,21 +18,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,23 +43,37 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import java.util.concurrent.TimeUnit
+import coil.compose.AsyncImage
+import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Episode
 import nl.woolacast.ui.common.Artwork
+import nl.woolacast.ui.common.IconAction
+import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.NoticePanel
+import nl.woolacast.ui.common.PageTitle
+import nl.woolacast.ui.common.PlayCircle
+import nl.woolacast.ui.common.TextPill
+import nl.woolacast.ui.common.UnderlineTabs
+import nl.woolacast.ui.common.WoolIcons
+import nl.woolacast.ui.common.minutes
+import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
 
 private enum class LibraryTab(val label: String) {
     FOLLOWED("Gevolgd"), QUEUE("Wachtrij"), SAVED("Bewaard")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
     viewModel: LibraryViewModel,
     countryCode: String,
+    playingId: String?,
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
+    onSearch: () -> Unit,
     onPlay: (Episode) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -66,47 +81,74 @@ fun LibraryScreen(
     val queue by viewModel.queue.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
     val alerts by viewModel.alerts.collectAsStateWithLifecycle()
+    val feeds by viewModel.feeds.collectAsStateWithLifecycle()
+    val sort by viewModel.sort.collectAsStateWithLifecycle()
+    val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     var tab by remember { mutableStateOf(LibraryTab.FOLLOWED) }
+    var sortOpen by remember { mutableStateOf(false) }
 
-    LaunchedEffect(countryCode, follows.size) { viewModel.loadAlerts(countryCode) }
+    LaunchedEffect(countryCode, follows.size) {
+        viewModel.loadAlerts(countryCode)
+        viewModel.refreshFeeds()
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            "WOOLACAST",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 20.dp, top = 18.dp)
-        )
-        Text(
-            "Bibliotheek",
-            style = MaterialTheme.typography.displaySmall,
-            modifier = Modifier.padding(start = 20.dp, top = 6.dp, bottom = 12.dp)
-        )
-
-        TabRow(
-            selectedTabIndex = LibraryTab.entries.indexOf(tab),
-            containerColor = MaterialTheme.colorScheme.background
-        ) {
-            LibraryTab.entries.forEach { entry ->
-                Tab(
-                    selected = entry == tab,
-                    onClick = { tab = entry },
-                    text = { Text(entry.label, style = MaterialTheme.typography.titleMedium) }
-                )
+        MarkBar {
+            IconAction(WoolIcons.Search, "Zoeken", onSearch)
+            Box {
+                IconAction(WoolIcons.Filter, "Sorteren", { sortOpen = true })
+                DropdownMenu(expanded = sortOpen, onDismissRequest = { sortOpen = false }) {
+                    LibrarySort.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.label, fontWeight = if (option == sort) FontWeight.Bold else FontWeight.Normal) },
+                            onClick = { viewModel.setSort(option); sortOpen = false }
+                        )
+                    }
+                }
             }
         }
+        PageTitle("Bibliotheek")
+
+        UnderlineTabs(
+            labels = LibraryTab.entries.map { it.label },
+            selected = LibraryTab.entries.indexOf(tab),
+            onSelect = { tab = LibraryTab.entries[it] }
+        )
 
         when (tab) {
-            LibraryTab.FOLLOWED -> FollowedTab(follows, alerts, onOpenPodcast)
+            LibraryTab.FOLLOWED -> PullToRefreshBox(
+                isRefreshing = refreshing,
+                onRefresh = {
+                    viewModel.loadAlerts(countryCode)
+                    viewModel.refreshFeeds(force = true)
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                FollowedTab(
+                    follows = when (sort) {
+                        LibrarySort.NAME -> follows.sortedBy { it.title.lowercase() }
+                        LibrarySort.RECENT -> follows.sortedByDescending { feeds[it.id]?.latestDate ?: "" }
+                    },
+                    feeds = feeds,
+                    alerts = alerts,
+                    onOpenPodcast = onOpenPodcast,
+                    onUnfollow = viewModel::unfollow
+                )
+            }
             LibraryTab.QUEUE -> EpisodeTab(
                 episodes = queue,
-                empty = "Nog niets in de wachtrij. Zet een aflevering erin vanaf een podcastpagina.",
+                empty = "Nog niets in de wachtrij. Zet een aflevering erin vanaf een podcastpagina; " +
+                    "de speler gaat er vanzelf mee door.",
+                playingId = playingId,
+                numbered = true,
                 onPlay = onPlay,
                 onRemove = viewModel::removeFromQueue
             )
             LibraryTab.SAVED -> EpisodeTab(
                 episodes = saved,
                 empty = "Nog niets bewaard. Bewaar een aflevering om hem hier terug te vinden.",
+                playingId = playingId,
+                numbered = false,
                 onPlay = onPlay,
                 onRemove = viewModel::removeSaved
             )
@@ -114,46 +156,92 @@ fun LibraryScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FollowedTab(
-    follows: List<nl.woolacast.data.local.FollowedShow>,
+    follows: List<FollowedShow>,
+    feeds: Map<String, FeedStatus>,
     alerts: List<ChartAlert>,
-    onOpenPodcast: (String, String?, String) -> Unit
+    onOpenPodcast: (String, String?, String) -> Unit,
+    onUnfollow: (FollowedShow) -> Unit
 ) {
     if (follows.isEmpty()) {
         NoticePanel(
             title = "Nog niets gevolgd",
             message = "Open een podcast uit een hitlijst en tik op Volgen. " +
-                "Wat je volgt komt hier te staan."
+                "Wat je volgt komt hier te staan, met wat er nieuw is."
         )
         return
     }
+    var menuFor by remember { mutableStateOf<FollowedShow?>(null) }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (alerts.isNotEmpty()) {
-            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(3) }) {
+            item(span = { GridItemSpan(3) }) {
                 AlertCard(alerts, onOpenPodcast)
             }
         }
         items(follows, key = { it.id }) { show ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenPodcast(show.id, show.feedUrl, show.title) }
-            ) {
-                Artwork(show.artworkUrl, 102.dp, corner = 13.dp)
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    show.title,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+            val status = feeds[show.id]
+            Box {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(13.dp))
+                        .combinedClickable(
+                            onClick = { onOpenPodcast(show.id, show.feedUrl, show.title) },
+                            onLongClick = { menuFor = show }
+                        )
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(13.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    ) {
+                        if (show.artworkUrl != null) {
+                            AsyncImage(model = show.artworkUrl, contentDescription = null, modifier = Modifier.fillMaxSize())
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        show.title,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, lineHeight = 16.sp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    when {
+                        status == null -> Unit
+                        status.newCount > 0 -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(Modifier.size(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                            Text(
+                                "${status.newCount} nieuw",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        status.latestDate != null -> Text(
+                            "Bijgewerkt ${relativeDay(status.latestDate)}",
+                            fontSize = 11.sp,
+                            color = LocalChartColors.current.muted
+                        )
+                    }
+                }
+                DropdownMenu(expanded = menuFor?.id == show.id, onDismissRequest = { menuFor = null }) {
+                    DropdownMenuItem(
+                        text = { Text("Niet meer volgen") },
+                        onClick = { menuFor = null; onUnfollow(show) }
+                    )
+                }
             }
         }
     }
@@ -166,27 +254,28 @@ private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?,
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(bottom = 4.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.secondary)
-            .padding(start = 15.dp, end = 15.dp, top = 14.dp, bottom = 6.dp)
+            .background(colors.panel)
+            .padding(start = 15.dp, end = 15.dp, top = 15.dp, bottom = 8.dp)
     ) {
         Row(
+            modifier = Modifier.padding(bottom = 11.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
-            Icon(
-                Icons.Filled.Notifications,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
-            )
+            Icon(WoolIcons.Bell, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
             Text(
                 "Chart-alerts",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSecondary
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = colors.onPanel
             )
+            Spacer(Modifier.weight(1f))
+            Text("Sinds gisteren", fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanelMuted)
         }
         alerts.forEach { alert ->
+            HorizontalDivider(color = colors.onPanel.copy(alpha = 0.13f))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -195,36 +284,43 @@ private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?,
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(11.dp)
             ) {
-                Artwork(alert.artworkUrl, 36.dp, corner = 9.dp)
+                Artwork(alert.artworkUrl, 36.dp, corner = 9.dp, elevation = 0.dp)
                 Column(Modifier.weight(1f)) {
                     Text(
                         alert.title,
-                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = colors.onPanel,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        "Nu #${alert.rank} · ${alert.source} ${alert.country}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
-                        maxLines = 1
+                        when {
+                            alert.reachedTop -> "Bereikte #1 · ${alert.source} ${alert.country}"
+                            alert.isNew -> "Nieuw binnen op #${alert.rank} · ${alert.source} ${alert.country}"
+                            else -> "Nu #${alert.rank} · ${alert.source} ${alert.country}"
+                        },
+                        fontSize = 11.5.sp,
+                        color = colors.onPanelMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Filled.ArrowDropUp,
-                        contentDescription = null,
-                        tint = colors.rise,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        "${alert.move}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.rise
-                    )
+                if (alert.reachedTop) {
+                    TextPill("TOP", MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), MaterialTheme.colorScheme.primary)
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .height(19.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(colors.rise.copy(alpha = 0.18f))
+                            .padding(horizontal = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Icon(WoolIcons.Up, null, tint = colors.rise, modifier = Modifier.size(9.dp))
+                        Text("${alert.move}", fontSize = 10.5.sp, fontWeight = FontWeight.Bold, color = colors.rise)
+                    }
                 }
             }
         }
@@ -235,6 +331,8 @@ private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?,
 private fun EpisodeTab(
     episodes: List<SavedEpisode>,
     empty: String,
+    playingId: String?,
+    numbered: Boolean,
     onPlay: (Episode) -> Unit,
     onRemove: (String) -> Unit
 ) {
@@ -243,22 +341,33 @@ private fun EpisodeTab(
         return
     }
 
-    LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
-        items(episodes.size) { index ->
+    LazyColumn(contentPadding = PaddingValues(vertical = 8.dp, horizontal = 20.dp)) {
+        items(episodes.size, key = { episodes[it].id }) { index ->
             val episode = episodes[index]
+            val playing = episode.id == playingId
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onPlay(episode.toEpisode()) }
-                    .padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+                    .padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                if (numbered) {
+                    Text(
+                        "${index + 1}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = LocalChartColors.current.muted,
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
+                }
                 Artwork(episode.artworkUrl, 52.dp, corner = 12.dp)
                 Column(Modifier.weight(1f)) {
                     Text(
                         episode.title,
                         style = MaterialTheme.typography.bodyLarge,
+                        color = if (playing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -266,7 +375,7 @@ private fun EpisodeTab(
                     Text(
                         listOfNotNull(
                             episode.showTitle.takeIf { it.isNotBlank() },
-                            episode.durationMillis?.let { "${TimeUnit.MILLISECONDS.toMinutes(it)} min" }
+                            minutes(episode.durationMillis)
                         ).joinToString(" · "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -274,33 +383,13 @@ private fun EpisodeTab(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Box(
-                    modifier = Modifier.size(44.dp).clickable { onPlay(episode.toEpisode()) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Afspelen")
-                }
-                IconButton(onClick = { onRemove(episode.id) }) {
-                    Icon(
-                        Icons.Filled.Close,
-                        contentDescription = "Verwijderen",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                PlayCircle(onClick = { onPlay(episode.toEpisode()) }, playing = playing)
+                IconAction(
+                    WoolIcons.Close, "Verwijderen", { onRemove(episode.id) },
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant, iconSize = 18.dp
+                )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }
-
-private fun SavedEpisode.toEpisode() = Episode(
-    id = id,
-    showId = showId,
-    showTitle = showTitle,
-    title = title,
-    description = null,
-    artworkUrl = artworkUrl,
-    audioUrl = audioUrl,
-    durationMillis = durationMillis,
-    releaseDate = releaseDate
-)

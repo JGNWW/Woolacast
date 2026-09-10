@@ -3,15 +3,21 @@ package nl.woolacast.ui.charts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.woolacast.data.ChartRepository
+import nl.woolacast.data.PodcastRepository
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.Category
 import nl.woolacast.domain.Chart
+import nl.woolacast.domain.ChartEntry
 import nl.woolacast.domain.ChartLevel
+import nl.woolacast.domain.Episode
 import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.ChartUnavailable
 import nl.woolacast.domain.Country
@@ -27,10 +33,23 @@ data class ChartsUiState(
     val query: ChartQuery,
     val loading: Boolean = false,
     val chart: Chart? = null,
-    val notice: Notice? = null
+    val notice: Notice? = null,
+    /** De aflevering waarvan de audio nu wordt opgezocht in de feed. */
+    val resolvingId: String? = null,
+    /** Korte melding onderin, bijvoorbeeld als een aflevering niet te vinden is. */
+    val toast: String? = null
 )
 
-class ChartsViewModel(private val repository: ChartRepository) : ViewModel() {
+/** Een aflevering uit de lijst die speelbaar is gemaakt, met waar hij vandaan komt. */
+data class PlayRequest(val episode: Episode, val label: String?)
+
+class ChartsViewModel(
+    private val repository: ChartRepository,
+    private val podcasts: PodcastRepository
+) : ViewModel() {
+
+    private val _playRequests = MutableSharedFlow<PlayRequest>(extraBufferCapacity = 1)
+    val playRequests: SharedFlow<PlayRequest> = _playRequests.asSharedFlow()
 
     private val _state = MutableStateFlow(
         ChartsUiState(
@@ -64,6 +83,46 @@ class ChartsViewModel(private val repository: ChartRepository) : ViewModel() {
         update { it.copy(country = country ?: it.country, category = category ?: it.category) }
 
     fun refresh() = load()
+
+    fun dismissToast() {
+        _state.value = _state.value.copy(toast = null)
+    }
+
+    /**
+     * Speelt een aflevering rechtstreeks uit de lijst. Hitlijsten geven geen
+     * audio; die staat in de feed van de show, dus daar zoeken we hem op.
+     */
+    fun play(entry: ChartEntry) {
+        val query = _state.value.query
+        if (_state.value.resolvingId != null) return
+        _state.value = _state.value.copy(resolvingId = entry.id)
+        viewModelScope.launch {
+            val showId = entry.showId
+            val episode = if (showId != null) {
+                podcasts.resolveEpisode(
+                    showId = showId,
+                    countryCode = query.country.code,
+                    feedUrl = entry.feedUrl,
+                    showTitle = entry.publisher,
+                    episodeTitle = entry.title
+                )
+            } else null
+
+            if (episode == null) {
+                _state.value = _state.value.copy(
+                    resolvingId = null,
+                    toast = "Niet gevonden in de feed van ${entry.publisher}. Open de podcast om hem daar te kiezen."
+                )
+                return@launch
+            }
+
+            val where = if (query.category.isAll) "Top afleveringen" else query.category.label
+            _playRequests.tryEmit(
+                PlayRequest(episode, "#${entry.rank} in $where ${query.country.code.uppercase()}")
+            )
+            _state.value = _state.value.copy(resolvingId = null)
+        }
+    }
 
     private fun update(transform: (ChartQuery) -> ChartQuery) {
         val next = transform(_state.value.query)

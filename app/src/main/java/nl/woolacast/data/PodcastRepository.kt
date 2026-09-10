@@ -58,12 +58,39 @@ class PodcastRepository(
                 artworkUrl = parsed.imageUrl ?: feed.imageUrl,
                 audioUrl = parsed.audioUrl,
                 durationMillis = parsed.durationMillis,
-                releaseDate = parsed.releaseDate
+                releaseDate = parsed.releaseDate,
+                link = parsed.link
             )
         }
 
         return PodcastDetail(podcast, episodes)
     }
+
+    /**
+     * Zoekt een aflevering uit een hitlijst op in de feed van de show, zodat hij
+     * direct vanuit de lijst kan spelen. Lijsten geven geen audio-URL; de feed wel.
+     * Vergelijkt op titel, want Apple's aflevering-id's staan niet in RSS.
+     */
+    suspend fun resolveEpisode(
+        showId: String,
+        countryCode: String,
+        feedUrl: String?,
+        showTitle: String?,
+        episodeTitle: String
+    ): Episode? {
+        val detail = runCatching { detail(showId, countryCode, feedUrl, showTitle) }.getOrNull()
+            ?: return null
+        val wanted = normalise(episodeTitle)
+        return detail.episodes.firstOrNull { normalise(it.title) == wanted }
+            ?: detail.episodes.firstOrNull { normalise(it.title).contains(wanted) || wanted.contains(normalise(it.title)) }
+    }
+
+    /** Alleen de kop van een feed: wat is de nieuwste aflevering, en hoeveel zijn er. */
+    suspend fun latestEpisodes(feedUrl: String, limit: Int = 10): List<Episode> =
+        runCatching { fromFeed("", feedUrl).episodes.take(limit) }.getOrDefault(emptyList())
+
+    private fun normalise(text: String) =
+        text.lowercase().replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
 
     /** Alleen voor Apple-ids: zoekt de feed-URL op in de publieke catalogus. */
     private suspend fun lookupFeedUrl(showId: String, countryCode: String): String? {
@@ -123,7 +150,8 @@ class PodcastRepository(
                     artworkUrl = result.artworkUrl600 ?: result.artworkUrl100,
                     audioUrl = result.episodeUrl,
                     durationMillis = result.trackTimeMillis,
-                    releaseDate = result.releaseDate?.take(10)
+                    releaseDate = result.releaseDate?.take(10),
+                    link = "https://podcasts.apple.com/$countryCode/podcast/id$showId?i=$episodeId"
                 )
             }
 

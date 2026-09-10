@@ -54,9 +54,15 @@ class AppContainer(context: Context) {
 
     val dataset: ChartsDataset get() = chartsDataset
 
-    val player = PlayerController(context) { episodeId, positionMs, durationMs ->
-        store.rememberProgress(episodeId, positionMs, durationMs)
-    }
+    val player = PlayerController(
+        context = context,
+        resumePosition = { episodeId -> store.progress.value[episodeId] ?: 0L },
+        onProgress = { episodeId, positionMs, durationMs ->
+            store.rememberProgress(episodeId, positionMs, durationMs)
+        },
+        nextInQueue = { store.queue.value.firstOrNull()?.toEpisode() },
+        consumeQueued = { episodeId -> store.removeFromQueue(episodeId) }
+    )
 }
 
 class WoolacastApp : Application() {
