@@ -147,21 +147,16 @@ fun ChartsScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 12.dp)
                     ) {
-                        item {
-                            val cachedAt = chart.cachedAt
-                            Text(
-                                text = listOfNotNull(
-                                    "Top ${chart.entries.size}",
-                                    if (cachedAt != null) "geen verbinding · lijst van ${shortDate(cachedAt)}"
-                                    else chart.updatedLabel?.takeIf { it.isNotBlank() }
-                                ).joinToString(" · "),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (cachedAt != null) MaterialTheme.colorScheme.primary
-                                else LocalChartColors.current.muted,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.height(30.dp).padding(top = 6.dp)
-                            )
+                        // Geen verbinding? Dan staat dat erbij; anders begint de lijst meteen.
+                        chart.cachedAt?.let { cachedAt ->
+                            item {
+                                Text(
+                                    "Geen verbinding · lijst van ${shortDate(cachedAt)}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                            }
                         }
                         items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
                             val open = {
@@ -254,7 +249,7 @@ private fun ContextBar(
             textDecoration = if (!categoriesAllowed && !state.query.category.isAll) TextDecoration.LineThrough else null,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.weight(1f)
         )
         if (!state.query.category.isAll) {
             Box(
@@ -269,13 +264,16 @@ private fun ContextBar(
         } else {
             Icon(WoolIcons.ChevronDown, "Lijst instellen", tint = muted, modifier = Modifier.size(18.dp))
         }
-        Spacer(Modifier.weight(1f))
         if (state.loading) {
             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
             Spacer(Modifier.width(6.dp))
         } else {
             Text(
-                state.chart?.updatedLabel?.substringBefore(" · ")?.take(22).orEmpty(),
+                when {
+                    state.chart?.cachedAt != null -> "geen verbinding"
+                    state.loadedAt != null -> "Bijgewerkt ${state.loadedAt}"
+                    else -> ""
+                },
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
                 color = muted,
                 maxLines = 1,

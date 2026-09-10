@@ -37,7 +37,9 @@ data class ChartsUiState(
     /** De aflevering waarvan de audio nu wordt opgezocht in de feed. */
     val resolvingId: String? = null,
     /** Korte melding onderin, bijvoorbeeld als een aflevering niet te vinden is. */
-    val toast: String? = null
+    val toast: String? = null,
+    /** Wanneer deze lijst is opgehaald, als "17:53". */
+    val loadedAt: String? = null
 )
 
 /** Een aflevering uit de lijst die speelbaar is gemaakt, met waar hij vandaan komt. */
@@ -153,7 +155,10 @@ class ChartsViewModel(
         loadJob = viewModelScope.launch {
             runCatching { repository.chart(query) }
                 .onSuccess { chart ->
-                    _state.value = _state.value.copy(loading = false, chart = chart, notice = null)
+                    _state.value = _state.value.copy(
+                        loading = false, chart = chart, notice = null,
+                        loadedAt = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    )
                 }
                 .onFailure { error ->
                     _state.value = _state.value.copy(

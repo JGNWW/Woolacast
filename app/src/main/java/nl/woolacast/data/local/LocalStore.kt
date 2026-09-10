@@ -81,8 +81,8 @@ private data class StoreData(
     val saved: List<SavedEpisode> = emptyList(),
     /** Waar je gebleven bent, per aflevering, in milliseconden. */
     val progress: Map<String, Long> = emptyMap(),
-    /** "light", "dark" of "system". Het ontwerp is licht; dat is de standaard. */
-    val theme: String = "light"
+    /** "light", "dark" of "system"; standaard volgt de app het toestel. */
+    val theme: String = "system"
 )
 
 /**
@@ -113,7 +113,7 @@ class LocalStore(private val file: File) {
     private val _progress = MutableStateFlow<Map<String, Long>>(emptyMap())
     val progress: StateFlow<Map<String, Long>> = _progress.asStateFlow()
 
-    private val _theme = MutableStateFlow("light")
+    private val _theme = MutableStateFlow("system")
     val theme: StateFlow<String> = _theme.asStateFlow()
 
     suspend fun setTheme(mode: String) = mutate { it.copy(theme = mode) }
