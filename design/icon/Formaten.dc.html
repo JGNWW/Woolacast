@@ -1,0 +1,350 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+:root{
+  --bg:#FAF6F0; --surf:#FFFDFA; --line:#E4DACA; --line2:#F0E8DC;
+  --ink:#211D17; --ink2:#6E6458; --ink3:#988C7A;
+  --pri:#C4542B; --cream:#F4E3CC;
+  /* mascot slots, overridden per instance */
+  --m-body:#F4E3CC; --m-body2:#FBF2E4; --m-line:#CBA57E; --m-wart:#E3CDB0;
+  --m-phone:#211D17; --m-pad:#4A4137;
+  --m-eye:#FFFDFA; --m-iris:#E0A83A; --m-pupil:#211D17;
+}
+*{box-sizing:border-box}
+body{margin:0}
+a{color:var(--pri)}a:hover{color:#5A2110}
+.board{background:var(--bg);padding:30px;overflow:hidden;
+  font-family:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;color:var(--ink);
+  font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.dsp{font-family:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.h2{font-size:22px;font-weight:700;letter-spacing:-.018em;margin:0}
+.note{font-size:12.5px;color:var(--ink2);line-height:1.45}
+.row{display:flex;align-items:center}
+.stack{display:flex;flex-direction:column}
+.tile{border-radius:22.4%;overflow:hidden;display:block;flex:none}
+.tile svg{display:block;width:100%;height:100%}
+.cap{font-size:11px;font-weight:600;color:var(--ink3);text-align:center;
+  font-variant-numeric:tabular-nums;margin-top:8px}
+.card{background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:16px}
+
+.hero{display:flex;flex-direction:column;align-items:center;gap:22px}
+.big{width:360px;height:360px;border-radius:22.4%;overflow:hidden;box-shadow:0 10px 30px rgba(33,29,23,.18)}
+.big svg{display:block;width:100%;height:100%}
+.mini{display:flex;gap:14px;align-items:center;justify-content:center}
+.strip{display:flex;gap:18px;align-items:flex-end;padding:16px 18px;border-radius:14px}
+.strip.lt{background:var(--surf);border:1px solid var(--line2)}
+.strip.dk{background:#1B1712}
+.sz{display:flex;flex-direction:column;align-items:center}
+.mask{position:relative;width:300px;height:300px;flex:none}
+.mask .layer{position:absolute;left:0;top:0;width:300px;height:300px}
+.mask .layer svg{display:block;width:100%;height:100%}
+.guide{position:absolute;border:1.5px dashed rgba(255,253,250,.8)}
+.legend{display:flex;flex-direction:column;gap:9px}
+.lg{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink2)}
+.lg i{width:22px;height:0;border-top:1.5px dashed var(--ink3);display:block;flex:none}
+.lg b{width:22px;height:14px;border-radius:4px;display:block;flex:none}
+.msk{width:96px;height:96px;overflow:hidden;flex:none}
+.msk svg{display:block;width:100%;height:100%}
+</style>
+</helmet>
+<div class="board" style="height:740px">
+  <div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:20px">
+    <div>
+      <div class="eyebrow" style="margin-bottom:6px">Formaten</div>
+      <div class="h2 dsp">Wat er overblijft als hij krimpt</div>
+    </div>
+    <div class="note" style="max-width:330px;text-align:right">Dichtheidsklassen xxxhdpi tot mdpi. Vanaf 96 px de volle tekening, daaronder de vereenvoudigde: geen wratten, neusgaten of irissen, dikkere lijnen.</div>
+  </div>
+
+  <div class="strip lt" style="margin-bottom:16px">
+    <span class="eyebrow" style="width:96px;flex:none">Volledig</span>
+<span class="sz"><span class="tile" style="width:192px;height:192px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g></svg></span><span class="cap">192</span></span>
+<span class="sz"><span class="tile" style="width:144px;height:144px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g></svg></span><span class="cap">144</span></span>
+<span class="sz"><span class="tile" style="width:96px;height:96px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g></svg></span><span class="cap">96</span></span>
+<span class="sz"><span class="tile" style="width:72px;height:72px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g></svg></span><span class="cap">72</span></span>
+<span class="sz"><span class="tile" style="width:48px;height:48px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g></svg></span><span class="cap">48</span></span>
+    <span style="flex:1 1 auto"></span>
+    <span class="note" style="width:150px">Werkt tot ongeveer 96 px</span>
+  </div>
+
+  <div class="strip lt">
+    <span class="eyebrow" style="width:96px;flex:none">Vereenvoudigd</span>
+<span class="sz"><span class="tile" style="width:192px;height:192px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g></svg></span><span class="cap">192</span></span>
+<span class="sz"><span class="tile" style="width:144px;height:144px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g></svg></span><span class="cap">144</span></span>
+<span class="sz"><span class="tile" style="width:96px;height:96px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g></svg></span><span class="cap">96</span></span>
+<span class="sz"><span class="tile" style="width:72px;height:72px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g></svg></span><span class="cap">72</span></span>
+<span class="sz"><span class="tile" style="width:48px;height:48px"><svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g></svg></span><span class="cap">48</span></span>
+    <span style="flex:1 1 auto"></span>
+    <span class="note" style="width:150px">Houdt vorm tot 48 px</span>
+  </div>
+
+  <div class="row" style="gap:14px;margin-top:20px">
+    <div class="card" style="flex:1 1 0;padding:13px 15px">
+      <div class="eyebrow" style="margin-bottom:5px">Play Store</div>
+      <div class="note">512 × 512 px, 32-bits PNG, geen transparantie</div>
+    </div>
+    <div class="card" style="flex:1 1 0;padding:13px 15px">
+      <div class="eyebrow" style="margin-bottom:5px">Launcher</div>
+      <div class="note">Adaptive icon als vector; PNG's alleen nog als terugval</div>
+    </div>
+    <div class="card" style="flex:1 1 0;padding:13px 15px">
+      <div class="eyebrow" style="margin-bottom:5px">Notificatie</div>
+      <div class="note">24 dp, één kleur wit, transparante achtergrond</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":940,"height":740}}'>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

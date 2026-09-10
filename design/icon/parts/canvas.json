@@ -1,0 +1,71 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 560,
+      "h": 720,
+      "title": "A · De pad"
+    },
+    {
+      "file": "RichtingB.dc.html",
+      "x": 640,
+      "y": 0,
+      "w": 560,
+      "h": 720,
+      "title": "B · Notering"
+    },
+    {
+      "file": "RichtingC.dc.html",
+      "x": 1280,
+      "y": 0,
+      "w": 560,
+      "h": 720,
+      "title": "C · Stijgende W"
+    },
+    {
+      "file": "Formaten.dc.html",
+      "x": 0,
+      "y": 860,
+      "w": 940,
+      "h": 740,
+      "title": "Formaten"
+    },
+    {
+      "file": "Adaptive.dc.html",
+      "x": 1020,
+      "y": 860,
+      "w": 940,
+      "h": 510,
+      "title": "Adaptive icon"
+    },
+    {
+      "file": "Varianten.dc.html",
+      "x": 0,
+      "y": 1740,
+      "w": 940,
+      "h": 400,
+      "title": "Varianten"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-keuze",
+      "x": 0,
+      "y": -200,
+      "w": 560,
+      "text": "Drie richtingen naast elkaar. A is de voorkeur omdat het jouw idee is en de app een gezicht geeft; B is het veiligst op klein formaat; C draagt de naam mee.\nDe rest van het canvas werkt A uit — als je B of C kiest, verhuizen die borden mee."
+    },
+    {
+      "id": "n-robot",
+      "x": 1280,
+      "y": -200,
+      "w": 560,
+      "text": "De Android-robot zit er bewust niet in. Google staat modificatie toe onder CC BY 3.0, maar geen merkrechten op de robot of afgeleiden — en een app-icoon is precies zo'n merkgebruik."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

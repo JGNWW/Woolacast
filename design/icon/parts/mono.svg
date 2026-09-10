@@ -1,0 +1,13 @@
+<g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--mo-fg)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--mo-fg)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--mo-fg)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--mo-fg)"/>
+  <rect x="44" y="252" width="114" height="156" rx="56" fill="var(--mo-bg)"/>
+  <rect x="354" y="252" width="114" height="156" rx="56" fill="var(--mo-bg)"/>
+  <rect x="56" y="264" width="90" height="132" rx="44" fill="var(--mo-fg)"/>
+  <rect x="366" y="264" width="90" height="132" rx="44" fill="var(--mo-fg)"/>
+  <circle cx="186" cy="232" r="40" fill="var(--mo-bg)"/>
+  <circle cx="326" cy="232" r="40" fill="var(--mo-bg)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--mo-bg)" stroke-width="18" stroke-linecap="round"/>
+</g>

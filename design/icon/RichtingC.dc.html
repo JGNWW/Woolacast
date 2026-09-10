@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Instrument+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+:root{
+  --bg:#FAF6F0; --surf:#FFFDFA; --line:#E4DACA; --line2:#F0E8DC;
+  --ink:#211D17; --ink2:#6E6458; --ink3:#988C7A;
+  --pri:#C4542B; --cream:#F4E3CC;
+  /* mascot slots, overridden per instance */
+  --m-body:#F4E3CC; --m-body2:#FBF2E4; --m-line:#CBA57E; --m-wart:#E3CDB0;
+  --m-phone:#211D17; --m-pad:#4A4137;
+  --m-eye:#FFFDFA; --m-iris:#E0A83A; --m-pupil:#211D17;
+}
+*{box-sizing:border-box}
+body{margin:0}
+a{color:var(--pri)}a:hover{color:#5A2110}
+.board{background:var(--bg);padding:30px;overflow:hidden;
+  font-family:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;color:var(--ink);
+  font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.dsp{font-family:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+.h2{font-size:22px;font-weight:700;letter-spacing:-.018em;margin:0}
+.note{font-size:12.5px;color:var(--ink2);line-height:1.45}
+.row{display:flex;align-items:center}
+.stack{display:flex;flex-direction:column}
+.tile{border-radius:22.4%;overflow:hidden;display:block;flex:none}
+.tile svg{display:block;width:100%;height:100%}
+.cap{font-size:11px;font-weight:600;color:var(--ink3);text-align:center;
+  font-variant-numeric:tabular-nums;margin-top:8px}
+.card{background:var(--surf);border:1px solid var(--line2);border-radius:16px;padding:16px}
+
+.hero{display:flex;flex-direction:column;align-items:center;gap:22px}
+.big{width:360px;height:360px;border-radius:22.4%;overflow:hidden;box-shadow:0 10px 30px rgba(33,29,23,.18)}
+.big svg{display:block;width:100%;height:100%}
+.mini{display:flex;gap:14px;align-items:center;justify-content:center}
+.strip{display:flex;gap:18px;align-items:flex-end;padding:16px 18px;border-radius:14px}
+.strip.lt{background:var(--surf);border:1px solid var(--line2)}
+.strip.dk{background:#1B1712}
+.sz{display:flex;flex-direction:column;align-items:center}
+.mask{position:relative;width:300px;height:300px;flex:none}
+.mask .layer{position:absolute;left:0;top:0;width:300px;height:300px}
+.mask .layer svg{display:block;width:100%;height:100%}
+.guide{position:absolute;border:1.5px dashed rgba(255,253,250,.8)}
+.legend{display:flex;flex-direction:column;gap:9px}
+.lg{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink2)}
+.lg i{width:22px;height:0;border-top:1.5px dashed var(--ink3);display:block;flex:none}
+.lg b{width:22px;height:14px;border-radius:4px;display:block;flex:none}
+.msk{width:96px;height:96px;overflow:hidden;flex:none}
+.msk svg{display:block;width:100%;height:100%}
+</style>
+</helmet>
+<div class="board" style="height:720px">
+  <div class="hero">
+    <div class="big">
+      <svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17">
+        <rect width="512" height="512" fill="#C4542B"></rect>
+        <g transform="translate(0,10)">
+  <path d="M112 196 L184 340 L256 248 L328 340 L400 152" fill="none" stroke="var(--m-body)"
+        stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+      </svg>
+    </div>
+    <div style="text-align:center;max-width:400px">
+      <div class="eyebrow" style="margin-bottom:7px">Richting C</div>
+      <div class="h2 dsp">Stijgende W</div>
+      <div class="note" style="margin-top:8px">De W van Woolacast, getekend als een grafieklijn die aan het eind doorstijgt. Draagt de naam mee en blijft scherp op elk formaat — maar heeft geen personage om verder mee te bouwen.</div>
+    </div>
+    <div class="mini">
+      <span class="tile" style="width:96px;height:96px">
+        <svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,10)">
+  <path d="M112 196 L184 340 L256 248 L328 340 L400 152" fill="none" stroke="var(--m-body)"
+        stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg>
+      </span>
+      <span class="tile" style="width:64px;height:64px">
+        <svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,10)">
+  <path d="M112 196 L184 340 L256 248 L328 340 L400 152" fill="none" stroke="var(--m-body)"
+        stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg>
+      </span>
+      <span class="tile" style="width:48px;height:48px">
+        <svg viewBox="0 0 512 512" style="--m-body:#F4E3CC;--m-body2:#FBF2E4;--m-line:#CBA57E;--m-wart:#E3CDB0;--m-phone:#211D17;--m-pad:#4A4137;--m-eye:#FFFDFA;--m-iris:#E0A83A;--m-pupil:#211D17"><rect width="512" height="512" fill="#C4542B"></rect><g transform="translate(0,10)">
+  <path d="M112 196 L184 340 L256 248 L328 340 L400 152" fill="none" stroke="var(--m-body)"
+        stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+</g></svg>
+      </span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":560,"height":720}}'>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

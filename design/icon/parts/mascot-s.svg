@@ -1,0 +1,14 @@
+<g transform="translate(0,-20)">
+  <path d="M110 322 C110 68 402 68 402 322" fill="none" stroke="var(--m-phone)" stroke-width="36" stroke-linecap="round"/>
+  <path d="M102 316 C102 230 172 192 256 192 C340 192 410 230 410 316 C410 388 344 438 256 438 C168 438 102 388 102 316 Z" fill="var(--m-body)"/>
+  <circle cx="186" cy="232" r="62" fill="var(--m-body)"/>
+  <circle cx="326" cy="232" r="62" fill="var(--m-body)"/>
+  <path d="M120 346 C162 426 350 426 392 346 C406 376 352 428 256 430 C160 428 106 376 120 346 Z" fill="var(--m-body2)"/>
+  <path d="M120 346 C162 426 350 426 392 346" fill="none" stroke="var(--m-line)" stroke-width="17" stroke-linecap="round"/>
+  <circle cx="186" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="326" cy="232" r="44" fill="var(--m-eye)"/>
+  <circle cx="190" cy="237" r="25" fill="var(--m-pupil)"/>
+  <circle cx="322" cy="237" r="25" fill="var(--m-pupil)"/>
+  <rect x="54" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+  <rect x="364" y="264" width="94" height="134" rx="45" fill="var(--m-phone)"/>
+</g>

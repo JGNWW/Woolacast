@@ -1,0 +1,36 @@
+<g transform="translate(0,-20)">
+  <!-- beugel, ruim boven de kop -->
+  <path d="M110 320 C110 74 402 74 402 320" fill="none" stroke="var(--m-phone)" stroke-width="30" stroke-linecap="round"/>
+  <!-- kop -->
+  <path d="M108 316 C108 236 174 200 256 200 C338 200 404 236 404 316 C404 384 342 432 256 432 C170 432 108 384 108 316 Z" fill="var(--m-body)"/>
+  <!-- oogbulten -->
+  <circle cx="190" cy="236" r="56" fill="var(--m-body)"/>
+  <circle cx="322" cy="236" r="56" fill="var(--m-body)"/>
+  <!-- lichte keel; bovenrand is de mondlijn -->
+  <path d="M126 344 C166 420 346 420 386 344 C400 374 350 424 256 426 C162 424 112 374 126 344 Z" fill="var(--m-body2)"/>
+  <!-- wratten -->
+  <circle cx="136" cy="300" r="10" fill="var(--m-wart)"/>
+  <circle cx="154" cy="358" r="7" fill="var(--m-wart)"/>
+  <circle cx="378" cy="304" r="9" fill="var(--m-wart)"/>
+  <circle cx="362" cy="362" r="6" fill="var(--m-wart)"/>
+  <circle cx="256" cy="282" r="8" fill="var(--m-wart)"/>
+  <!-- mond -->
+  <path d="M126 344 C166 420 346 420 386 344" fill="none" stroke="var(--m-line)" stroke-width="13" stroke-linecap="round"/>
+  <!-- neusgaten -->
+  <circle cx="234" cy="322" r="6.5" fill="var(--m-line)"/>
+  <circle cx="278" cy="322" r="6.5" fill="var(--m-line)"/>
+  <!-- ogen -->
+  <circle cx="190" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="322" cy="236" r="39" fill="var(--m-eye)"/>
+  <circle cx="196" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="316" cy="242" r="27" fill="var(--m-iris)"/>
+  <circle cx="196" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="316" cy="242" r="14" fill="var(--m-pupil)"/>
+  <circle cx="184" cy="229" r="8" fill="var(--m-eye)"/>
+  <circle cx="304" cy="229" r="8" fill="var(--m-eye)"/>
+  <!-- oorschelpen -->
+  <rect x="60" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="364" y="266" width="88" height="128" rx="42" fill="var(--m-phone)"/>
+  <rect x="77" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+  <rect x="381" y="285" width="54" height="90" rx="27" fill="var(--m-pad)"/>
+</g>
