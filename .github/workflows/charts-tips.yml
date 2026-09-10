@@ -1,0 +1,54 @@
+name: Podcasttips van de media (dagelijks)
+
+# Podcastrubrieken verschijnen wekelijks tot dagelijks; wie er een week
+# overheen laat gaan, laat de app verouderen. Dit is een bescheiden klus: per
+# land een handvol indexpagina's en de artikelen erachter, plus één zoekopdracht
+# bij Apple per genoemde titel. We houden ons aan robots.txt en komen langs
+# onder onze eigen naam.
+#
+# Let op: GitHub draait een schema alleen vanaf de standaardtak. Zolang dit werk
+# op een aparte tak staat, moet je hem hier met de hand starten; na samenvoegen
+# loopt hij vanzelf. Wijs dan ook DEFAULT_BASE_URL in de app naar die tak.
+on:
+  schedule:
+    - cron: "40 4 * * *"
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Landcodes, door komma's gescheiden"
+        default: "nl,be,de,gb,us,fr,es,it,se,dk,no,ie,ca,au,br,mx,jp,in"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: charts
+  cancel-in-progress: false
+
+jobs:
+  tips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tips ophalen
+        working-directory: charts-service
+        run: |
+          python3 collect.py tips \
+            --countries "${{ inputs.countries || 'nl,be,de,gb,us,fr,es,it,se,dk,no,ie,ca,au,br,mx,jp,in' }}" \
+            --out charts
+
+      - name: Wegschrijven als er iets veranderd is
+        run: |
+          git config user.name  "woolacast-charts"
+          git config user.email "actions@users.noreply.github.com"
+          git add charts-service/charts/tips charts-service/charts/logos
+          git diff --cached --quiet || {
+            git commit -m "Podcasttips van $(date -u +%Y-%m-%d)"
+            git pull --rebase --autostash
+            git push
+          }

@@ -17,6 +17,10 @@ data class TipsUiState(
     val all: List<MediaTip> = emptyList(),
     val updated: String? = null
 ) {
+    /** Het beeldmerk per medium, om de keuzeknoppen bovenaan te vullen. */
+    val logos: Map<String, String> get() =
+        all.mapNotNull { tip -> tip.logo?.let { tip.outlet to it } }.toMap()
+
     /** Wat er getoond wordt: alles, of alleen het gekozen medium. */
     val visible: List<MediaTip> get() = all.filter { outlet == null || it.outlet == outlet }
 }

@@ -279,7 +279,7 @@ private fun TipCard(tip: MediaTip, onClick: () -> Unit) {
             overflow = TextOverflow.Ellipsis
         )
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            OutletMark(tip.outlet, size = 18.dp)
+            OutletMark(tip.outlet, size = 18.dp, logoUrl = tip.logo)
             Text(
                 listOfNotNull(tip.outlet, shortDate(tip.date)).joinToString(" · "),
                 fontSize = 11.5.sp,

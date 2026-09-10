@@ -553,6 +553,46 @@ def discover_feeds(host: str, limit: int = 14) -> list[str]:
 GUIDE_ARTICLES = 14        # hoeveel artikelen van een gids we per run lezen
 GUIDE_PER_ARTICLE = 6      # een tiplijst noemt er vijf; meer is bijvangst
 
+# Een tiplijst noemt meerdere podcasts en mag ze alle koppelen. Een recensie
+# gaat over één podcast: daar telt alleen de naam uit de kop, anders koppelen
+# we de kop aan een podcast die er slechts terloops in genoemd wordt.
+LIST_HINT = re.compile(
+    r"\b(tips?|tipps|gids|guide|beste|besten|best|migliori|mejores|meilleurs|"
+    r"anbefalinger|empfehlungen|selectie|selection|lijst|list|roundup|"
+    r"twee|drie|vier|vijf|zes|zeven|acht|negen|tien|two|three|four|five|six|"
+    r"seven|eight|nine|ten|dieci|cinco|cinq|f\u00fcnf|drei)\b|\btop\s*\d|"
+    r"\d+\s*podcast|podcasts\b", re.I | re.UNICODE)
+
+
+def about_window(plain: str, name: str, width: int = 240) -> str:
+    """
+    De zin waarin de podcast genoemd wordt, zodat de tip daarover gaat. Een
+    naam komt vaak meermaals voor: in de paginakop, in een menu en in de
+    lopende tekst. We kiezen het fragment dat het meest op proza lijkt.
+    """
+    best, best_score = "", -1.0
+    for m in list(re.finditer(re.escape(name), plain, re.I))[:8]:
+        # Begin bij het einde van de vorige zin, maar niet meer dan een halve
+        # alinea terug: anders gaat het fragment over de vorige podcast.
+        start = plain.rfind(". ", max(0, m.start() - 110), m.start())
+        start = start + 2 if start != -1 else max(0, m.start() - 60)
+        end = plain.find(". ", m.end())
+        end = end + 1 if end != -1 and end - start <= width else min(len(plain), start + width)
+        text = plain[start:end].strip()
+        words = text.split()
+        if len(words) < 6:
+            continue
+        # Proza heeft lange woorden en kleine letters; een menu heeft korte
+        # woorden met hoofdletters.
+        lower = sum(1 for w in words if w[:1].islower()) / len(words)
+        long = sum(1 for w in words if len(w) > 3) / len(words)
+        score = lower + long + (0.5 if text.endswith(".") else 0)
+        if score > best_score:
+            best_score, best = score, text
+            if start > 0 and not plain[max(0, start - 2):start].strip().endswith("."):
+                best = "\u2026" + text
+    return best if best_score >= 1.0 else ""
+
 
 def parse_guide_index(body: str, base: str, prefix: str) -> list[str]:
     """Artikellinks op de indexpagina van een podcastgids, in paginavolgorde."""
@@ -585,6 +625,9 @@ def read_guide_article(url: str) -> dict | None:
     title = re.search(r"<title[^>]*>(.*?)</title>", body, re.S)
     title = html_unescape(re.sub(r"<[^>]+>", "", title.group(1))).split("|")[0].strip() if title else ""
     date = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', body)
+    meta = re.search(r'<meta[^>]+(?:property="og:description"|name="description")[^>]+'
+                     r'content="([^"]{20,400})"', body, re.I)
+    meta = html_unescape(meta.group(1)).strip() if meta else ""
 
     names, seen = [], set()
     tags = (re.findall(r"<h[23][^>]*>(.*?)</h[23]>", body, re.S)
@@ -596,10 +639,13 @@ def read_guide_article(url: str) -> dict | None:
             names.append(text)
         if len(names) >= 25:
             break
-    plain = re.sub(r"\s+", " ", html_unescape(re.sub(r"<[^>]+>", " ", body)))
+    # Scripts en opmaakblokken bevatten de kop nog eens in JSON-LD; die horen
+    # niet in de lopende tekst waaruit we citeren.
+    readable = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", " ", body, flags=re.S | re.I)
+    plain = re.sub(r"\s+", " ", html_unescape(re.sub(r"<[^>]+>", " ", readable)))
     return {
         "title": title,
-        "summary": plain[:600],
+        "summary": meta or plain[:600],
         "link": url,
         "date": date.group(1) if date else None,
         "names": names,
@@ -650,8 +696,26 @@ def read_guide(country: str, outlet: str, index_url: str, index_body: str,
                     return True
             return False
 
-        for name in article["names"] + podcast_candidates(article["title"], article["summary"]):
-            if found >= GUIDE_PER_ARTICLE:
+        # Waar gaat dit stuk over? Een naam die in de kop of in het webadres
+        # staat is het onderwerp; een naam die alleen in de lopende tekst
+        # voorkomt kan een zijdelingse verwijzing zijn.
+        title_low = article["title"].lower()
+        slug = normalise_any(urllib.parse.urlsplit(article_url).path)
+        subject = [n for n in article["names"]
+                   if n.lower() in title_low or (len(n) > 4 and normalise_any(n) in slug)]
+        subject += [n for n in podcast_candidates(article["title"], "")
+                    if n.lower() not in {x.lower() for x in subject}]
+
+        is_list = bool(LIST_HINT.search(article["title"]))
+        if is_list:
+            names = subject + article["names"] + podcast_candidates(article["title"], article["summary"])
+        elif subject:
+            names = subject          # recensie: alleen het onderwerp zelf
+        else:
+            continue                 # geen bewijs waar het stuk over gaat
+
+        for name in names:
+            if found >= (GUIDE_PER_ARTICLE if is_list else 1):
                 break
             name = name.strip(" .,:;\u2013\u2014-")
             if not looks_like_title(name) or name.lower() in seen_here:
@@ -669,7 +733,7 @@ def read_guide(country: str, outlet: str, index_url: str, index_body: str,
             tips.append({
                 "outlet": outlet,
                 "headline": article["title"],
-                "summary": article["summary"][:300],
+                "summary": (about_window(plain, name) or article["summary"])[:300],
                 "url": article_url,
                 "date": article["date"],
                 **match,
@@ -889,8 +953,117 @@ def run_prospect(countries: list[str]) -> None:
                 print(f'        ("?", "{url}", "{mode}"),   # {hits} tips', flush=True)
 
 
+# ------------------------------------------------------------------- logo's
+
+# Het beeldmerk van een medium staat op zijn eigen site: als apple-touch-icon
+# (dat is er juist om als tegel getoond te worden) of als icoon. We halen het
+# één keer op en zetten het bij de gegevens, zodat de app het niet bij elke
+# lezer opnieuw bij de uitgever hoeft op te halen.
+LOGO_LINKS = re.compile(
+    r'<link[^>]+rel="[^"]*(?:apple-touch-icon|icon)[^"]*"[^>]*>', re.I)
+LOGO_HREF = re.compile(r'href="([^"]+)"', re.I)
+LOGO_SIZES = re.compile(r'sizes="(\d+)x\d+"', re.I)
+LOGO_TYPES = {b"\x89PNG": "png", b"\xff\xd8\xff": "jpg", b"RIFF": "webp"}
+
+
+def logo_slug(outlet: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", outlet.lower().replace("é", "e").replace("ü", "u"))
+    return slug.strip("-") or "medium"
+
+
+def fetch_bytes(url: str, timeout: int = 15) -> bytes | None:
+    if not allowed(url):
+        return None
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "image/*"})
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.read(400_000)
+    except Exception:
+        return None
+
+
+def find_logo(host: str) -> tuple[bytes, str] | None:
+    """Zoekt het beeldmerk van een site; groter icoon gaat voor."""
+    host = host.strip("/")
+    # Sommige sites zetten hun icoon alleen op de www-variant, of juist niet.
+    other = host[4:] if host.startswith("www.") else "www." + host
+    for candidate in (host, other):
+        found = _logo_from(candidate)
+        if found:
+            return found
+    return None
+
+
+def _logo_from(host: str) -> tuple[bytes, str] | None:
+    base = f"https://{host.strip('/')}"
+    candidates: list[tuple[int, str]] = []
+    page = fetch(base + "/", raw=True, tries=1, timeout=15, headers={"Accept": "text/html"})
+    if page:
+        for tag in LOGO_LINKS.findall(page[0]):
+            href = LOGO_HREF.search(tag)
+            if not href:
+                continue
+            url = urllib.parse.urljoin(page[1], html_unescape(href.group(1)))
+            if url.lower().split("?")[0].endswith((".svg", ".ico")):
+                continue
+            size = LOGO_SIZES.search(tag)
+            rank = int(size.group(1)) if size else (120 if "apple-touch" in tag.lower() else 32)
+            candidates.append((rank, url))
+    candidates.append((100, base + "/apple-touch-icon.png"))
+    candidates.append((90, base + "/apple-touch-icon-precomposed.png"))
+    candidates.sort(reverse=True)
+
+    seen = set()
+    for _, url in candidates:
+        if url in seen:
+            continue
+        seen.add(url)
+        data = fetch_bytes(url)
+        if not data or len(data) < 200:
+            continue
+        for magic, ext in LOGO_TYPES.items():
+            if data.startswith(magic):
+                return data, ext
+    return None
+
+
+def write_logos(root: pathlib.Path, outlets: dict[str, str]) -> dict[str, str]:
+    """Haalt per medium één beeldmerk op. Bestaat het al, dan blijft het staan."""
+    folder = root / "logos"
+    folder.mkdir(parents=True, exist_ok=True)
+    names: dict[str, str] = {}
+    for outlet, host in sorted(outlets.items()):
+        slug = logo_slug(outlet)
+        existing = sorted(folder.glob(f"{slug}.*"))
+        if existing:
+            names[outlet] = existing[0].name
+            continue
+        found = find_logo(host)
+        if not found:
+            print(f"    logo {outlet}: niet gevonden ({host})", flush=True)
+            continue
+        data, ext = found
+        (folder / f"{slug}.{ext}").write_bytes(data)
+        names[outlet] = f"{slug}.{ext}"
+        print(f"    logo {outlet}: {len(data) // 1024 or 1} kB", flush=True)
+    return names
+
+
+def source_hosts(country: str) -> dict[str, str]:
+    hosts: dict[str, str] = {}
+    for outlet, url, _mode in TIP_SOURCES.get(country, []):
+        host = urllib.parse.urlsplit(url if "//" in url else "//" + url).netloc or url.split("/")[0]
+        hosts.setdefault(outlet, host)
+    return hosts
+
+
 def write_tips(root: pathlib.Path, country: str) -> int:
     tips = collect_tips(country)
+    logos = write_logos(root, {o: h for o, h in source_hosts(country).items()
+                               if o in {t["outlet"] for t in tips}})
+    for tip in tips:
+        if logos.get(tip["outlet"]):
+            tip["logo"] = logos[tip["outlet"]]
     folder = root / "tips"
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{country}.json").write_text(json.dumps({

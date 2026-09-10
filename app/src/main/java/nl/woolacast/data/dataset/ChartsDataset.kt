@@ -239,6 +239,14 @@ class ChartsDataset(
         if (tips.containsKey(countryCode)) return@withLock tips[countryCode]
         runCatching { api.tips("$baseUrl/tips/$countryCode.json") }
             .getOrNull()
+            ?.let { loaded ->
+                // Het logo staat als bestandsnaam in de gegevens; hier wordt
+                // het een adres, zodat de app niet bij de uitgever hoeft aan
+                // te kloppen om te weten hoe een medium eruitziet.
+                loaded.copy(entries = loaded.entries.map { tip ->
+                    if (tip.logo == null) tip else tip.copy(logo = "$baseUrl/logos/${tip.logo}")
+                })
+            }
             .takeIf { it != null && it.entries.isNotEmpty() }
             .also { tips[countryCode] = it }
     }

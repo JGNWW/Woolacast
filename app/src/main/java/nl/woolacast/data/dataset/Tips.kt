@@ -19,7 +19,9 @@ data class MediaTip(
     val publisher: String = "",
     val artworkUrl: String? = null,
     val feedUrl: String? = null,
-    val genre: String? = null
+    val genre: String? = null,
+    /** Bestandsnaam van het beeldmerk; de dataset maakt er een adres van. */
+    val logo: String? = null
 )
 
 @Serializable

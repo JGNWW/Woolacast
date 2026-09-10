@@ -85,7 +85,7 @@ fun TipsScreen(
                     label = outlet,
                     selected = state.outlet == outlet,
                     onClick = { viewModel.setOutlet(if (state.outlet == outlet) null else outlet) },
-                    leading = { OutletMark(outlet, size = 16.dp) }
+                    leading = { OutletMark(outlet, size = 16.dp, logoUrl = state.logos[outlet]) }
                 )
             }
         }
@@ -167,7 +167,7 @@ private fun TipRow(tip: MediaTip, onOpenPodcast: (String, String?, String) -> Un
         Artwork(tip.artworkUrl, 56.dp, corner = 12.dp)
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                OutletMark(tip.outlet)
+                OutletMark(tip.outlet, logoUrl = tip.logo)
                 Text(
                     tip.outlet,
                     fontSize = 11.5.sp,
