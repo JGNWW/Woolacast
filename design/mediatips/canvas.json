@@ -1,0 +1,61 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Ontdek — sectie Mediatips"
+    },
+    {
+      "file": "Tips.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Mediatips — het scherm"
+    },
+    {
+      "file": "Podcast.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Podcastpagina — \"Getipt door\""
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-ontdek",
+      "x": 0,
+      "y": -170,
+      "w": 390,
+      "text": "Ingang op Ontdek: een sectie \"Tips van de media\" met chips per medium en kaarten met de tip als citaat. \"Alle 14\" opent het volledige scherm. De media wisselen met het land: NL toont Volkskrant, NRC, Trouw, VPRO Gids; BE De Standaard en De Morgen; DE Zeit en SZ; VK The Guardian; VS NYT en Vulture."
+    },
+    {
+      "id": "n-tips",
+      "x": 470,
+      "y": -170,
+      "w": 390,
+      "text": "Het scherm zelf: land vooraan, dan een chip per medium, en de tips chronologisch per week. Elke tip is één regel wie en wanneer, de podcast, en het citaat. Afspelen start de nieuwste aflevering; tikken opent de podcastpagina."
+    },
+    {
+      "id": "n-detail",
+      "x": 940,
+      "y": -170,
+      "w": 390,
+      "text": "De tip volgt de podcast: op de podcastpagina staat onder de noteringen een blok \"Getipt door\" met citaat en datum, zodat een tip ook opduikt als je de show via een hitlijst vindt."
+    },
+    {
+      "id": "n-data",
+      "x": 0,
+      "y": 900,
+      "w": 860,
+      "text": "Hoe het gevoed wordt: het verzamelklusje leest per medium zijn podcastrubriek (RSS waar die er is, anders de rubriekpagina) en koppelt genoemde titels aan de Apple-catalogus, net als bij Spotify. Per medium is een eigen adapter nodig, en niet elke rubriek is bereikbaar — de Volkskrant-tagpagina weert bijvoorbeeld automatische lezers, hun site-RSS niet. Alle tips en podcasts hier zijn voorbeeldtekst."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
