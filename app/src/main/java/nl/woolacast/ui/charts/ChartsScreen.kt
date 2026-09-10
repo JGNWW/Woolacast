@@ -287,7 +287,7 @@ private fun ContextBar(
 }
 
 @Composable
-private fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
+internal fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -323,7 +323,7 @@ private fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
  * welke podcast hij komt, hoe lang en hoe oud hij is — en hij speelt direct.
  */
 @Composable
-private fun EpisodeChartRow(
+internal fun EpisodeChartRow(
     entry: ChartEntry,
     resolving: Boolean,
     onClick: () -> Unit,
@@ -375,7 +375,7 @@ private fun EpisodeChartRow(
     }
 }
 
-private fun Suggestion.label(): String = when (this) {
+internal fun Suggestion.label(): String = when (this) {
     Suggestion.ALL_CATEGORIES -> "Toon alle categorieën"
     Suggestion.SWITCH_TO_APPLE -> "Toon Apple Podcasts-lijst"
     Suggestion.SWITCH_TO_SHOWS -> "Toon podcasts"

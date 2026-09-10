@@ -251,6 +251,15 @@ private fun SourceOption(
         ) {
             if (selected) Box(Modifier.size(11.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
         }
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(RoundedCornerShape(9.dp))
+                .background(if (id == SourceId.APPLE) colors.seriesApple else colors.seriesSpotify),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(id.initial, color = Color(0xFFFBF6EE), fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+        }
         Column(Modifier.weight(1f)) {
             Text(id.label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
             Text(

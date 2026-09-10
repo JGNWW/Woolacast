@@ -67,6 +67,12 @@ class LibraryViewModel(
         _sort.value = sort
     }
 
+    val theme = store.theme
+
+    fun setTheme(mode: String) {
+        viewModelScope.launch { store.setTheme(mode) }
+    }
+
     /**
      * Wat de app zelf toevoegt: van de shows die je volgt, wie er bewoog. Dat
      * kan alleen omdat de lijsten dagelijks worden vastgelegd — zonder gisteren

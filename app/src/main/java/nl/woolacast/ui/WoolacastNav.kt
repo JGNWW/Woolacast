@@ -52,7 +52,11 @@ import kotlinx.coroutines.launch
 import nl.woolacast.AppContainer
 import nl.woolacast.data.local.toSaved
 import nl.woolacast.domain.Catalog
+import nl.woolacast.domain.ChartLevel
+import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.Episode
+import nl.woolacast.domain.SourceId
+import nl.woolacast.ui.charts.ChartListScreen
 import nl.woolacast.ui.charts.ChartsScreen
 import nl.woolacast.ui.charts.ChartsViewModel
 import nl.woolacast.ui.common.MiniPlayer
@@ -206,8 +210,16 @@ fun WoolacastNav(container: AppContainer) {
                         onSearch = openSearch,
                         onAlerts = { selectTab(Tab.LIBRARY) },
                         onPick = { country, category ->
-                            chartsViewModel.pick(country, category)
-                            selectTab(Tab.CHARTS)
+                            // Een land of categorie vanaf Ontdek opent zijn eigen lijst.
+                            val query = chartsState.query.copy(
+                                country = country ?: chartsState.query.country,
+                                category = category ?: chartsState.query.category
+                            )
+                            navController.navigate(
+                                "${Tab.DISCOVER.route}/list?source=${query.source.name}" +
+                                    "&country=${query.country.code}&genre=${query.category.appleGenreId ?: 0}" +
+                                    "&level=${query.level.name}"
+                            )
                         }
                     )
                 }
@@ -281,6 +293,31 @@ private fun NavGraphBuilder.tabScreens(
     playAndOpen: (Episode, String?) -> Unit
 ) {
     val prefix = tab.route
+
+    composable("$prefix/list?source={source}&country={country}&genre={genre}&level={level}") { entry ->
+        val arguments = entry.arguments
+        val query = ChartQuery(
+            source = runCatching { SourceId.valueOf(arguments?.getString("source").orEmpty()) }.getOrDefault(SourceId.APPLE),
+            country = Catalog.country(arguments?.getString("country") ?: chartsCountry),
+            category = Catalog.category(arguments?.getString("genre")?.toIntOrNull()?.takeIf { it != 0 }),
+            level = runCatching { ChartLevel.valueOf(arguments?.getString("level").orEmpty()) }.getOrDefault(ChartLevel.SHOWS)
+        )
+        val listViewModel: ChartsViewModel = viewModel(
+            key = "list-${query.key}",
+            factory = viewModelFactory {
+                initializer { ChartsViewModel(container.chartRepository, container.podcastRepository, query) }
+            }
+        )
+        LaunchedEffect(listViewModel) {
+            listViewModel.playRequests.collect { request -> playAndOpen(request.episode, request.label) }
+        }
+        ChartListScreen(
+            viewModel = listViewModel,
+            repository = container.chartRepository,
+            onBack = { navController.popBackStack() },
+            onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) }
+        )
+    }
 
     composable("$prefix/search") {
         val searchViewModel: SearchViewModel = viewModel(

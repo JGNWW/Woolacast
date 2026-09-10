@@ -80,7 +80,9 @@ private data class StoreData(
     val queue: List<SavedEpisode> = emptyList(),
     val saved: List<SavedEpisode> = emptyList(),
     /** Waar je gebleven bent, per aflevering, in milliseconden. */
-    val progress: Map<String, Long> = emptyMap()
+    val progress: Map<String, Long> = emptyMap(),
+    /** "light", "dark" of "system". Het ontwerp is licht; dat is de standaard. */
+    val theme: String = "light"
 )
 
 /**
@@ -110,6 +112,11 @@ class LocalStore(private val file: File) {
 
     private val _progress = MutableStateFlow<Map<String, Long>>(emptyMap())
     val progress: StateFlow<Map<String, Long>> = _progress.asStateFlow()
+
+    private val _theme = MutableStateFlow("light")
+    val theme: StateFlow<String> = _theme.asStateFlow()
+
+    suspend fun setTheme(mode: String) = mutate { it.copy(theme = mode) }
 
     suspend fun load() = withContext(Dispatchers.IO) {
         mutex.withLock {
@@ -225,6 +232,7 @@ class LocalStore(private val file: File) {
         _queue.value = data.queue
         _saved.value = data.saved
         _progress.value = data.progress
+        _theme.value = data.theme
     }
 
     private companion object {

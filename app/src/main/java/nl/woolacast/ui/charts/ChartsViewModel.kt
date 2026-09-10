@@ -45,22 +45,19 @@ data class PlayRequest(val episode: Episode, val label: String?)
 
 class ChartsViewModel(
     private val repository: ChartRepository,
-    private val podcasts: PodcastRepository
+    private val podcasts: PodcastRepository,
+    initialQuery: ChartQuery = ChartQuery(
+        source = SourceId.APPLE,
+        country = Catalog.defaultCountry,
+        category = Catalog.defaultCategory,
+        level = ChartLevel.SHOWS
+    )
 ) : ViewModel() {
 
     private val _playRequests = MutableSharedFlow<PlayRequest>(extraBufferCapacity = 1)
     val playRequests: SharedFlow<PlayRequest> = _playRequests.asSharedFlow()
 
-    private val _state = MutableStateFlow(
-        ChartsUiState(
-            query = ChartQuery(
-                source = SourceId.APPLE,
-                country = Catalog.defaultCountry,
-                category = Catalog.defaultCategory,
-                level = ChartLevel.SHOWS
-            )
-        )
-    )
+    private val _state = MutableStateFlow(ChartsUiState(query = initialQuery))
     val state: StateFlow<ChartsUiState> = _state.asStateFlow()
 
     private var loadJob: Job? = null

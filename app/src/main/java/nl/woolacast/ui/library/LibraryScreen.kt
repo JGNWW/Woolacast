@@ -84,6 +84,7 @@ fun LibraryScreen(
     val feeds by viewModel.feeds.collectAsStateWithLifecycle()
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
     var tab by remember { mutableStateOf(LibraryTab.FOLLOWED) }
     var sortOpen by remember { mutableStateOf(false) }
 
@@ -102,6 +103,13 @@ fun LibraryScreen(
                         DropdownMenuItem(
                             text = { Text(option.label, fontWeight = if (option == sort) FontWeight.Bold else FontWeight.Normal) },
                             onClick = { viewModel.setSort(option); sortOpen = false }
+                        )
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    listOf("light" to "Licht thema", "dark" to "Donker thema", "system" to "Thema van het toestel").forEach { (mode, label) ->
+                        DropdownMenuItem(
+                            text = { Text(label, fontWeight = if (mode == theme) FontWeight.Bold else FontWeight.Normal) },
+                            onClick = { viewModel.setTheme(mode); sortOpen = false }
                         )
                     }
                 }

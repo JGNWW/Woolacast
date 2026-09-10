@@ -56,7 +56,6 @@ import nl.woolacast.ui.common.Flag
 import nl.woolacast.ui.common.IconAction
 import nl.woolacast.ui.common.LinkText
 import nl.woolacast.ui.common.NoticePanel
-import nl.woolacast.ui.common.SourceColumnsHeader
 import nl.woolacast.ui.common.SourceDot
 import nl.woolacast.ui.common.TitleBar
 import nl.woolacast.ui.common.WoolIcons
@@ -200,7 +199,6 @@ fun TrackerScreen(
                         }
                     }
                 }
-                item { SourceColumnsHeader(Modifier.padding(top = 6.dp)) }
                 items(shown.size) { index ->
                     val (country, ranks) = shown[index]
                     CountryRow(country, ranks.associate { it.source to it.rank })
