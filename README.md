@@ -218,25 +218,37 @@ Wat dat oplevert, gemeten:
 
 | Land | Tips | Media |
 | --- | --- | --- |
-| US | 32 | Podcast Review |
-| IE | 17 | The Irish Times, RTÉ, Hot Press |
+| US | 27 | Podcast Review |
+| IE | 16 | The Irish Times, RTÉ, Hot Press |
 | GB | 15 | The Guardian (Hear Here) |
-| FR | 14 | Télérama, Slate, Radio France, Le Nouvel Obs |
-| NL | 9 | VPRO Podcastgids, NOS |
-| ES | 7 | Cadena SER, La Vanguardia |
-| DE | 6 | NDR, FAZ, BR |
+| FR | 13 | Télérama, Slate, Radio France |
+| ES | 8 | Cadena SER, La Vanguardia |
+| DE | 7 | NDR, FAZ, BR, Tagesspiegel |
+| NL | 7 | VPRO Podcastgids, NOS |
 | AU · BR | 5 | Guardian Australia · Folha de S.Paulo, G1 |
-| IT | 4 | Corriere della Sera |
 | BE · MX | 2 | HLN, Humo · El Universal |
-| CA | 1 | The Tyee |
-| SE, DK, NO, JP, IN | 0 | — |
+| CA · DK | 1 | The Tyee · Radio4 |
+| IT, SE, NO, JP, IN | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
-Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Noorwegen staat
-op nul omdat NRK tijdens die ronde niet bereikbaar was; dat herstelt vanzelf.
-Japan en India vragen om herkenning van titels in een ander schrift — dat kan de
-lezer nu niet.
+Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
+vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
+
+### Waar we níet mogen kijken
+
+Google News lijkt de oplossing: daar staan de recensies van alle titels bij
+elkaar. Maar `news.google.com/robots.txt` zegt `Disallow: /` voor iedereen op
+de homepage na, en noemt `ClaudeBot`, `anthropic-ai` en `GPTBot` daarbij met
+naam. Ook de RSS-ingang valt daaronder. Een officiële API is er niet; de
+aggregators die er wel een hebben vragen een sleutel en een server, en die
+hebben we bewust niet. Dus: niet doen.
+
+Wat er wel is, is de feed van de uitgever zelf. VPRO en NRC hebben er een voor
+hun podcastrubriek, en die lezen we. De DPG-titels (Volkskrant, Trouw, Parool,
+AD) publiceren hun podcastrubriek niet in een feed en hun pagina's staan achter
+een toestemmingsscherm; daar komen we niet langs zonder dat scherm te omzeilen,
+en dat doen we niet.
 
 ### Zelf zoeken: de prospector
 
