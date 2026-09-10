@@ -434,6 +434,14 @@ def podcast_candidates(title: str, summary: str) -> list[str]:
     return found[:3]
 
 
+def normalise_any(title: str) -> str:
+    """
+    Zoals normalise, maar houdt letters uit elk schrift. Voor tips is dat nodig:
+    anders valt "Подкаст Asia Pacific" samen met "Asia Pacific".
+    """
+    return re.sub(r"[\W_]+", "", title.lower(), flags=re.UNICODE)
+
+
 def lookup_show(name: str, country: str) -> dict | None:
     """
     Zoekt de genoemde titel in Apple's catalogus. Alleen een treffer die exact
@@ -443,12 +451,13 @@ def lookup_show(name: str, country: str) -> dict | None:
     data = fetch(TIP_SEARCH.format(term=urllib.parse.quote(name), cc=country))
     if not data:
         return None
-    wanted = normalise(name)
+    wanted = normalise_any(name)
     if len(wanted) < 4:
         return None
     for hit in data.get("results", []):
         title = hit.get("collectionName", "")
-        variants = {normalise(title), normalise(title.split(":")[0]), normalise(title.split(" - ")[0])}
+        variants = {normalise_any(title), normalise_any(title.split(":")[0]),
+                    normalise_any(title.split(" - ")[0])}
         if wanted not in variants:
             continue
         return {
@@ -551,6 +560,18 @@ def read_guide(country: str, outlet: str, index_url: str, index_body: str,
             continue
         found = 0
         seen_here = set()
+        plain = article.get("plain", "")
+
+        def mentioned_as_podcast(name: str) -> bool:
+            """Een losse naam moet in het artikel bij het woord 'podcast' staan."""
+            if " " in name.strip():
+                return True
+            for m in re.finditer(re.escape(name), plain):
+                window = plain[max(0, m.start() - 120):m.end() + 120].lower()
+                if "podcast" in window or "podkast" in window or "pod " in window:
+                    return True
+            return False
+
         for name in article["names"] + podcast_candidates(article["title"], article["summary"]):
             if found >= GUIDE_PER_ARTICLE:
                 break
@@ -558,6 +579,8 @@ def read_guide(country: str, outlet: str, index_url: str, index_body: str,
             if not looks_like_title(name) or name.lower() in seen_here:
                 continue
             seen_here.add(name.lower())
+            if not mentioned_as_podcast(name):
+                continue
             match = lookup_show(name, country)
             if not match:
                 continue
