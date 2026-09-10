@@ -24,7 +24,10 @@ data class ChartEntry(
     val showId: String? = null,
     /** Bekend bij open bronnen; bij Apple pas na een lookup. */
     val feedUrl: String? = null,
-    val description: String? = null
+    val description: String? = null,
+    /** Alleen op afleveringniveau, en alleen als de bron ze meegeeft. */
+    val durationMillis: Long? = null,
+    val releaseDate: String? = null
 )
 
 data class Chart(

@@ -307,9 +307,70 @@ def write_movers(root: pathlib.Path, country: str, charts: list[dict]) -> None:
         ensure_ascii=False, separators=(",", ":")))
 
 
+def normalise(title: str) -> str:
+    """Genoeg om dezelfde show bij Apple en Spotify te herkennen."""
+    return re.sub(r"[^a-z0-9]+", "", title.lower())
+
+
+def write_shows(root: pathlib.Path, country: str, charts: list[dict]) -> None:
+    """
+    Waar noteert een show, op welke plek, bij welke bron. Dat is wat de tracker
+    nodig heeft en het enige wat je niet uit één lijst kunt afleiden.
+
+    Zo krap mogelijk: alleen land, bron en rang. Titel en artwork weet de app
+    al, en dit bestand wordt elke dag opnieuw geschreven — wat er niet in staat,
+    hoeft ook niet elke dag door de geschiedenis van de repo.
+
+    Verdeeld over honderd bestanden op de laatste twee cijfers van het id, zodat
+    de app er één van een paar kilobyte ophaalt in plaats van alles.
+
+    Apple en Spotify delen geen id, dus die worden op naam gekoppeld.
+    """
+    apple_by_name, spotify_by_name = {}, {}
+    for chart in charts:
+        if chart["level"] != "shows":
+            continue
+        target = apple_by_name if chart["source"] == "apple" else spotify_by_name
+        for entry in chart["entries"]:
+            key = normalise(entry["title"])
+            if key and (key not in target or entry["rank"] < target[key]["rank"]):
+                target[key] = entry
+
+    shards: dict[str, dict] = {}
+
+    def shard_for(show_id: str) -> dict:
+        name = show_id[-2:].rjust(2, "0")
+        if name not in shards:
+            path = root / "shows" / f"{name}.json"
+            shards[name] = json.loads(path.read_text()) if path.exists() else {}
+        return shards[name]
+
+    for key, entry in apple_by_name.items():
+        shard = shard_for(entry["id"])
+        record = shard.get(entry["id"]) or {}
+        positions = [p for p in record.get("p", []) if p[0] != country]
+        positions.append([country, "a", entry["rank"]])
+
+        twin = spotify_by_name.get(key)
+        if twin:
+            positions.append([country, "s", twin["rank"]])
+            # De Spotify-uri is nodig om diens historie op te kunnen zoeken.
+            record["u"] = twin["id"]
+
+        record["p"] = sorted(positions, key=lambda p: (p[2], p[0]))
+        shard[entry["id"]] = record
+
+    folder = root / "shows"
+    folder.mkdir(parents=True, exist_ok=True)
+    for name, shard in shards.items():
+        (folder / f"{name}.json").write_text(
+            json.dumps(shard, ensure_ascii=False, separators=(",", ":")))
+
+
 def write_index(root: pathlib.Path) -> None:
     charts = []
     for path in sorted(root.rglob("*.history.json")):
+
         data = json.loads(path.read_text())
         folder = path.parent
         listing = folder / f"{data['level']}.json"
@@ -358,6 +419,7 @@ def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
 
         if collected:
             write_movers(root, country, collected)
+            write_shows(root, country, collected)
 
 
 def run_episodes(countries: list[str], limit: int, workers: int, root: pathlib.Path) -> None:

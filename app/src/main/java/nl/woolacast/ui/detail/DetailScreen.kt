@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,7 +39,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.concurrent.TimeUnit
+import androidx.compose.foundation.background
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.Episode
+import nl.woolacast.domain.SourceId
 import nl.woolacast.ui.common.Artwork
 
 @Composable
@@ -45,6 +52,7 @@ fun DetailScreen(
     viewModel: DetailViewModel,
     onBack: () -> Unit,
     onPlay: (Episode) -> Unit,
+    onOpenTracker: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -130,6 +138,16 @@ fun DetailScreen(
                     }
                 }
 
+                if (state.positions.isNotEmpty()) {
+                    item {
+                        ChartStrip(
+                            positions = state.positions,
+                            countryCount = state.countryCount,
+                            onClick = onOpenTracker
+                        )
+                    }
+                }
+
                 podcast.description?.takeIf { it.isNotBlank() }?.let { description ->
                     item {
                         Text(
@@ -206,3 +224,65 @@ private fun formatDuration(millis: Long): String {
     val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
     return "$minutes min"
 }
+
+/**
+ * De noteringen van deze show in één balk: waar staat hij, bij welke bron.
+ * Tikken opent het volledige verloop.
+ */
+@Composable
+private fun ChartStrip(
+    positions: List<ShowPositionLike>,
+    countryCount: Int,
+    onClick: () -> Unit
+) {
+    val here = positions.groupBy { it.source }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(MaterialTheme.colorScheme.secondary)
+            .clickable(onClick = onClick)
+            .padding(start = 14.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            Icons.Filled.BarChart,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSecondary,
+            modifier = Modifier.size(20.dp)
+        )
+        listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
+            val best = here[source]?.minByOrNull { it.rank } ?: return@forEach
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    "${best.rank}",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    source.label.substringBefore(' '),
+                    color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Text(
+            if (countryCount == 1) "1 land" else "$countryCount landen",
+            color = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
+            style = MaterialTheme.typography.bodySmall
+        )
+        Icon(
+            Icons.Filled.ChevronRight,
+            contentDescription = "Verloop bekijken",
+            tint = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.7f),
+            modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+private typealias ShowPositionLike = nl.woolacast.data.dataset.ShowPosition

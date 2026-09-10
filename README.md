@@ -171,10 +171,11 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 | Speler: mini-balk die uitklapt naar volledig scherm | werkt |
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek | werkt |
-| Ontdek | ingang op de lijsten |
+| Ontdek: stijgers, landen, categorieen | werkt |
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
 | Grootste stijgers op Ontdek | werkt zodra er twee dagen historie is |
-| Chart-tracker | nog niet |
+| Chart-tracker: één show over bronnen, landen en tijd | werkt |
+| Noteringsbalk op de podcastpagina | werkt |
 | Afleveringen downloaden voor offline luisteren | nog niet |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
@@ -207,7 +208,9 @@ historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
 - Lettertypen: Bricolage Grotesque en Instrument Sans staan in het ontwerp maar
   nog niet in `res/font/`; de maatvoering in `Type.kt` klopt al wel.
 - Afleveringen downloaden, zodat luisteren ook zonder verbinding kan.
-- Chart-tracker en chart-alerts.
+- Zoeken.
+- Bibliotheek: tabbladen voor wachtrij en bewaard, plus chart-alerts.
+- Podcastpagina: tabbladen voor noteringen en over.
 - Afhankelijkheden zijn gepind op versies van eind 2024 en werken; lint meldt
   dat er nieuwere zijn (AGP 9.4 inmiddels).
 - `applicationId` staat op `nl.woolacast` — aanpassen naar een domein dat je

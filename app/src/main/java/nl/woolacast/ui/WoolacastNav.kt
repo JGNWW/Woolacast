@@ -41,6 +41,8 @@ import nl.woolacast.ui.discover.DiscoverScreen
 import nl.woolacast.ui.discover.DiscoverViewModel
 import nl.woolacast.ui.library.LibraryScreen
 import nl.woolacast.ui.player.PlayerScreen
+import nl.woolacast.ui.tracker.TrackerScreen
+import nl.woolacast.ui.tracker.TrackerViewModel
 
 private const val PLAYER_ROUTE = "player"
 
@@ -162,6 +164,31 @@ fun WoolacastNav(container: AppContainer) {
                 )
             }
 
+            composable("tracker/{showId}?country={country}&title={title}&publisher={publisher}&art={art}") { entry ->
+                val arguments = entry.arguments
+                val showId = arguments?.getString("showId").orEmpty()
+                val trackerViewModel: TrackerViewModel = viewModel(
+                    key = "tracker-$showId",
+                    factory = viewModelFactory {
+                        initializer {
+                            TrackerViewModel(
+                                dataset = container.dataset,
+                                showId = showId,
+                                countryCode = arguments?.getString("country")
+                                    ?: Catalog.defaultCountry.code,
+                                title = arguments?.getString("title").orEmpty(),
+                                publisher = arguments?.getString("publisher").orEmpty(),
+                                artworkUrl = arguments?.getString("art")?.takeIf { it.isNotBlank() }
+                            )
+                        }
+                    }
+                )
+                TrackerScreen(
+                    viewModel = trackerViewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
             composable(PLAYER_ROUTE) {
                 PlayerScreen(
                     state = playback,
@@ -188,13 +215,23 @@ fun WoolacastNav(container: AppContainer) {
                                 feedUrl = feedUrl,
                                 title = showTitle,
                                 repository = container.podcastRepository,
-                                store = container.store
+                                store = container.store,
+                                dataset = container.dataset
                             )
                         }
                     }
                 )
+                val podcast = detailViewModel.state.collectAsStateWithLifecycle().value.podcast
                 DetailScreen(
                     viewModel = detailViewModel,
+                    onOpenTracker = {
+                        navController.navigate(
+                            "tracker/${Uri.encode(showId)}?country=$countryCode" +
+                                "&title=${Uri.encode(podcast?.title ?: showTitle.orEmpty())}" +
+                                "&publisher=${Uri.encode(podcast?.publisher.orEmpty())}" +
+                                "&art=${Uri.encode(podcast?.artworkUrl.orEmpty())}"
+                        )
+                    },
                     onBack = { navController.popBackStack() },
                     onPlay = { episode ->
                         container.player.play(episode)

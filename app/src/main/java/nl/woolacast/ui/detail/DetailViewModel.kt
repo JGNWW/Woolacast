@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.woolacast.data.PodcastRepository
+import nl.woolacast.data.dataset.ChartsDataset
+import nl.woolacast.data.dataset.ShowPosition
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.domain.Episode
@@ -16,7 +18,10 @@ data class DetailUiState(
     val loading: Boolean = true,
     val podcast: Podcast? = null,
     val episodes: List<Episode> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    /** Waar deze show noteert; leeg als er nog niets is vastgelegd. */
+    val positions: List<ShowPosition> = emptyList(),
+    val countryCount: Int = 0
 )
 
 class DetailViewModel(
@@ -25,7 +30,8 @@ class DetailViewModel(
     private val feedUrl: String?,
     private val title: String?,
     private val repository: PodcastRepository,
-    private val store: LocalStore
+    private val store: LocalStore,
+    private val dataset: ChartsDataset? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailUiState())
@@ -49,6 +55,14 @@ class DetailViewModel(
                         error = error.message ?: "Kon deze podcast niet laden."
                     )
                 }
+        }
+
+        viewModelScope.launch {
+            val tracking = dataset?.tracking(showId) ?: return@launch
+            _state.value = _state.value.copy(
+                positions = tracking.positions,
+                countryCount = tracking.positions.map { it.country }.distinct().size
+            )
         }
     }
 

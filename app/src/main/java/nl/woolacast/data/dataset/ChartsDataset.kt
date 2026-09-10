@@ -71,6 +71,21 @@ data class DatasetHistory(
     val days: Map<String, Map<String, Int>> = emptyMap()
 )
 
+@Serializable
+data class ShowRecord(
+    /** [land, bron ("a"/"s"), rang] */
+    val p: List<List<kotlinx.serialization.json.JsonPrimitive>> = emptyList(),
+    /** De Spotify-uri, als die op naam gekoppeld kon worden. */
+    val u: String? = null
+)
+
+data class ShowPosition(val country: String, val source: SourceId, val rank: Int)
+
+data class ShowTracking(
+    val positions: List<ShowPosition> = emptyList(),
+    val spotifyUri: String? = null
+)
+
 interface ChartsDatasetApi {
     @GET
     suspend fun chart(@Url url: String): DatasetChart
@@ -80,6 +95,9 @@ interface ChartsDatasetApi {
 
     @GET
     suspend fun history(@Url url: String): DatasetHistory
+
+    @GET
+    suspend fun shows(@Url url: String): Map<String, ShowRecord>
 }
 
 /**
@@ -101,6 +119,7 @@ class ChartsDataset(
     private val mutex = Mutex()
     private val charts = mutableMapOf<String, DatasetChart?>()
     private val histories = mutableMapOf<String, DatasetHistory?>()
+    private val showShards = mutableMapOf<String, Map<String, ShowRecord>?>()
     private val movers = mutableMapOf<String, DatasetMovers?>()
 
     private fun ChartQuery.datasetPath(): String {
@@ -137,7 +156,9 @@ class ChartsDataset(
                 genre = dataset.genreLabel,
                 storeUrl = null,
                 showId = entry.showId,
-                feedUrl = entry.feedUrl
+                feedUrl = entry.feedUrl,
+                durationMillis = entry.durationMs,
+                releaseDate = entry.releaseDate
             )
         }
         return Chart(
@@ -181,6 +202,55 @@ class ChartsDataset(
             else runCatching { api.history("$baseUrl/$path.history.json") }
                 .getOrNull()
                 .also { histories[path] = it }
+        }
+    }
+
+    /**
+     * Waar een show noteert, over landen en bronnen heen. Het register is
+     * verdeeld over honderd scherven op de laatste twee cijfers van het id, dus
+     * dit haalt een paar kilobyte op in plaats van alles.
+     */
+    suspend fun tracking(appleShowId: String): ShowTracking? {
+        if (appleShowId.length < 2 || !appleShowId.all { it.isDigit() }) return null
+        val shard = appleShowId.takeLast(2)
+
+        val records = mutex.withLock {
+            if (showShards.containsKey(shard)) showShards[shard]
+            else runCatching { api.shows("$baseUrl/shows/$shard.json") }
+                .getOrNull()
+                .also { showShards[shard] = it }
+        } ?: return null
+
+        val record = records[appleShowId] ?: return null
+        val positions = record.p.mapNotNull { row ->
+            if (row.size < 3) return@mapNotNull null
+            val rank = row[2].content.toIntOrNull() ?: return@mapNotNull null
+            ShowPosition(
+                country = row[0].content,
+                source = if (row[1].content == "s") SourceId.SPOTIFY else SourceId.APPLE,
+                rank = rank
+            )
+        }
+        return ShowTracking(positions, record.u)
+    }
+
+    /** Rang per dag voor één show in één land, om een lijn van te tekenen. */
+    suspend fun rankHistory(
+        source: SourceId,
+        countryCode: String,
+        showId: String
+    ): List<Pair<String, Int>> {
+        val folder = if (source == SourceId.SPOTIFY) "spotify" else "apple"
+        val path = "$folder/$countryCode/26/shows"
+        val history = mutex.withLock {
+            if (histories.containsKey(path)) histories[path]
+            else runCatching { api.history("$baseUrl/$path.history.json") }
+                .getOrNull()
+                .also { histories[path] = it }
+        } ?: return emptyList()
+
+        return history.days.toSortedMap().mapNotNull { (day, ranks) ->
+            ranks[showId]?.let { day to it }
         }
     }
 

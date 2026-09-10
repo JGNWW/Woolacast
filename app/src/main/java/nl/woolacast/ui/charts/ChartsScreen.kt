@@ -179,7 +179,7 @@ fun ChartsScreen(
                     )
                 }
                 items(chart.entries, key = { "${it.rank}-${it.id}" }) { entry ->
-                    ChartRow(entry) {
+                    val open = {
                         entry.showId?.let { id ->
                             // Op afleveringniveau is de titel die van de aflevering;
                             // voor het opzoeken van een feed hebben we de show nodig.
@@ -190,6 +190,12 @@ fun ChartsScreen(
                             }
                             onOpenPodcast(id, entry.feedUrl, chart.query.country.code, showTitle)
                         }
+                        Unit
+                    }
+                    if (chart.query.level == ChartLevel.EPISODES) {
+                        EpisodeChartRow(entry, open)
+                    } else {
+                        ChartRow(entry, open)
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
@@ -245,6 +251,59 @@ private fun ChartRow(entry: ChartEntry, onClick: () -> Unit) {
         }
         MovementBadge(entry.movement)
         Spacer(Modifier.width(4.dp))
+    }
+}
+
+/**
+ * Een aflevering heeft meer te vertellen dan een show: twee regels titel, van
+ * welke podcast hij komt, en hoe lang en hoe oud hij is.
+ */
+@Composable
+private fun EpisodeChartRow(entry: ChartEntry, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 13.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        RankNumber(entry.rank, modifier = Modifier.padding(top = 3.dp))
+        Artwork(entry.artworkUrl, 56.dp, corner = 12.dp)
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                entry.title,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                entry.publisher,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(7.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                val facts = listOfNotNull(
+                    entry.durationMillis?.let { "${it / 60000} min" },
+                    entry.releaseDate
+                ).joinToString(" · ")
+                if (facts.isNotEmpty()) {
+                    Text(
+                        facts,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                MovementBadge(entry.movement, modifier = Modifier.width(40.dp))
+            }
+        }
     }
 }
 
