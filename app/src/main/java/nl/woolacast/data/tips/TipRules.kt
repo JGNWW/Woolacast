@@ -214,13 +214,24 @@ object TipRules {
         // Ook een afkorting telt: "SZ-Podcast" is de Süddeutsche. Wel op een
         // woordgrens, anders zit "AD" in "advies" — en zonder de lidwoorden,
         // want wie "de" als naam telt schrapt de halve Nederlandse pers.
-        val words = outlet.split(Regex("[\\W_]+"))
-            .filter { it.length >= 2 && it.lowercase() !in HOUSE_SKIP }
+        // Alleen de héle naam telt, niet een los woord eruit. "The Irish Times"
+        // deelt "Irish" met half Ierland en "Guardian Australia" deelt
+        // "Australia" met half Australië; op losse woorden filterden we daar
+        // de echte tips weg.
+        val losse = outlet.split(Regex("[\\W_]+"))
+            .filter { it.isNotEmpty() && it.lowercase() !in HOUSE_SKIP }
+        val words = if (losse.size == 1 && losse[0].length >= 2) losse else emptyList()
+        // "F.A.Z. Bücher-Podcast" draagt de naam van de FAZ, maar met puntjes
+        // ertussen herkent geen woordgrens hem. Plak zo'n reeks aan elkaar.
+        val plat = Regex("\\b(?:\\p{L}\\.){2,}").replace(headline) { it.value.replace(".", "") }
         if (words.any {
                 Regex("\\b${Regex.escape(it)}\\b", RegexOption.IGNORE_CASE)
-                    .containsMatchIn(headline)
+                    .containsMatchIn(plat)
             }
         ) return true
+        // En de volledige naam achter elkaar: "Guardian Australia" in de kop.
+        val heel = normalise(outlet)
+        if (heel.length >= 6 && normalise(headline).contains(heel)) return true
         return sameHouse(outlet, publisher)
     }
 
@@ -234,6 +245,17 @@ object TipRules {
             .filter { it.length > 2 && it !in skip }
             .toSet()
         if (tokens(outlet).intersect(tokens(publisher)).isNotEmpty()) return true
+        // Een afkorting hoort bij de naam die hij afkort: BR is de Bayerischer
+        // Rundfunk, FAZ de Frankfurter Allgemeine Zeitung. Dat delen ze niet
+        // als woord, wel als beginletters.
+        val kort = outlet.replace(Regex("[\\W_]+"), "").lowercase()
+        if (kort.length in 2..4 && outlet == outlet.uppercase()) {
+            val letters = publisher.split(Regex("[\\W_]+"))
+                .filter { it.isNotEmpty() }
+                .map { it.first().lowercaseChar() }
+                .joinToString("")
+            if (letters.startsWith(kort) || letters.contains(kort)) return true
+        }
         // "NPO Radio 1" en "nporadio1" zijn hetzelfde huis, maar delen geen
         // woord. Zonder spaties en leestekens vallen ze wel samen.
         val flatOutlet = normalise(outlet)

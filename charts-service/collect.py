@@ -865,6 +865,14 @@ def couple_article(country: str, outlet: str, article: dict, article_url: str,
         match = lookup_show(name, country)
         if not match:
             continue
+        # Een medium dat zijn eigen programma aanprijst geeft geen tip. Dit
+        # stond alleen op de weg via Google Nieuws en niet op die via de
+        # gidsen, en daar liep de halve Duitse oogst doorheen: "Die NDR
+        # Podcasts nach Radioprogramm" is de NDR, en "F.A.Z. Bücher-Podcast"
+        # is de FAZ.
+        host = urllib.parse.urlsplit(article_url).netloc
+        if own_house(article["title"], outlet, host) or same_house(outlet, match.get("publisher", "")):
+            continue
         found += 1
         tips.append({
             "outlet": outlet,
@@ -944,8 +952,8 @@ GOOGLE_EDITION = {
 # koppelingen; in het Engels helpt geen van beide, want daar noemt de kop de
 # podcast niet.
 GOOGLE_QUERIES = {
-    "nl": ['podcast recensie', '"beste podcasts"', 'beste podcast', '"podcastserie"',
-           'podcasttips', '"podcasttip"', 'podcast luistertip', '"podcastgids"'],
+    "nl": ['podcast recensie', 'nieuwe podcast', '"beste podcasts"', 'beste podcast',
+           '"podcastserie"', 'podcasttips', '"podcasttip"', 'nieuwe podcast recensie'],
     "be": ['podcast recensie', '"beste podcasts"', 'beste podcast', '"podcastserie"',
            'podcasttips', '"podcasttip"', '"podcastgids"'],
     "de": ['podcast rezension', 'podcast kritik', 'podcast kolumne', 'podcast hören',
@@ -962,8 +970,9 @@ GOOGLE_QUERIES = {
            '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
     "in": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
            '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
-    "fr": ['podcast critique', 'podcast écouter', 'podcast meilleur', 'podcast semaine',
-           'podcast recommandation', '"meilleurs podcasts"', '"podcasts à écouter"'],
+    "fr": ['podcast critique', 'podcast épisodes', 'podcast écouter', 'podcast meilleur',
+           'podcast semaine', 'podcast émission', 'podcast recommandation',
+           '"meilleurs podcasts"'],
     "es": ['podcast crítica', 'podcast reseña', 'podcast recomendación', '"mejores podcasts"',
            '"nuevos podcasts"', '"podcasts para escuchar"'],
     "mx": ['podcast crítica', 'podcast reseña', 'podcast recomendación', '"mejores podcasts"',
@@ -1072,6 +1081,14 @@ def same_house(outlet: str, publisher: str) -> bool:
 
     if tokens(outlet) & tokens(publisher):
         return True
+    # Een afkorting hoort bij de naam die hij afkort: BR is de Bayerischer
+    # Rundfunk, FAZ de Frankfurter Allgemeine Zeitung. Dat delen ze niet als
+    # woord, wel als beginletters.
+    kort = re.sub(r"[\W_]+", "", outlet).lower()
+    if 2 <= len(kort) <= 4 and outlet.upper() == outlet:
+        letters = "".join(w[0] for w in re.split(r"[\W_]+", publisher) if w).lower()
+        if letters.startswith(kort) or kort in letters:
+            return True
     # "NPO Radio 1" en "nporadio1" zijn hetzelfde huis, maar delen geen woord.
     # Zonder spaties en leestekens vallen ze wel samen.
     flat_outlet, flat_publisher = normalise_any(outlet), normalise_any(publisher)
@@ -1117,12 +1134,25 @@ def own_house(headline: str, outlet: str, host: str) -> bool:
     een eigen aflevering, geen tip. Op een woordgrens, anders zit "AD" in
     "advies" en "SZ" in niets bijzonders.
     """
-    words = {w for w in re.split(r"[\W_]+", outlet.lower())
-             if len(w) > 1 and w not in HOUSE_SKIP}
+    # Alleen de héle naam telt, niet een los woord eruit. "The Irish Times"
+    # deelt "Irish" met half Ierland, en "Guardian Australia" deelt "Australia"
+    # met half Australië; op losse woorden filterden we daar de echte tips weg.
+    losse = [w for w in re.split(r"[\W_]+", outlet) if w and w.lower() not in HOUSE_SKIP]
+    words = set()
+    if len(losse) == 1 and len(losse[0]) > 1:
+        words.add(losse[0].lower())
     domain = host.replace("www.", "").split(".")[0].lower()
     if domain and domain not in HOUSE_SKIP:
         words.add(domain)
-    if any(re.search(rf"\b{re.escape(w)}\b", headline, re.I) for w in words):
+    # "F.A.Z. Bücher-Podcast" draagt de naam van de FAZ, maar met puntjes ertussen
+    # herkent geen woordgrens hem. Plak zo'n reeks losse letters aan elkaar.
+    plat = re.sub(r"\b(?:[^\W\d_]\.){2,}",
+                  lambda m: m.group(0).replace(".", ""), headline)
+    if any(re.search(rf"\b{re.escape(w)}\b", plat, re.I) for w in words):
+        return True
+    # En de volledige naam achter elkaar: "Guardian Australia" in de kop.
+    heel = normalise_any(outlet)
+    if len(heel) >= 6 and heel in normalise_any(headline):
         return True
     # Ook het domein zonder punten: "nporadio1.nl" tegenover "NPO Radio 1".
     flat = normalise_any(host.replace("www.", "").split(".")[0])

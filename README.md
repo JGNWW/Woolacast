@@ -218,19 +218,19 @@ Wat dat oplevert, gemeten:
 
 | Land | Tips | Media |
 | --- | --- | --- |
-| US | 31 | Podcast Review, Rolling Stone |
-| FR | 22 | Le Monde, Le Nouvel Obs, Radio France, Slate |
-| NL | 22 | De Telegraaf, NOS, NPO, NPO Radio 1 |
-| DE | 19 | BR, Deutschlandfunk, Deutschlandfunk Kultur, FAZ |
-| IE | 19 | Hot Press, RTÉ, The Irish Times |
+| US | 30 | Podcast Review, Rolling Stone |
+| NL | 19 | NOS, NPO, NPO Radio 1, Trouw |
 | GB | 18 | Financial Times, NME, The Guardian |
+| FR | 15 | Le Figaro, Le Monde, Nouvelobs.com, Radio France |
+| DE | 10 | BR, Deutschlandfunk, FAZ, STERN |
 | BR | 9 | Folha de S.Paulo, G1, Hugo Gloss, O GLOBO |
-| BE | 6 | De Standaard, HLN, Humo |
-| JP | 6 | Xtrend.nikkei.com, ナタリー, 産経ニュース |
-| AU | 5 | Guardian Australia, news.com.au |
-| ES | 4 | Cadena SER, La Vanguardia, RTVE, elDiario |
+| JP | 6 | Natalie.mu, Xtrend.nikkei.com, 産経ニュース |
+| BE | 5 | De Standaard, HLN, Humo |
+| ES | 3 | Cadena SER, RTVE, elDiario |
+| IE | 3 | Hot Press, The Irish Times |
 | MX | 3 | EL PAÍS, El Universal |
 | CA | 2 | CTV News, The Tyee |
+| AU | 1 | news.com.au |
 | DK | 1 | Radio4 |
 | NO | 1 | NRK |
 | IN, IT, SE | 0 | — |
@@ -239,6 +239,29 @@ De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
 Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
 vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
+
+### Een eigen podcast aanprijzen is geen tip
+
+Dit filter zat op de weg via Google Nieuws maar niet op die via de gidsen, en
+daar liep veel doorheen. De helft van de Duitse oogst bestond uit omroepen die
+hun eigen programma aankondigden ("Die NDR Podcasts nach Radioprogramm",
+"F.A.Z. Bücher-Podcast"), en de negentien Ierse tips waren vrijwel allemaal
+podcasts van The Irish Times en RTÉ zelf. Nu geldt overal dezelfde regel: is de
+uitgever van de show hetzelfde huis als het medium, dan is het een aankondiging.
+
+Twee dingen bleken daarbij nodig. Een afkorting hoort bij de naam die hij
+afkort, want BR is de Bayerischer Rundfunk en FAZ de Frankfurter Allgemeine
+Zeitung, en die delen geen woord maar wel hun beginletters. En een naam met
+puntjes ertussen ("F.A.Z.") herkent geen woordgrens; die reeks wordt eerst
+aaneengeplakt.
+
+Omgekeerd mag een los woord uit de naam van een medium niet meetellen. "The
+Irish Times" deelt "Irish" met half Ierland en "Guardian Australia" deelt
+"Australia" met half Australië: op dat woord filterden we juist de echte tips
+weg. Alleen de volledige naam telt, of een naam die uit één woord bestaat.
+
+Het totaal zakt daarmee van 168 naar 126. Dat is de bedoeling: wat wegviel was
+geen tip.
 
 ### Welke zoekopdracht werkt echt
 

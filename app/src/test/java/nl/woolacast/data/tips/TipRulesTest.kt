@@ -141,6 +141,29 @@ class TipRulesTest {
     }
 
     @Test
+    fun `een los woord uit de naam van een medium is geen eigen aankondiging`() {
+        // "The Irish Times" deelt "Irish" met half Ierland; op dat woord
+        // filterden we daar de echte tips weg.
+        assertFalse(TipRules.ownAnnouncement("The best Irish podcasts of the week", "The Irish Times", "x"))
+        assertFalse(TipRules.ownAnnouncement("The best Australian podcasts", "Guardian Australia", "x"))
+        // Noemt het stuk de volledige naam, dan is het wel een eigen aankondiging.
+        assertTrue(
+            TipRules.ownAnnouncement(
+                "The Irish Times podcast: the week in news", "The Irish Times", "x"
+            )
+        )
+    }
+
+    @Test
+    fun `een afkorting hoort bij de naam die hij afkort`() {
+        assertTrue(TipRules.sameHouse("BR", "Bayerischer Rundfunk"))
+        assertTrue(TipRules.sameHouse("FAZ", "Frankfurter Allgemeine Zeitung"))
+        assertFalse(TipRules.sameHouse("BBC", "Bayerischer Rundfunk"))
+        // En met puntjes ertussen telt de naam ook.
+        assertTrue(TipRules.ownAnnouncement("F.A.Z. Bücher-Podcast: alles over literatuur", "FAZ", "x"))
+    }
+
+    @Test
     fun `een persbericht is geen tip`() {
         assertTrue(TipRules.isPressRelease("プレスリリース：Podcast「深夜枠。」配信開始"))
         assertTrue(TipRules.isPressRelease("Persbericht: nieuwe podcast van start"))
