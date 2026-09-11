@@ -947,7 +947,8 @@ GOOGLE_QUERIES = {
 # zoekopdracht levert alles van die krant op, niet alleen podcastrecensies.
 PODCAST_WORD = re.compile(
     r"podcast|podkast|podd|luistertip|h\u00f6rtipp|beluister", re.I)
-GOOGLE_SITES_PER_QUERY = 5
+# Zoveel kranten krijgen een eigen zoekopdracht per land, per dag.
+GOOGLE_SITE_QUERIES = 12
 
 
 def google_news(country: str, query: str) -> list[dict]:
@@ -990,7 +991,7 @@ def rfc_date(text: str) -> str | None:
 
 
 OUTLET_NAMES = {
-    "npo": "NPO", "standaard": "De Standaard", "ctvnews": "CTV News",
+    "npo": "NPO", "nporadio1": "NPO Radio 1", "standaard": "De Standaard", "ctvnews": "CTV News",
     "sz": "SZ", "hln": "HLN", "nrc": "NRC", "vrt": "VRT", "rtl": "RTL",
     "news.com": "news.com.au", "thetimes": "The Times", "bbc": "BBC",
     "abc": "ABC", "cbc": "CBC", "rte": "RT\u00c9", "nos": "NOS", "vpro": "VPRO",
@@ -1029,8 +1030,14 @@ def same_house(outlet: str, publisher: str) -> bool:
         parts = re.split(r"[\W_]+", text.lower())
         return {p for p in parts if len(p) > 2 and p not in skip}
 
-    left, right = tokens(outlet), tokens(publisher)
-    return bool(left & right)
+    if tokens(outlet) & tokens(publisher):
+        return True
+    # "NPO Radio 1" en "nporadio1" zijn hetzelfde huis, maar delen geen woord.
+    # Zonder spaties en leestekens vallen ze wel samen.
+    flat_outlet, flat_publisher = normalise_any(outlet), normalise_any(publisher)
+    if len(flat_outlet) >= 4 and len(flat_publisher) >= 4:
+        return flat_outlet in flat_publisher or flat_publisher in flat_outlet
+    return False
 
 
 def quoted_in(headline: str, name: str) -> bool:
@@ -1048,12 +1055,28 @@ def quoted_in(headline: str, name: str) -> bool:
     return False
 
 
+# Lidwoorden horen niet bij de naam van een medium: wie "de" als naam telt,
+# schrapt de halve Nederlandse pers.
+HOUSE_SKIP = {"de", "het", "een", "the", "la", "le", "el", "il", "los", "las",
+              "les", "der", "die", "das", "van", "en", "and", "of", "nl", "be"}
+
+
 def own_house(headline: str, outlet: str, host: str) -> bool:
-    """Draagt de kop de naam van het medium zelf? Dan is het een aankondiging."""
-    words = {w for w in re.split(r"[\W_]+", outlet.lower()) if len(w) > 1}
-    words.add(host.replace("www.", "").split(".")[0].lower())
-    low = headline.lower()
-    return any(w in low for w in words if len(w) > 1)
+    """
+    Draagt de kop de naam van het medium zelf? Dan is het een aankondiging van
+    een eigen aflevering, geen tip. Op een woordgrens, anders zit "AD" in
+    "advies" en "SZ" in niets bijzonders.
+    """
+    words = {w for w in re.split(r"[\W_]+", outlet.lower())
+             if len(w) > 1 and w not in HOUSE_SKIP}
+    domain = host.replace("www.", "").split(".")[0].lower()
+    if domain and domain not in HOUSE_SKIP:
+        words.add(domain)
+    if any(re.search(rf"\b{re.escape(w)}\b", headline, re.I) for w in words):
+        return True
+    # Ook het domein zonder punten: "nporadio1.nl" tegenover "NPO Radio 1".
+    flat = normalise_any(host.replace("www.", "").split(".")[0])
+    return len(flat) >= 5 and flat in normalise_any(headline)
 
 
 def near_podcast(headline: str, name: str, window: int = 50) -> bool:
@@ -1084,11 +1107,13 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
     allowed_hosts = {h.split("/")[0].replace("www.", "") for h in MEDIA.get(country, [])}
     allowed_hosts |= known_hosts
 
+    # Een vraag per krant, niet vijf kranten in een vraag. Google geeft er
+    # hooguit honderd items op terug, en bij vijf tegelijk verdringen de grote
+    # titels de kleine: Nederland ging van twee koppelingen naar tien door dit
+    # los te trekken.
     queries = [(q, False) for q in GOOGLE_QUERIES.get(country, [])]
-    hosts = list(MEDIA.get(country, []))
-    for i in range(0, len(hosts), GOOGLE_SITES_PER_QUERY):
-        group = " OR ".join(f"site:{h.split('/')[0]}" for h in hosts[i:i + GOOGLE_SITES_PER_QUERY])
-        queries.append((f"({group}) podcast", True))
+    for host in list(MEDIA.get(country, []))[:GOOGLE_SITE_QUERIES]:
+        queries.append((f"site:{host.split('/')[0]} podcast", True))
 
     tips, seen = [], set()
     for query, strict in queries:
@@ -1493,8 +1518,11 @@ def source_hosts(country: str) -> dict[str, str]:
 FEEDS_PER_COUNTRY = 16
 FEEDS_PER_HOST = 3
 
+# Zoveel kranten krijgen een eigen zoekopdracht in de catalogus van de app.
+GOOGLE_SITE_FEEDS = 5
 
-def feed_catalogue(country: str) -> list[dict]:
+
+def feed_catalogue(country: str, productive: set[str] | None = None) -> list[dict]:
     """De feeds die de app zelf kan lezen, op volgorde van opbrengst."""
     guides, news, discovered = [], [], []
     for outlet, url, mode in TIP_SOURCES.get(country, []):
@@ -1511,13 +1539,23 @@ def feed_catalogue(country: str) -> list[dict]:
     edition = GOOGLE_EDITION.get(country)
     if edition:
         hl, gl, ceid = edition
-        for query in GOOGLE_QUERIES.get(country, []):
-            google.append({
+
+        def vraag(query: str) -> dict:
+            return {
                 "outlet": "Google Nieuws",
                 "url": (f"{GOOGLE_NEWS}?q={urllib.parse.quote(query + f' when:{TIP_DAYS}d')}"
                         f"&hl={hl}&gl={gl}&ceid={ceid}"),
                 "kind": "google",
-            })
+            }
+
+        for query in GOOGLE_QUERIES.get(country, []):
+            google.append(vraag(query))
+        # En een eigen vraag voor de kranten die deze ronde iets opleverden.
+        # Vijf kranten in een vraag verdringen elkaar; los van elkaar vindt
+        # Google er meer. Welke dat zijn weten we pas na het ophalen, dus die
+        # lijst komt uit de ronde zelf.
+        for host in sorted(productive or ())[:GOOGLE_SITE_FEEDS]:
+            google.append(vraag(f"site:{host} podcast"))
 
     entries, seen = [], set()
     for entry in guides + google + news + discovered:
@@ -1530,8 +1568,9 @@ def feed_catalogue(country: str) -> list[dict]:
     return entries
 
 
-def write_feeds(root: pathlib.Path, country: str, logos: dict[str, str]) -> int:
-    entries = feed_catalogue(country)
+def write_feeds(root: pathlib.Path, country: str, logos: dict[str, str],
+                productive: set[str] | None = None) -> int:
+    entries = feed_catalogue(country, productive)
     for entry in entries:
         if logos.get(entry["outlet"]):
             entry["logo"] = logos[entry["outlet"]]
@@ -1560,11 +1599,15 @@ def write_tips(root: pathlib.Path, country: str) -> int:
         if tip.get("host"):
             hosts.setdefault(tip["outlet"], tip["host"])
     logos = write_logos(root, hosts)
+    # Kranten die deze ronde iets opleverden krijgen in de catalogus een eigen
+    # zoekopdracht mee, zodat de app ze ook los bevraagt. Dit moet vóór het
+    # opruimen van het adres gebeuren, anders is de lijst leeg.
+    productive = {t["host"].replace("www.", "") for t in tips if t.get("host")}
     for tip in tips:
         tip.pop("host", None)
         if logos.get(tip["outlet"]):
             tip["logo"] = logos[tip["outlet"]]
-    print(f"    catalogus: {write_feeds(root, country, logos)} feeds voor de app",
+    print(f"    catalogus: {write_feeds(root, country, logos, productive)} feeds voor de app",
           flush=True)
     folder = root / "tips"
     folder.mkdir(parents=True, exist_ok=True)

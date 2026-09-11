@@ -150,17 +150,27 @@ object TipRules {
         }
     }
 
+    /** Lidwoorden horen niet bij de naam van een medium. */
+    private val HOUSE_SKIP = setOf(
+        "de", "het", "een", "the", "la", "le", "el", "il", "los", "las",
+        "les", "der", "die", "das", "van", "en", "and", "of", "nl", "be"
+    )
+
     /**
      * Een medium dat zijn eigen aflevering aankondigt geeft geen tip. Dat is te
      * zien aan de kop ("SZ-Podcast: ...") en aan de uitgever van de show.
      */
     fun ownAnnouncement(headline: String, outlet: String, publisher: String): Boolean {
         // Ook een afkorting telt: "SZ-Podcast" is de Süddeutsche. Wel op een
-        // woordgrens, anders zit "AD" in "advies".
-        val words = outlet.split(Regex("[\\W_]+")).filter { it.length >= 2 }
-        if (words.any { Regex("\\b${Regex.escape(it)}\\b", RegexOption.IGNORE_CASE).containsMatchIn(headline) }) {
-            return true
-        }
+        // woordgrens, anders zit "AD" in "advies" — en zonder de lidwoorden,
+        // want wie "de" als naam telt schrapt de halve Nederlandse pers.
+        val words = outlet.split(Regex("[\\W_]+"))
+            .filter { it.length >= 2 && it.lowercase() !in HOUSE_SKIP }
+        if (words.any {
+                Regex("\\b${Regex.escape(it)}\\b", RegexOption.IGNORE_CASE)
+                    .containsMatchIn(headline)
+            }
+        ) return true
         return sameHouse(outlet, publisher)
     }
 
@@ -173,7 +183,13 @@ object TipRules {
             .split(Regex("[\\W_]+"))
             .filter { it.length > 2 && it !in skip }
             .toSet()
-        return tokens(outlet).intersect(tokens(publisher)).isNotEmpty()
+        if (tokens(outlet).intersect(tokens(publisher)).isNotEmpty()) return true
+        // "NPO Radio 1" en "nporadio1" zijn hetzelfde huis, maar delen geen
+        // woord. Zonder spaties en leestekens vallen ze wel samen.
+        val flatOutlet = normalise(outlet)
+        val flatPublisher = normalise(publisher)
+        if (flatOutlet.length < 4 || flatPublisher.length < 4) return false
+        return flatOutlet.contains(flatPublisher) || flatPublisher.contains(flatOutlet)
     }
 
     /** Letters en cijfers, kleine letters, verder niets — om titels te vergelijken. */
