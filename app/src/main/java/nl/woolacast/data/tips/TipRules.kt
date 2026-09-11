@@ -31,8 +31,13 @@ object TipRules {
         RegexOption.IGNORE_CASE
     )
 
-    private const val OPEN = "‘“«„\"'"
-    private const val CLOSE = "’”»\"'"
+    /**
+     * Elke taal zet zijn eigen tekens om een titel: ‘zo’ en “zo” bij ons, „zo“
+     * in het Duits, ”zo” en »zo» in het Zweeds, «zo» in het Frans. Wie die niet
+     * allemaal kent, mist in zo'n taal alles — Zweden stond daardoor op nul.
+     */
+    private const val OPEN = "‘“”«»„\"'"
+    private const val CLOSE = "’”“»«\"'"
 
     /**
      * Japans zet een titel tussen 「 en 」. Daar hoort geen regel bij over wat

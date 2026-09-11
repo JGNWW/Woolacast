@@ -399,15 +399,18 @@ def parse_any_date(raw: str) -> str | None:
 # Let op de afkappingsquote: in "\u2018Afrika\u2019s grootste beursgang\u2019" is de eerste
 # \u2019 geen sluitteken maar een apostrof. Een sluitteken wordt niet gevolgd
 # door een letter.
+# Elke taal zet zijn eigen tekens om een titel: \u2018zo\u2019 en \u201czo\u201d bij ons, \u201ezo\u201c in
+# het Duits, \u201dzo\u201d en \u00bbzo\u00bb in het Zweeds, \u00abzo\u00bb in het Frans. Wie die niet
+# allemaal kent, mist in zo'n taal alles.
 QUOTED = re.compile(
-    r"[\u2018\u201c\u00ab\u201e\u300c\u300e\"']"
+    r"[\u2018\u201c\u201d\u00ab\u00bb\u201e\u300c\u300e\"']"
     r"([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\u300c\u300d\u300e\u300f\"']{2,70})"
-    r"[\u2019\u201d\u00bb\u300d\u300f\"'](?![\w])")
+    r"[\u2019\u201d\u201c\u00bb\u00ab\u300d\u300f\"'](?![\w])")
 NEAR_PODCAST = re.compile(
     r"podcast(?:serie|reeks|series)?\s+(?:van\s+de\s+week\s+)?"
-    r"[\u2018\u201c\u00ab\u201e\u300c\u300e\"']"
+    r"[\u2018\u201c\u201d\u00ab\u00bb\u201e\u300c\u300e\"']"
     r"([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\u300c\u300d\u300e\u300f\"']{2,70})"
-    r"[\u2019\u201d\u00bb\u300d\u300f\"']",
+    r"[\u2019\u201d\u201c\u00bb\u00ab\u300d\u300f\"']",
     re.I)
 TITLE_PREFIX = re.compile(r"^podcast\s+(?:tip:?\s+)?([^:\u2013\u2014-]{3,60})[:\u2013\u2014-]", re.I)
 # Woorden die verraden dat een fragment een zin is, geen titel.
@@ -935,49 +938,41 @@ GOOGLE_EDITION = {
 # Waar een rubriek naar heet in de taal van het land. Deze zoekopdrachten gaan
 # over podcasts, dus een titel in de kop is er ook een.
 GOOGLE_QUERIES = {
-    "nl": ['"beste podcasts"', "podcasttips", '"podcast van de week"',
-           '"luistertip" OR "luistertips"', "podcastrecensie"],
-    "be": ['"beste podcasts"', "podcasttips", '"podcast van de week"',
-           '"luistertip" OR "luistertips"', "podcastrecensie"],
-    "de": ['"beste Podcasts"', '"Podcast-Tipps"', '"Podcast der Woche"',
-           '"Podcast Empfehlungen"', '"Podcast-Kritik"'],
-    "gb": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "us": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "ie": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "ca": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "au": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "in": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"', '"podcast recommendations"'],
-    "fr": ['"meilleurs podcasts"', '"podcast de la semaine"',
-           '"s\u00e9lection de podcasts"', '"critique podcast"',
-           '"podcast \u00e0 \u00e9couter"'],
-    "es": ['"mejores podcasts"', '"podcast de la semana"',
-           '"recomendaciones de podcasts"', '"podcast recomendado"',
-           '"cr\u00edtica podcast"'],
-    "mx": ['"mejores podcasts"', '"podcast de la semana"',
-           '"recomendaciones de podcasts"', '"podcast recomendado"',
-           '"cr\u00edtica podcast"'],
-    "it": ['"migliori podcast"', '"podcast della settimana"', '"consigli podcast"',
-           '"podcast da ascoltare"', '"recensione podcast"'],
-    "se": ['"b\u00e4sta poddar"', '"veckans podd"', "poddtips",
-           '"poddrecension"', '"poddar att lyssna p\u00e5"'],
-    "dk": ['"bedste podcasts"', '"ugens podcast"', "podcastanbefalinger",
-           '"podcastanmeldelse"', '"podcasts du skal lytte til"'],
-    "no": ['"beste podkaster"', '"ukens podkast"', "podkasttips",
-           '"podkastanbefaling"', '"podkastanmeldelse"'],
-    "br": ['"melhores podcasts"', '"podcast da semana"',
-           '"indica\u00e7\u00f5es de podcast"', '"podcasts para ouvir"',
-           '"cr\u00edtica de podcast"'],
-    # Japans schrijft titels tussen \u300c en \u300d; die tekens kennen de regels nu.
-    "jp": ["\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u304a\u3059\u3059\u3081",
-           "\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u7279\u96c6",
-           "\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u30ec\u30d3\u30e5\u30fc",
-           "\u4eca\u9031\u306e\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8"],
+    "nl": ['"beste podcasts"', 'podcasttips', 'podcastrecensie', '"podcasttip"', '"podcastserie"',
+           '"luistertip" OR "luistertips"', '"welke podcast"', '"podcastgids"'],
+    "be": ['"beste podcasts"', 'podcasttips', 'podcastrecensie', '"podcasttip"', '"podcastserie"',
+           '"luistertip" OR "luistertips"', '"podcastgids"'],
+    "de": ['"Podcast-Tipps"', '"Podcast der Woche"', '"Podcast-Kritik"', '"neue Podcasts"',
+           '"Podcast-Kolumne"', '"Podcast-Empfehlung"', '"Podcast-Rezension"', '"Podcast Empfehlungen"'],
+    "gb": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "us": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "ie": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "ca": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "au": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "in": ['"best podcasts"', '"podcast review"', '"podcasts to listen to"', '"new podcasts"',
+           '"what to listen to"', '"podcast roundup"', '"listening list"', '"podcast picks"'],
+    "fr": ['"meilleurs podcasts"', '"podcasts à écouter"', '"podcast à écouter"', '"sélection de podcasts"',
+           '"nouveaux podcasts"', '"critique podcast"'],
+    "es": ['"mejores podcasts"', '"nuevos podcasts"', '"podcasts para escuchar"', '"podcast de la semana"',
+           '"selección de podcasts"', '"recomendaciones de podcasts"'],
+    "mx": ['"mejores podcasts"', '"nuevos podcasts"', '"podcasts para escuchar"', '"podcast de la semana"',
+           '"selección de podcasts"', '"recomendaciones de podcasts"'],
+    "it": ['"migliori podcast"', '"nuovi podcast"', '"podcast da non perdere"', '"cosa ascoltare"',
+           '"podcast da ascoltare"', '"podcast consigliati"'],
+    "se": ['"veckans podd"', 'poddtips', '"poddar att lyssna på"', '"nya poddar"', '"veckans poddtips"',
+           '"bästa poddar"', '"lyssningstips"'],
+    "dk": ['"bedste podcasts"', '"ugens podcast"', 'podcastanbefalinger', '"podcastanmeldelse"',
+           '"nye podcasts"', '"podcasts du skal lytte til"'],
+    "no": ['"beste podkaster"', '"ukens podkast"', 'podkasttips', '"podkastanbefaling"',
+           '"nye podkaster"', '"podkastanmeldelse"'],
+    "br": ['"melhores podcasts"', '"podcast da semana"', '"novos podcasts"', '"podcasts para ouvir"',
+           '"indicações de podcast"', '"crítica de podcast"'],
+    "jp": ['ポッドキャスト おすすめ', 'ポッドキャスト 特集', 'ポッドキャスト レビュー', '今週のポッドキャスト'],
 }
 
 # In een kop uit een site-zoekopdracht moet het woord podcast zelf staan: die

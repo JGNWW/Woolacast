@@ -219,23 +219,48 @@ Wat dat oplevert, gemeten:
 | Land | Tips | Media |
 | --- | --- | --- |
 | US | 31 | Podcast Review, Rolling Stone |
-| FR | 22 | Télérama, Slate, Radio France, Le Monde, Le Nouvel Obs |
-| NL | 20 | VPRO Podcastgids, Trouw, de Volkskrant, NOS, NPO |
-| IE | 19 | The Irish Times, RTÉ, Hot Press |
-| GB | 18 | The Guardian, Financial Times, NME |
-| DE | 11 | NDR, FAZ, BR, Tagesspiegel |
-| BR | 7 | Folha de S.Paulo, G1, O Globo |
+| FR | 22 | Le Monde, Le Nouvel Obs, Radio France, Slate |
+| NL | 21 | De Telegraaf, NOS, NPO, NPO Radio 1 |
+| IE | 19 | Hot Press, RTÉ, The Irish Times |
+| GB | 18 | Financial Times, NME, The Guardian |
+| DE | 17 | BR, Deutschlandfunk, Deutschlandfunk Kultur, Die Zeit |
+| BR | 7 | Folha de S.Paulo, G1, O GLOBO |
 | BE | 6 | De Standaard, HLN, Humo |
-| AU · JP | 5 | Guardian Australia, news.com.au · Natalie, Mainichi, Sankei, Nikkei |
-| MX | 3 | El País, El Universal |
-| CA · ES | 2 | The Tyee, CTV News · Cadena SER, La Vanguardia |
-| DK · NO · IN | 1 | Radio4 · NRK · The Indian Express |
-| IT, SE | 0 | — |
+| JP | 6 | Natalie.mu, 日経クロストレンド, 産経ニュース |
+| AU | 5 | Guardian Australia, news.com.au |
+| MX | 3 | EL PAÍS, El Universal |
+| CA | 2 | CTV News, The Tyee |
+| ES | 2 | Cadena SER, La Vanguardia |
+| IN | 1 | The Indian Express |
+| NO | 1 | NRK |
+| DK, IT, SE | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
 Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
 vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
+
+### Welke zoekopdracht werkt echt
+
+De algemene zoekopdrachten zijn niet bedacht maar gemeten. Per taal is een
+handvol kandidaten uitgeprobeerd en geteld hoeveel artikelen ze opleveren en
+hoeveel daarvan echt een podcast koppelen. Wat niets gaf en ook nauwelijks
+artikelen teruggaf, staat er niet in: elke vraag kost een verzoek.
+
+Dat leverde per taal een andere winnaar op. In het Duits is `"beste Podcasts"`
+vrijwel dood (één artikel in drie maanden) terwijl `"Podcast-Tipps"` er 31 geeft;
+in het Nederlands is het precies andersom. `"podcast van de week"` klinkt goed maar
+gaf één artikel, `"podcastserie"` gaf er 48. Duitsland ging van elf naar zeventien
+tips toen de lijst op de meting werd aangepast.
+
+Onderweg kwam een fout boven die hele talen kostte: elke taal zet zijn eigen
+tekens om een titel. Wij kenden ‘zo’ en “zo”, maar niet het Duitse „zo“, het
+Zweedse ”zo” of het Franse «zo». In die talen zag de lezer dus nooit een titel
+staan. Dat is nu recht.
+
+En `when:90d` doet wat het belooft: de oudste treffer in een ronde is 89 dagen
+oud. Bij een zoekopdracht op een grote krant komen we wel tegen de honderd
+artikelen per vraag aan die Google teruggeeft.
 
 ### Alle achttien landen even breed
 

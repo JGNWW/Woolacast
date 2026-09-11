@@ -124,6 +124,13 @@ class TipRulesTest {
     }
 
     @Test
+    fun `elke taal heeft eigen aanhalingstekens`() {
+        assertTrue("Skruvad historia" in TipRules.candidates("Bästa poddarna för lat dag: ”Skruvad historia”"))
+        assertTrue("Hey München" in TipRules.candidates("Der neue Podcast „Hey München“ ist da"))
+        assertTrue("Transfert" in TipRules.candidates("Le podcast «Transfert» est de retour"))
+    }
+
+    @Test
     fun `een Japanse titel staat tussen haken`() {
         val kop = "ポッドキャスト「ゆる言語学ラジオ」がおすすめ"
         assertTrue(TipRules.mentionsPodcast(kop))
