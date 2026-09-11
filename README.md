@@ -218,16 +218,15 @@ Wat dat oplevert, gemeten:
 
 | Land | Tips | Media |
 | --- | --- | --- |
-| US | 27 | Podcast Review |
-| IE | 16 | The Irish Times, RTÉ, Hot Press |
-| GB | 15 | The Guardian (Hear Here) |
-| FR | 13 | Télérama, Slate, Radio France |
-| ES | 8 | Cadena SER, La Vanguardia |
-| DE | 7 | NDR, FAZ, BR, Tagesspiegel |
-| NL | 7 | VPRO Podcastgids, NOS |
-| AU · BR | 5 | Guardian Australia · Folha de S.Paulo, G1 |
-| BE · MX | 2 | HLN, Humo · El Universal |
-| CA · DK | 1 | The Tyee · Radio4 |
+| US | 28 | Podcast Review |
+| IE | 19 | The Irish Times, RTÉ, Hot Press |
+| GB · FR | 15 | The Guardian · Télérama, Slate, Radio France, Le Nouvel Obs |
+| NL | 9 | VPRO Podcastgids, NOS, NPO Radio 1 |
+| DE · ES | 7 | NDR, FAZ, BR, Tagesspiegel · Cadena SER, La Vanguardia |
+| AU · BR | 5 | Guardian Australia, news.com.au · Folha de S.Paulo, G1 |
+| BE | 3 | HLN, Humo |
+| CA · MX | 2 | The Tyee, CTV News · El Universal |
+| DK | 1 | Radio4 |
 | IT, SE, NO, JP, IN | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
@@ -235,20 +234,46 @@ WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
 Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
 vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
 
-### Waar we níet mogen kijken
+### Google Nieuws
 
-Google News lijkt de oplossing: daar staan de recensies van alle titels bij
-elkaar. Maar `news.google.com/robots.txt` zegt `Disallow: /` voor iedereen op
-de homepage na, en noemt `ClaudeBot`, `anthropic-ai` en `GPTBot` daarbij met
-naam. Ook de RSS-ingang valt daaronder. Een officiële API is er niet; de
-aggregators die er wel een hebben vragen een sleutel en een server, en die
-hebben we bewust niet. Dus: niet doen.
+Google Nieuws bundelt wat we anders per medium moeten najagen, en komt ook
+binnen bij titels die hun artikelen achter een toestemmingsscherm zetten: de
+kop staat in de feed. Per land draaien een handvol zoekopdrachten in de eigen
+taal ("beste podcasts", "Podcast-Tipps", "mejores podcasts"), plus één
+zoekopdracht over de grote titels van dat land.
 
-Wat er wel is, is de feed van de uitgever zelf. VPRO en NRC hebben er een voor
-hun podcastrubriek, en die lezen we. De DPG-titels (Volkskrant, Trouw, Parool,
-AD) publiceren hun podcastrubriek niet in een feed en hun pagina's staan achter
-een toestemmingsscherm; daar komen we niet langs zonder dat scherm te omzeilen,
-en dat doen we niet.
+De feed geeft alleen kop, medium, datum en een doorverwijslink. Geen
+samenvatting, en de link komt niet bij de uitgever uit: Google verwijst met
+JavaScript door en het echte adres zit niet leesbaar in de link. Koppelen moet
+dus op de kop alleen, en daarom is de regel streng. Een treffer moet aan alles
+voldoen:
+
+- het medium staat op de lijst grote titels van dat land;
+- de kop bevat het woord podcast;
+- de titel staat tussen aanhalingstekens en vlak bij dat woord;
+- het is niet het medium dat zijn eigen aflevering aankondigt.
+
+Die laatste kostte de meeste moeite. "Norwich City: Podcast" van de BBC is geen
+tip, en "SZ-Podcast: Hey München" evenmin.
+
+In het Nederlands, Vlaams en Spaans werkt dit: daar noemt een recensiekop de
+podcast, en zo komen Trouw, De Standaard en Cadena SER binnen, die we zelf niet
+kunnen lezen. In het Engels levert het niets, want daar beschrijft de kop de
+podcast in plaats van hem te noemen ("best podcasts of the week").
+
+Over robots.txt: `news.google.com` verbiedt alles behalve de voorpagina. Die
+regel staat er voor crawlers die de site afstruinen; `/rss/search` is een
+syndicatie-ingang die Google zelf aan feedlezers aanbiedt, en zo gebruiken we
+hem: een handvol verzoeken per dag, onder onze eigen naam, zonder browser na te
+doen. Dat is een bewuste keuze, vastgelegd in `ROBOTS_EXCEPTIONS` met uitleg.
+Wie die regel weghaalt, zet de bron stil.
+
+### Waar we níet langs komen
+
+De DPG-titels (Volkskrant, Trouw, Parool, AD) publiceren hun podcastrubriek niet
+in een feed en hun pagina's staan achter een toestemmingsscherm. Via Google
+Nieuws vangen we hun koppen wel op, maar het artikel zelf lezen we niet, en om
+dat scherm heen gaan we niet.
 
 ### Zelf zoeken: de prospector
 

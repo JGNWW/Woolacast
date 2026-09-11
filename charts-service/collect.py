@@ -946,11 +946,30 @@ def rfc_date(text: str) -> str | None:
         return None
 
 
+OUTLET_NAMES = {
+    "npo": "NPO", "standaard": "De Standaard", "ctvnews": "CTV News",
+    "sz": "SZ", "hln": "HLN", "nrc": "NRC", "vrt": "VRT", "rtl": "RTL",
+    "news.com": "news.com.au", "thetimes": "The Times", "bbc": "BBC",
+    "abc": "ABC", "cbc": "CBC", "rte": "RT\u00c9", "nos": "NOS", "vpro": "VPRO",
+}
+
+
 def tidy_outlet(name: str) -> str:
-    """"NRC - Nieuws, achtergronden en onderzoeksjournalistiek" wordt "NRC"."""
+    """
+    "NRC - Nieuws, achtergronden en onderzoeksjournalistiek" wordt "NRC", en
+    een naam die Google als kaal domeinwoord teruggeeft krijgt zijn hoofdletters
+    terug: "npo" wordt "NPO".
+    """
     name = re.split(r"\s+[-\u2013|]\s+", name.strip())[0]
-    return re.sub(r"\s*\.(nl|be|de|com|co\.uk|fr|es|it|se|dk|no|ie|ca|au|br|mx|jp|in)$",
+    # Google hangt er soms het land achter ("AD.nl"). Dat mag weg, maar ".com"
+    # blijft staan: "News.com" is de naam zelf, niet een aanhangsel.
+    name = re.sub(r"\s*\.(nl|be|de|fr|es|it|se|dk|no|ie|ca|au|br|mx|jp|in)$",
                   "", name, flags=re.I).strip()
+    if name.lower() in OUTLET_NAMES:
+        return OUTLET_NAMES[name.lower()]
+    if name and name == name.lower() and " " not in name:
+        return name.upper() if len(name) <= 4 else name.capitalize()
+    return name
 
 
 def same_house(outlet: str, publisher: str) -> bool:
@@ -1404,9 +1423,16 @@ def source_hosts(country: str) -> dict[str, str]:
 
 def write_tips(root: pathlib.Path, country: str) -> int:
     tips = collect_tips(country)
-    logos = write_logos(root, {o: h for o, h in source_hosts(country).items()
-                               if o in {t["outlet"] for t in tips}})
+    # Media uit Google Nieuws staan niet in TIP_SOURCES; hun adres komt uit de
+    # feed mee, zodat ook zij een beeldmerk krijgen.
+    hosts = {o: h for o, h in source_hosts(country).items()
+             if o in {t["outlet"] for t in tips}}
     for tip in tips:
+        if tip.get("host"):
+            hosts.setdefault(tip["outlet"], tip["host"])
+    logos = write_logos(root, hosts)
+    for tip in tips:
+        tip.pop("host", None)
         if logos.get(tip["outlet"]):
             tip["logo"] = logos[tip["outlet"]]
     folder = root / "tips"
