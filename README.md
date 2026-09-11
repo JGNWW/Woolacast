@@ -220,20 +220,20 @@ Wat dat oplevert, gemeten:
 | --- | --- | --- |
 | US | 31 | Podcast Review, Rolling Stone |
 | FR | 22 | Le Monde, Le Nouvel Obs, Radio France, Slate |
-| NL | 21 | De Telegraaf, NOS, NPO, NPO Radio 1 |
+| NL | 22 | De Telegraaf, NOS, NPO, NPO Radio 1 |
+| DE | 19 | BR, Deutschlandfunk, Deutschlandfunk Kultur, FAZ |
 | IE | 19 | Hot Press, RTÉ, The Irish Times |
 | GB | 18 | Financial Times, NME, The Guardian |
-| DE | 17 | BR, Deutschlandfunk, Deutschlandfunk Kultur, Die Zeit |
-| BR | 7 | Folha de S.Paulo, G1, O GLOBO |
+| BR | 9 | Folha de S.Paulo, G1, Hugo Gloss, O GLOBO |
 | BE | 6 | De Standaard, HLN, Humo |
-| JP | 6 | Natalie.mu, 日経クロストレンド, 産経ニュース |
+| JP | 6 | Xtrend.nikkei.com, ナタリー, 産経ニュース |
 | AU | 5 | Guardian Australia, news.com.au |
+| ES | 4 | Cadena SER, La Vanguardia, RTVE, elDiario |
 | MX | 3 | EL PAÍS, El Universal |
 | CA | 2 | CTV News, The Tyee |
-| ES | 2 | Cadena SER, La Vanguardia |
-| IN | 1 | The Indian Express |
+| DK | 1 | Radio4 |
 | NO | 1 | NRK |
-| DK, IT, SE | 0 | — |
+| IN, IT, SE | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
@@ -246,6 +246,16 @@ De algemene zoekopdrachten zijn niet bedacht maar gemeten. Per taal is een
 handvol kandidaten uitgeprobeerd en geteld hoeveel artikelen ze opleveren en
 hoeveel daarvan echt een podcast koppelen. Wat niets gaf en ook nauwelijks
 artikelen teruggaf, staat er niet in: elke vraag kost een verzoek.
+
+Er zijn twee vormen, en het verschil tussen die twee bleek groter dan het
+verschil tussen de woorden. Een exacte zin tussen aanhalingstekens
+(`"beste podcasts"`) vindt de rubriek die precies zo heet. Losse woorden naast
+elkaar (`podcast recensie`) zoeken allebei de woorden ergens in het stuk, en
+vinden zo de recensie die zijn kop anders noemt. In het Nederlands is dat het
+verschil tussen één en zes koppelingen, en het bracht Trouw en de Volkskrant
+binnen die de exacte zin miste. In het Duits gaf `podcast rezension` er drie waar
+`"Podcast-Rezension"` er nul gaf, met Der Spiegel erbij. In het Frans deed geen
+enkele exacte zin iets en geven de losse woorden er vijf.
 
 Dat leverde per taal een andere winnaar op. In het Duits is `"beste Podcasts"`
 vrijwel dood (één artikel in drie maanden) terwijl `"Podcast-Tipps"` er 31 geeft;
