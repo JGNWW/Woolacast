@@ -200,7 +200,7 @@ fun WoolacastNav(container: AppContainer) {
             navigation(startDestination = Tab.DISCOVER.home, route = Tab.DISCOVER.route) {
                 composable(Tab.DISCOVER.home) {
                     val discoverViewModel: DiscoverViewModel = viewModel(
-                        factory = viewModelFactory { initializer { DiscoverViewModel(container.dataset) } }
+                        factory = viewModelFactory { initializer { DiscoverViewModel(container.dataset, container.reco) } }
                     )
                     DiscoverScreen(
                         viewModel = discoverViewModel,
@@ -373,7 +373,8 @@ private fun NavGraphBuilder.tabScreens(
                         store = container.store,
                         dataset = container.dataset,
                         charts = container.chartRepository,
-                        liveTips = container.liveTips
+                        liveTips = container.liveTips,
+                        reco = container.reco
                     )
                 }
             }
@@ -382,6 +383,7 @@ private fun NavGraphBuilder.tabScreens(
         DetailScreen(
             viewModel = detailViewModel,
             playingId = playingId,
+            onOpenPodcast = openPodcast,
             onOpenTracker = {
                 navController.navigate(
                     "$prefix/tracker/${Uri.encode(showId)}?country=$countryCode" +

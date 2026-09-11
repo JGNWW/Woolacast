@@ -22,6 +22,8 @@ import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.Podcast
 import nl.woolacast.domain.SourceId
+import nl.woolacast.data.reco.RecoRepository
+import nl.woolacast.data.reco.Suggestion
 import nl.woolacast.data.tips.LiveTipsReader
 import nl.woolacast.ui.common.cadence
 import java.time.Instant
@@ -42,7 +44,9 @@ data class DetailUiState(
     val episodeRanks: Map<String, Int> = emptyMap(),
     val countryCode: String = Catalog.defaultCountry.code,
     /** Media die deze podcast tipten. */
-    val tips: List<MediaTip> = emptyList()
+    val tips: List<MediaTip> = emptyList(),
+    /** Podcasts die hierop lijken. */
+    val similar: List<Suggestion> = emptyList()
 )
 
 class DetailViewModel(
@@ -54,7 +58,8 @@ class DetailViewModel(
     private val store: LocalStore,
     private val dataset: ChartsDataset? = null,
     private val charts: ChartRepository? = null,
-    private val liveTips: LiveTipsReader? = null
+    private val liveTips: LiveTipsReader? = null,
+    private val reco: RecoRepository? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailUiState(countryCode = countryCode))
@@ -162,6 +167,7 @@ class DetailViewModel(
                         cadence = cadence(detail.episodes.map { it.releaseDate })
                     )
                     reconcile()
+                    findSimilar(detail.podcast)
                 }
                 .onFailure { error ->
                     _state.value = _state.value.copy(
@@ -169,6 +175,29 @@ class DetailViewModel(
                         error = error.message ?: "Kon deze podcast niet laden."
                     )
                 }
+        }
+    }
+
+    /**
+     * Podcasts die op deze lijken. Het rekenwerk gebeurt op het toestel: het
+     * genre en de maker van deze show tegen de lijsten die de app toch al
+     * heeft, plus een zoekopdracht op de naam van de maker.
+     */
+    private fun findSimilar(podcast: Podcast) {
+        val repository = reco ?: return
+        if (_state.value.similar.isNotEmpty()) return
+        viewModelScope.launch {
+            val found = runCatching {
+                repository.similarTo(
+                    showId = podcast.id,
+                    title = podcast.title,
+                    publisher = podcast.publisher,
+                    genre = podcast.genre,
+                    description = podcast.description,
+                    countryCode = countryCode
+                )
+            }.getOrDefault(emptyList())
+            if (found.isNotEmpty()) _state.value = _state.value.copy(similar = found)
         }
     }
 

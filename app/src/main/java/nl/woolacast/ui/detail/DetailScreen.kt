@@ -57,6 +57,7 @@ import nl.woolacast.ui.common.SourceDot
 import nl.woolacast.ui.common.SquareIconButton
 import nl.woolacast.ui.common.TextPill
 import nl.woolacast.ui.common.TitleBar
+import nl.woolacast.ui.common.SuggestionRow
 import nl.woolacast.ui.common.UnderlineTabs
 import nl.woolacast.ui.common.WoolButton
 import nl.woolacast.ui.common.WoolIcons
@@ -75,6 +76,7 @@ fun DetailScreen(
     onBack: () -> Unit,
     onPlay: (Episode, String?) -> Unit,
     onOpenTracker: () -> Unit,
+    onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -342,6 +344,18 @@ fun DetailScreen(
                                 Text(feed, style = MaterialTheme.typography.bodySmall)
                             }
                         }
+                    }
+                }
+
+                if (state.similar.isNotEmpty()) {
+                    item {
+                        SuggestionRow(
+                            title = "Lijkt hierop",
+                            subtitle = "Gevonden op je toestel, uit de lijsten en de maker",
+                            suggestions = state.similar,
+                            onOpen = onOpenPodcast,
+                            modifier = Modifier.padding(top = 22.dp, bottom = 8.dp)
+                        )
                     }
                 }
             }

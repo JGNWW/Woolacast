@@ -182,6 +182,32 @@ JavaScript meedraagt. Het klusje vist dat token elke run opnieuw uit de pagina
 tabblad wie de laatste dagen de Top 200 binnenkwam, gegroepeerd per dag, uit
 de eigen metingen.
 
+## Misschien vind je dit leuk
+
+Twee plekken met voorstellen: "Lijkt hierop" op de pagina van een podcast, en
+"Misschien vind je dit leuk" op Ontdek, op grond van je eigen bibliotheek.
+
+Het rekenwerk gebeurt op het toestel. AntennaPod laat aanbevelingen bewust weg
+omdat een algoritme meestal een server met een profiel van je betekent; die
+afweging vervalt als het profiel je toestel niet verlaat. Pocket Casts haalt zijn
+Discover van eigen servers, dus daar valt niets van over te nemen. Dit is dus
+zelf gebouwd, met wat er al is.
+
+Het profiel bestaat uit drie dingen, opgeteld uit je bibliotheek: in welke genres
+je luistert (volgen weegt drie keer zo zwaar als een losse bewaarde aflevering),
+van welke makers je iets hebt, en welke woorden er in de titels van jouw podcasts
+staan. De kandidaten komen uit de hitlijsten die de app toch al ophaalt, van de
+genres waarin je het meest luistert. Eén opzoeking bij Apple zegt in welk genre
+jouw eigen shows vallen; verder gaat er niets de deur uit.
+
+Onder elke tegel staat waaróm hij er staat: "Ook van Podimo", "Lijkt op wat je
+luistert", "Veel geluisterd in True crime". Een voorstel zonder uitleg is een gok.
+
+Op de pagina van een podcast is het profiel die ene show: zijn genre, zijn maker
+en de woorden uit titel en omschrijving. Dezelfde maker weegt daar het zwaarst,
+en die shows staan zelden samen in één lijst, dus die haalt een zoekopdracht op
+de naam van de maker erbij.
+
 ## Tips van de media
 
 Kranten, omroepen en podcastgidsen tippen podcasts; de app haalt die tips op

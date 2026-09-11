@@ -16,6 +16,7 @@ import nl.woolacast.data.apple.AppleGenreTree
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.data.local.LocalStore
+import nl.woolacast.data.reco.RecoRepository
 import nl.woolacast.data.tips.LiveTipsReader
 import nl.woolacast.data.spotify.SpotifyChartSource
 import nl.woolacast.player.PlayerController
@@ -55,6 +56,9 @@ class AppContainer(context: Context) {
 
     /** Leest de podcastrubrieken van de media zelf, om de tips vers te houden. */
     val liveTips = LiveTipsReader(feedClient, catalogApi)
+
+    /** Voorstellen op grond van je eigen bibliotheek, gerekend op het toestel. */
+    val reco = RecoRepository(chartRepository, catalogApi, store)
 
     val dataset: ChartsDataset get() = chartsDataset
 

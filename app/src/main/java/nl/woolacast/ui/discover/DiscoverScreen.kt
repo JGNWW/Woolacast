@@ -45,6 +45,7 @@ import nl.woolacast.ui.common.IconAction
 import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.PageTitle
 import nl.woolacast.ui.common.SectionHeader
+import nl.woolacast.ui.common.SuggestionRow
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.shortDate
 import nl.woolacast.ui.tips.OutletMark
@@ -126,6 +127,18 @@ fun DiscoverScreen(
                         }
                     }
                     Spacer(Modifier.height(20.dp))
+                }
+            }
+
+            if (state.forYou.isNotEmpty()) {
+                item {
+                    SuggestionRow(
+                        title = "Misschien vind je dit leuk",
+                        subtitle = "Op grond van wat je volgt en bewaard hebt, berekend op je toestel",
+                        suggestions = state.forYou,
+                        onOpen = onOpenPodcast,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
                 }
             }
 
