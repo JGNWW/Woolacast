@@ -12,6 +12,7 @@ import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.data.dataset.ShowPosition
 import nl.woolacast.data.local.FollowedShow
+import nl.woolacast.data.local.CachedTips
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.data.local.toSaved
@@ -21,7 +22,11 @@ import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.Podcast
 import nl.woolacast.domain.SourceId
+import nl.woolacast.data.tips.LiveTipsReader
 import nl.woolacast.ui.common.cadence
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class DetailUiState(
     val loading: Boolean = true,
@@ -48,7 +53,8 @@ class DetailViewModel(
     private val repository: PodcastRepository,
     private val store: LocalStore,
     private val dataset: ChartsDataset? = null,
-    private val charts: ChartRepository? = null
+    private val charts: ChartRepository? = null,
+    private val liveTips: LiveTipsReader? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailUiState(countryCode = countryCode))
@@ -79,8 +85,9 @@ class DetailViewModel(
         viewModelScope.launch { store.markOpened(showId) }
 
         viewModelScope.launch {
-            val tips = dataset?.tipsFor(showId, countryCode).orEmpty()
-            if (tips.isNotEmpty()) _state.value = _state.value.copy(tips = tips)
+            val known = dataset?.tipsFor(showId, countryCode).orEmpty()
+            if (known.isNotEmpty()) _state.value = _state.value.copy(tips = known)
+            addFoundTips(known)
         }
 
         viewModelScope.launch {
@@ -107,6 +114,39 @@ class DetailViewModel(
             reconcile()
         }
     }
+
+    /**
+     * Kijkt of een medium deze podcast ergens heeft aangeraden. Dat is een
+     * vraag aan Google Nieuws over deze ene titel, zonder tijdsgrens: een goede
+     * tip veroudert niet. Een keer per dag per podcast; daarna komt het antwoord
+     * uit het geheugen.
+     */
+    private suspend fun addFoundTips(known: List<MediaTip>) {
+        val reader = liveTips ?: return
+        val cached = store.cachedShowTips(showId)
+        val found = if (cached != null && sameDay(cached.fetchedAt)) {
+            cached.entries
+        } else {
+            val title = _state.value.podcast?.title ?: title ?: return
+            val publisher = _state.value.podcast?.publisher.orEmpty()
+            val catalogue = dataset?.feeds(countryCode) ?: return
+            val fresh = runCatching {
+                reader.forShow(catalogue, showId, title, publisher)
+            }.getOrDefault(emptyList())
+            store.cacheShowTips(showId, CachedTips(Instant.now().toString(), fresh))
+            fresh
+        }
+        if (found.isEmpty()) return
+        val seen = known.map { it.outlet.lowercase() }.toMutableSet()
+        val extra = found.filter { seen.add(it.outlet.lowercase()) }
+        if (extra.isNotEmpty()) {
+            _state.value = _state.value.copy(tips = _state.value.tips + extra)
+        }
+    }
+
+    private fun sameDay(stamp: String): Boolean = runCatching {
+        Instant.parse(stamp).atZone(ZoneId.systemDefault()).toLocalDate() == LocalDate.now()
+    }.getOrDefault(false)
 
     fun refresh() = load()
 

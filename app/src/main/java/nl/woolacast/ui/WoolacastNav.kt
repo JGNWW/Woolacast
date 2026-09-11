@@ -372,7 +372,8 @@ private fun NavGraphBuilder.tabScreens(
                         repository = container.podcastRepository,
                         store = container.store,
                         dataset = container.dataset,
-                        charts = container.chartRepository
+                        charts = container.chartRepository,
+                        liveTips = container.liveTips
                     )
                 }
             }

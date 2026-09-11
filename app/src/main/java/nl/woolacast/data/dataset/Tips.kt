@@ -21,7 +21,14 @@ data class MediaTip(
     val feedUrl: String? = null,
     val genre: String? = null,
     /** Bestandsnaam van het beeldmerk; de dataset maakt er een adres van. */
-    val logo: String? = null
+    val logo: String? = null,
+    /**
+     * Waar deze tip vandaan komt. Wat de verzamelaar vond is een echte tip: daar
+     * is het artikel bij gelezen. Wat de app zelf bij het openen van een podcast
+     * vond is alleen een kop, en die kan ook nieuws óver de podcast zijn. Dat
+     * verschil hoort de lezer te zien.
+     */
+    val found: Boolean = false
 )
 
 @Serializable
@@ -57,5 +64,11 @@ data class TipFeeds(
     val count: Int = 0,
     /** De media die in dit land meetellen, voor wat uit een zoekmachine komt. */
     val hosts: List<String> = emptyList(),
+    /**
+     * Het begin van een zoekopdracht bij Google Nieuws in de editie van dit
+     * land. De app plakt er zelf een vraag achter, bijvoorbeeld om te kijken of
+     * een losse podcast ergens is aangeraden.
+     */
+    val search: String = "",
     val entries: List<TipFeed> = emptyList()
 )

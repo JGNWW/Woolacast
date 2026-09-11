@@ -91,7 +91,9 @@ private data class StoreData(
     /** "light", "dark" of "system"; standaard volgt de app het toestel. */
     val theme: String = "system",
     /** Tips die de app zelf uit de feeds las, per land. */
-    val liveTips: Map<String, CachedTips> = emptyMap()
+    val liveTips: Map<String, CachedTips> = emptyMap(),
+    /** En hetzelfde per podcast: wie deze show ergens aanraadde. */
+    val showTips: Map<String, CachedTips> = emptyMap()
 )
 
 /**
@@ -232,6 +234,18 @@ class LocalStore(private val file: File) {
         it.copy(liveTips = it.liveTips + (countryCode to tips))
     }
 
+    fun cachedShowTips(showId: String): CachedTips? = data.showTips[showId]
+
+    /** Hooguit een paar honderd shows onthouden; de oudste vallen eraf. */
+    suspend fun cacheShowTips(showId: String, tips: CachedTips) = mutate { current ->
+        val trimmed = if (current.showTips.size < SHOW_TIPS_KEPT) current.showTips
+        else current.showTips.entries
+            .sortedByDescending { it.value.fetchedAt }
+            .take(SHOW_TIPS_KEPT / 2)
+            .associate { it.key to it.value }
+        current.copy(showTips = trimmed + (showId to tips))
+    }
+
     private suspend fun mutate(block: (StoreData) -> StoreData) = withContext(Dispatchers.IO) {
         mutex.withLock {
             data = block(data)
@@ -254,5 +268,8 @@ class LocalStore(private val file: File) {
 
     private companion object {
         const val HISTORY_DAYS = 30
+
+        /** Zoveel podcasts onthouden we hun tips van; daarna vallen de oudste af. */
+        const val SHOW_TIPS_KEPT = 300
     }
 }

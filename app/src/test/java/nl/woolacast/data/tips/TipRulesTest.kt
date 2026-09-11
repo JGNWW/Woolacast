@@ -98,6 +98,32 @@ class TipRulesTest {
     }
 
     @Test
+    fun `de opsomming onder een tiplijst levert de namen`() {
+        val tekst = "Vijf nieuwe podcasttips: van onderwereld tot regenboog. " +
+            "Met deze week: Luister Anita, Dan Taberski's Manifesto, Proces X: Seriedoders, " +
+            "De onderwereld en Radio Boos: Grote gesprekken."
+        val namen = TipRules.listCandidates(tekst)
+        assertTrue("Luister Anita" in namen)
+        assertTrue("Proces X: Seriedoders" in namen)
+        assertTrue("De onderwereld" in namen)
+    }
+
+    @Test
+    fun `de naam achter het woord podcast wordt woord voor woord langer geprobeerd`() {
+        val tekst = "In de podcast Mijn taalmaatje wil naar huis volgt Laura Hesselink de Syrische Nedal"
+        val namen = TipRules.afterWordCandidates(tekst)
+        assertTrue("Mijn taalmaatje" in namen)
+        assertTrue("Mijn taalmaatje wil naar huis" in namen)
+    }
+
+    @Test
+    fun `een titel die we al kennen hoeft niet geraden te worden`() {
+        assertTrue(TipRules.titleIn("De podcast \u2018Bandsplain\u2019 legt uit", "Bandsplain"))
+        assertTrue(TipRules.titleIn("Proces X gaat over seriemoordenaars", "Proces X: Seriedoders"))
+        assertFalse(TipRules.titleIn("Serialiseren is een werkwoord", "Serial"))
+    }
+
+    @Test
     fun `rommel uit de opmaak van een pagina is geen titel`() {
         assertFalse(TipRules.looksLikeTitle("Lees meer"))
         assertFalse(TipRules.looksLikeTitle("PODCASTS"))

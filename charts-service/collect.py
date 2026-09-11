@@ -1521,6 +1521,10 @@ FEEDS_PER_HOST = 3
 # Zoveel kranten krijgen een eigen zoekopdracht in de catalogus van de app.
 GOOGLE_SITE_FEEDS = 5
 
+# De app kijkt drie maanden terug. Verder terug hoeft niet: wat langer geleden
+# getipt is staat al in de gegevens van de verzamelaar.
+CATALOGUE_DAYS = 90
+
 
 def feed_catalogue(country: str, productive: set[str] | None = None) -> list[dict]:
     """De feeds die de app zelf kan lezen, op volgorde van opbrengst."""
@@ -1543,7 +1547,7 @@ def feed_catalogue(country: str, productive: set[str] | None = None) -> list[dic
         def vraag(query: str) -> dict:
             return {
                 "outlet": "Google Nieuws",
-                "url": (f"{GOOGLE_NEWS}?q={urllib.parse.quote(query + f' when:{TIP_DAYS}d')}"
+                "url": (f"{GOOGLE_NEWS}?q={urllib.parse.quote(query + f' when:{CATALOGUE_DAYS}d')}"
                         f"&hl={hl}&gl={gl}&ceid={ceid}"),
                 "kind": "google",
             }
@@ -1570,6 +1574,12 @@ def feed_catalogue(country: str, productive: set[str] | None = None) -> list[dic
 
 def write_feeds(root: pathlib.Path, country: str, logos: dict[str, str],
                 productive: set[str] | None = None) -> int:
+    # Zonder opgave van zaken: pak wat de vorige ronde opleverde, zodat de
+    # catalogus ook los van een ophaalronde bij te werken is.
+    if productive is None:
+        previous = root / "tips" / f"{country}.json"
+        if previous.exists():
+            productive = set(json.loads(previous.read_text()).get("googleHosts", []))
     entries = feed_catalogue(country, productive)
     for entry in entries:
         if logos.get(entry["outlet"]):
@@ -1582,9 +1592,14 @@ def write_feeds(root: pathlib.Path, country: str, logos: dict[str, str],
     hosts = sorted({h.split("/")[0].replace("www.", "") for h in MEDIA.get(country, [])}
                    | {urllib.parse.urlsplit(u if "//" in u else "//" + u).netloc.replace("www.", "")
                       for _o, u, _m in TIP_SOURCES.get(country, [])} - {""})
+    # De editie van Google Nieuws voor dit land, zodat de app zelf een vraag kan
+    # stellen over een losse podcast zonder dat wij hem hoeven voor te kauwen.
+    hl, gl, ceid = GOOGLE_EDITION.get(country, ("en-US", "US", "US:en"))
     (folder / f"{country}.json").write_text(json.dumps({
         "country": country, "updated": NOW, "count": len(entries),
-        "hosts": hosts, "entries": entries,
+        "hosts": hosts,
+        "search": f"{GOOGLE_NEWS}?hl={hl}&gl={gl}&ceid={ceid}&q=",
+        "entries": entries,
     }, ensure_ascii=False, separators=(",", ":")))
     return len(entries)
 
@@ -1614,6 +1629,9 @@ def write_tips(root: pathlib.Path, country: str) -> int:
     (folder / f"{country}.json").write_text(json.dumps({
         "country": country, "updated": NOW, "count": len(tips),
         "outlets": sorted({t["outlet"] for t in tips}),
+        # Welke kranten Google Nieuws hier iets opleverde: daarmee blijft de
+        # catalogus van de app bij te werken zonder alles opnieuw op te halen.
+        "googleHosts": sorted(productive),
         "entries": tips,
     }, ensure_ascii=False, separators=(",", ":")))
     return len(tips)

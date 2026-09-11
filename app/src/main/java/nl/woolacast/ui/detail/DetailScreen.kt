@@ -580,7 +580,13 @@ private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
                 modifier = Modifier.size(17.dp)
             )
             Text(
-                if (tips.size == 1) "Getipt door 1 medium" else "Getipt door ${tips.size} media",
+                // "Getipt" alleen als het artikel gelezen is; wat de app zelf
+                // bij het openen vond kan ook nieuws over de podcast zijn.
+                when {
+                    tips.all { it.found } -> "Wat de media zegt"
+                    tips.size == 1 -> "Getipt door 1 medium"
+                    else -> "Getipt door ${tips.size} media"
+                },
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer

@@ -11,8 +11,9 @@ import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.data.local.CachedTips
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.tips.LiveTipsReader
-import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class TipsUiState(
     val loading: Boolean = true,
@@ -96,17 +97,14 @@ class TipsViewModel(
         )
     }
 
+    /** Een keer per dag per land. De knop rechtsboven doet het altijd. */
     private fun stale(cached: CachedTips): Boolean {
         val fetched = runCatching { Instant.parse(cached.fetchedAt) }.getOrNull() ?: return true
-        return Duration.between(fetched, Instant.now()) > FRESH_FOR
+        return fetched.atZone(ZoneId.systemDefault()).toLocalDate() != LocalDate.now()
     }
 
     fun setOutlet(outlet: String?) {
         _state.value = _state.value.copy(outlet = outlet)
     }
 
-    private companion object {
-        /** Een rubriek verschijnt hooguit dagelijks; vaker kijken heeft geen zin. */
-        val FRESH_FOR: Duration = Duration.ofHours(8)
-    }
 }

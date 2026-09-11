@@ -93,7 +93,8 @@ object TipRules {
 
     /** "In de podcast Mijn taalmaatje wil naar huis volgt ..." — zonder aanhaling. */
     private val AFTER_WORD = Regex(
-        "\\bpodcast(?:serie|reeks)?\\s+((?:[\\p{Lu}][\\p{L}'’\\-]*\\s+){1,6}[\\p{L}'’\\-]*)"
+        "\\bpodcast(?:serie|reeks)?\\s+" +
+            "([\\p{Lu}][\\p{L}'’\\-]*(?:\\s+[\\p{L}'’\\-]+){0,5})"
     )
 
     fun listCandidates(text: String): List<String> {
@@ -136,6 +137,20 @@ object TipRules {
     fun quotedIn(headline: String, name: String): Boolean =
         QUOTED.findAll(headline).any { it.groupValues[1].equals(name, ignoreCase = true) } ||
             NEAR_PODCAST.findAll(headline).any { it.groupValues[1].equals(name, ignoreCase = true) }
+
+    /**
+     * Draagt deze kop de titel van een show die we al kennen? Losser dan de
+     * regel voor een onbekende titel: we hoeven niets te raden, dus een titel
+     * die er letterlijk in staat is genoeg. Wel op een woordgrens, anders is
+     * "Serial" ook een treffer in "Serialiseren".
+     */
+    fun titleIn(headline: String, showTitle: String): Boolean {
+        val bare = showTitle.substringBefore(":").substringBefore(" - ").trim()
+        if (bare.length < 4) return false
+        val pattern = Regex("(?<![\\p{L}\\p{N}])" + Regex.escape(bare) + "(?![\\p{L}\\p{N}])",
+            RegexOption.IGNORE_CASE)
+        return pattern.containsMatchIn(headline)
+    }
 
     /** Staat de naam in dezelfde adem als het woord podcast? */
     fun nearPodcast(headline: String, name: String, window: Int = 50): Boolean {

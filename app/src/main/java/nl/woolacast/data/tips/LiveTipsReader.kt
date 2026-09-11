@@ -107,6 +107,54 @@ class LiveTipsReader(
     }
 
     /**
+     * Of deze ene podcast ergens is aangeraden. Bij het openen van een
+     * podcastpagina is de vraag omgedraaid: we weten al welke show het is, dus
+     * we hoeven geen titel uit een kop te vissen — we kijken of de kop deze
+     * titel draagt. Dat mag over alle jaren, want een goede tip veroudert niet,
+     * en nieuws mag hier ook: op de pagina van een podcast wil je zien wat de
+     * media over deze podcast schreven, recensie of niet.
+     *
+     * Een medium dat zijn eigen programma aanprijst valt af. Dat is geen tip,
+     * dat is een aankondiging.
+     */
+    suspend fun forShow(
+        catalogue: TipFeeds,
+        showId: String,
+        showTitle: String,
+        publisher: String
+    ): List<MediaTip> {
+        if (catalogue.search.isBlank() || showTitle.length < 4) return emptyList()
+        val hosts = catalogue.hosts.toSet()
+        val query = "\"" + showTitle.replace("\"", " ") + "\" podcast"
+        val url = catalogue.search + java.net.URLEncoder.encode(query, "UTF-8")
+        val parsed = runCatching { feedClient.fetch(url) }.getOrNull() ?: return emptyList()
+
+        val tips = mutableListOf<MediaTip>()
+        val seen = mutableSetOf<String>()
+        for (item in parsed.episodes.take(MAX_ITEMS_PER_FEED)) {
+            if (tips.size >= MAX_TIPS_PER_SHOW) break
+            val headline = headlineOf(item, GOOGLE)
+            if (!TipRules.mentionsPodcast(headline)) continue
+            if (!TipRules.titleIn(headline, showTitle)) continue
+            if (!allowed(item.sourceUrl, hosts)) continue
+            val outlet = outletOf(item, GOOGLE)
+            if (TipRules.ownAnnouncement(headline, outlet, publisher)) continue
+            if (!seen.add(outlet)) continue
+            tips += MediaTip(
+                outlet = outlet,
+                headline = headline,
+                url = item.link.orEmpty(),
+                date = item.releaseDate,
+                showId = showId,
+                showTitle = showTitle,
+                publisher = publisher,
+                found = true
+            )
+        }
+        return tips
+    }
+
+    /**
      * Waar de namen vandaan komen. Uit een zoekmachine alleen de kop, want daar
      * staat verder niets bij. Uit de feed van een medium ook de samenvatting:
      * juist daar somt een tiplijst zijn vijf podcasts op.
@@ -180,6 +228,12 @@ class LiveTipsReader(
 
         /** Een tiplijst noemt er vijf; meer is bijvangst. */
         const val MAX_SHOWS_PER_ITEM = 6
+
+        /** Zoveel media tonen we hooguit op een podcastpagina. */
+        const val MAX_TIPS_PER_SHOW = 6
+
+        /** Voor een losse vraag aan Google gelden dezelfde regels als voor een feed. */
+        val GOOGLE = TipFeed(outlet = "Google Nieuws", kind = "google")
 
         /** Zoveel titels proberen we hooguit op te zoeken per artikel. */
         const val MAX_NAMES_PER_ITEM = 12
