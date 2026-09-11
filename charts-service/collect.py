@@ -814,7 +814,12 @@ def couple_article(country: str, outlet: str, article: dict, article_url: str,
 
     is_list = bool(LIST_HINT.search(article["title"]))
     if is_list:
-        names = subject + article["names"] + podcast_candidates(article["title"], article["summary"])
+        # De opsomming onder een tiplijst noemt de besproken podcasts bij naam,
+        # ook als ze in het artikel zelf alleen cursief staan.
+        blurb = f"{article['title']} {article.get('summary') or ''}"
+        names = (subject + list_candidates(blurb) + article["names"]
+                 + podcast_candidates(article["title"], article["summary"])
+                 + after_word_candidates(blurb))
     elif subject:
         names = subject          # recensie: alleen het onderwerp zelf
     else:
@@ -1064,7 +1069,14 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
     """
     Podcastrubrieken uit Google Nieuws, per land in de eigen taal. Twee soorten
     zoekopdrachten: op de naam van de rubriek ("beste podcasts"), en op de grote
-    titels van dat land. Wat we zelf al rechtstreeks lezen slaan we over.
+    titels van dat land.
+
+    Een medium dat we zelf al lezen wordt hier niet overgeslagen, en dat is met
+    reden. Trouw stond eerst op die lijst, want we lezen hun cultuurfeed. Maar
+    in geen van hun acht feeds staat ooit een podcastrecensie - die publiceren
+    ze wel, ze zetten ze alleen niet in een feed. Google Nieuws vindt ze wel, en
+    door het overslaan gooiden we precies die weg. Dubbel ophalen kan geen
+    kwaad: aan het eind blijft per medium en per show een tip over.
     """
     # Alleen de grote titels van dat land. Google Nieuws indexeert ook elke
     # blog en elke persberichtensite, en die noemen "podcast" net zo vaak
@@ -1073,7 +1085,7 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
     allowed_hosts |= known_hosts
 
     queries = [(q, False) for q in GOOGLE_QUERIES.get(country, [])]
-    hosts = [h for h in MEDIA.get(country, []) if h.split("/")[0] not in known_hosts]
+    hosts = list(MEDIA.get(country, []))
     for i in range(0, len(hosts), GOOGLE_SITES_PER_QUERY):
         group = " OR ".join(f"site:{h.split('/')[0]}" for h in hosts[i:i + GOOGLE_SITES_PER_QUERY])
         queries.append((f"({group}) podcast", True))
@@ -1091,8 +1103,6 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
             else:
                 headline = headline.rsplit(" - ", 1)[0] if " - " in headline else headline
             host = item["host"].replace("www.", "")
-            if host in known_hosts:
-                continue
             if not any(host == h or host.endswith("." + h) for h in allowed_hosts):
                 continue
             # Google zoekt ook in de lopende tekst, dus ook een zoekopdracht op
