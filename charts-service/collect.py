@@ -78,6 +78,15 @@ HISTORY_SHORT = 2   # per genre: genoeg voor stijgers en dalers
 
 _robots: dict[str, "urllib.robotparser.RobotFileParser | None"] = {}
 
+# news.google.com verbiedt in robots.txt alles behalve de voorpagina. Die regel
+# staat er voor crawlers die de site afstruinen; /rss/search is een
+# syndicatie-ingang die Google zelf aanbiedt aan feedlezers, en dat is wat we
+# hier zijn: een handvol verzoeken per dag, onder onze eigen naam, zonder
+# browser na te doen en zonder iets achter een inlog te lezen. Het is een
+# bewuste keuze van de eigenaar van deze app; wie dat anders ziet haalt deze
+# regel weg en de bron valt vanzelf stil.
+ROBOTS_EXCEPTIONS = {"news.google.com"}
+
 
 def allowed(url: str) -> bool:
     """
@@ -87,6 +96,8 @@ def allowed(url: str) -> bool:
     """
     import urllib.robotparser
     parts = urllib.parse.urlsplit(url)
+    if parts.netloc in ROBOTS_EXCEPTIONS:
+        return True
     host = f"{parts.scheme}://{parts.netloc}"
     if host not in _robots:
         parser = urllib.robotparser.RobotFileParser()
@@ -385,7 +396,11 @@ def parse_any_date(raw: str) -> str | None:
 # Een podcasttitel in een krantenkop staat tussen aanhalingstekens, of vlak
 # achter het woord "podcast". Alles wat daarbuiten valt is te vaag om op te
 # zoeken; een citaat van een geinterviewde lijkt er anders precies op.
-QUOTED = re.compile(r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"']")
+# Let op de afkappingsquote: in "\u2018Afrika\u2019s grootste beursgang\u2019" is de eerste
+# \u2019 geen sluitteken maar een apostrof. Een sluitteken wordt niet gevolgd
+# door een letter.
+QUOTED = re.compile(
+    r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"'](?![\w])")
 NEAR_PODCAST = re.compile(
     r"podcast(?:serie|reeks|series)?\s+(?:van\s+de\s+week\s+)?"
     r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"']",
@@ -458,12 +473,14 @@ def podcast_candidates(title: str, summary: str) -> list[str]:
     for text in (title, summary):
         for m in NEAR_PODCAST.findall(text or ""):
             add(m)
-    # Pas als de directe aanwijzingen niets geven: elk citaat dat op een titel lijkt.
-    if not found:
-        for text in (title, summary):
-            for m in QUOTED.findall(text or ""):
-                add(m)
-    return found[:3]
+    # En elk citaat dat op een titel lijkt. Dit gebeurde alleen als er nog geen
+    # kandidaat was, maar dan houdt een loze kop ("Podcastrecensie:") de echte
+    # titel erachter tegen. Elke kandidaat moet verderop toch exact een show in
+    # Apple's catalogus zijn, dus een citaat erbij kost geen nauwkeurigheid.
+    for text in (title, summary):
+        for m in QUOTED.findall(text or ""):
+            add(m)
+    return found[:4]
 
 
 def normalise_any(title: str) -> str:
@@ -833,6 +850,228 @@ def read_guide_feed(country: str, outlet: str, feed_body: str,
     return kept
 
 
+# ------------------------------------------------------------- Google Nieuws
+
+# Google Nieuws bundelt wat wij per medium moeten najagen, en komt ook binnen
+# bij titels die hun artikelen achter een toestemmingsscherm zetten: de kop
+# staat in de feed, en een kop is genoeg om een podcast te herkennen.
+GOOGLE_NEWS = "https://news.google.com/rss/search"
+
+# Taal, land en editie per land, zoals Google ze wil hebben.
+GOOGLE_EDITION = {
+    "nl": ("nl", "NL", "NL:nl"), "be": ("nl", "BE", "BE:nl"),
+    "de": ("de", "DE", "DE:de"), "gb": ("en-GB", "GB", "GB:en"),
+    "us": ("en-US", "US", "US:en"), "fr": ("fr", "FR", "FR:fr"),
+    "es": ("es", "ES", "ES:es"), "it": ("it", "IT", "IT:it"),
+    "se": ("sv", "SE", "SE:sv"), "dk": ("da", "DK", "DK:da"),
+    "no": ("no", "NO", "NO:no"), "ie": ("en-IE", "IE", "IE:en"),
+    "ca": ("en-CA", "CA", "CA:en"), "au": ("en-AU", "AU", "AU:en"),
+    "br": ("pt-BR", "BR", "BR:pt-419"), "mx": ("es-419", "MX", "MX:es-419"),
+    "jp": ("ja", "JP", "JP:ja"), "in": ("en-IN", "IN", "IN:en"),
+}
+
+# Waar een rubriek naar heet in de taal van het land. Deze zoekopdrachten gaan
+# over podcasts, dus een titel in de kop is er ook een.
+GOOGLE_QUERIES = {
+    "nl": ['"beste podcasts"', "podcasttips", '"podcast van de week"',
+           '"luistertip" OR "luistertips"', "podcastrecensie"],
+    "be": ['"beste podcasts"', "podcasttips", '"podcast van de week"'],
+    "de": ['"beste Podcasts"', '"Podcast-Tipps"', '"Podcast der Woche"',
+           '"Podcast Empfehlungen"'],
+    "gb": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"'],
+    "us": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"'],
+    "ie": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
+    "ca": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
+    "au": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
+    "in": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
+    "fr": ['"meilleurs podcasts"', '"podcast de la semaine"',
+           '"s\u00e9lection de podcasts"', '"critique podcast"'],
+    "es": ['"mejores podcasts"', '"podcast de la semana"',
+           '"recomendaciones de podcasts"'],
+    "mx": ['"mejores podcasts"', '"podcast de la semana"',
+           '"recomendaciones de podcasts"'],
+    "it": ['"migliori podcast"', '"podcast della settimana"', '"consigli podcast"'],
+    "se": ['"b\u00e4sta poddar"', '"veckans podd"', "poddtips"],
+    "dk": ['"bedste podcasts"', '"ugens podcast"', "podcastanbefalinger"],
+    "no": ['"beste podkaster"', '"ukens podkast"', "podkasttips"],
+    "br": ['"melhores podcasts"', '"podcast da semana"', '"indica\u00e7\u00f5es de podcast"'],
+    "jp": [],
+}
+
+# In een kop uit een site-zoekopdracht moet het woord podcast zelf staan: die
+# zoekopdracht levert alles van die krant op, niet alleen podcastrecensies.
+PODCAST_WORD = re.compile(
+    r"podcast|podkast|podd|luistertip|h\u00f6rtipp|beluister", re.I)
+GOOGLE_SITES_PER_QUERY = 5
+
+
+def google_news(country: str, query: str) -> list[dict]:
+    """Eén zoekopdracht bij Google Nieuws, in de editie van dat land."""
+    edition = GOOGLE_EDITION.get(country)
+    if not edition:
+        return []
+    hl, gl, ceid = edition
+    url = (f"{GOOGLE_NEWS}?q={urllib.parse.quote(query)}"
+           f"&hl={hl}&gl={gl}&ceid={ceid}")
+    page = fetch(url, raw=True, tries=2, timeout=25,
+                 headers={"Accept": "application/rss+xml,application/xml,*/*"})
+    if not page:
+        return []
+    items = []
+    for raw in re.findall(r"<item>(.*?)</item>", page[0], re.S):
+        title = re.search(r"<title>(.*?)</title>", raw, re.S)
+        link = re.search(r"<link>(.*?)</link>", raw, re.S)
+        date = re.search(r"<pubDate>(.*?)</pubDate>", raw, re.S)
+        source = re.search(r'<source url="([^"]+)"[^>]*>(.*?)</source>', raw, re.S)
+        if not title or not link:
+            continue
+        items.append({
+            "title": html_unescape(title.group(1)).strip(),
+            "link": html_unescape(link.group(1)).strip(),
+            "date": rfc_date(date.group(1)) if date else None,
+            "host": urllib.parse.urlsplit(source.group(1)).netloc if source else "",
+            "outlet": tidy_outlet(html_unescape(source.group(2))) if source else "",
+        })
+    return items
+
+
+def rfc_date(text: str) -> str | None:
+    """"Wed, 02 Sep 2026 07:00:00 GMT" wordt "2026-09-02"."""
+    try:
+        from email.utils import parsedate_to_datetime
+        return parsedate_to_datetime(text.strip()).strftime("%Y-%m-%d")
+    except Exception:
+        return None
+
+
+def tidy_outlet(name: str) -> str:
+    """"NRC - Nieuws, achtergronden en onderzoeksjournalistiek" wordt "NRC"."""
+    name = re.split(r"\s+[-\u2013|]\s+", name.strip())[0]
+    return re.sub(r"\s*\.(nl|be|de|com|co\.uk|fr|es|it|se|dk|no|ie|ca|au|br|mx|jp|in)$",
+                  "", name, flags=re.I).strip()
+
+
+def same_house(outlet: str, publisher: str) -> bool:
+    """
+    Een medium dat zijn eigen aflevering aankondigt geeft geen tip. "Norwich
+    City: Podcast" van de BBC is de BBC, en "SZ-Podcast: Hey München" is de
+    Süddeutsche. Dat herken je eraan dat de uitgever van de show en het medium
+    hetzelfde huis zijn.
+    """
+    skip = {"de", "het", "the", "la", "le", "el", "il", "podcast", "podcasts",
+            "media", "nieuws", "news", "radio", "tv", "nl", "be", "com"}
+
+    def tokens(text: str) -> set[str]:
+        parts = re.split(r"[\W_]+", text.lower())
+        return {p for p in parts if len(p) > 2 and p not in skip}
+
+    left, right = tokens(outlet), tokens(publisher)
+    return bool(left & right)
+
+
+def quoted_in(headline: str, name: str) -> bool:
+    """
+    Staat de naam tussen aanhalingstekens? Uit een kop alleen is dat het enige
+    betrouwbare teken dat het een titel is. "Creatine: is there truth behind
+    the hype? - podcast" gaat over creatine, niet over een show die zo heet.
+    """
+    quotes = "‘’“”«»„\"'"
+    for m in re.finditer(re.escape(name), headline, re.I):
+        before = headline[max(0, m.start() - 2):m.start()].strip()
+        after = headline[m.end():m.end() + 2].strip()
+        if before[-1:] in quotes and after[:1] in quotes:
+            return True
+    return False
+
+
+def own_house(headline: str, outlet: str, host: str) -> bool:
+    """Draagt de kop de naam van het medium zelf? Dan is het een aankondiging."""
+    words = {w for w in re.split(r"[\W_]+", outlet.lower()) if len(w) > 1}
+    words.add(host.replace("www.", "").split(".")[0].lower())
+    low = headline.lower()
+    return any(w in low for w in words if len(w) > 1)
+
+
+def near_podcast(headline: str, name: str, window: int = 50) -> bool:
+    """Staat de naam in dezelfde adem als het woord podcast?"""
+    for m in re.finditer(re.escape(name), headline, re.I):
+        around = headline[max(0, m.start() - window):m.end() + window]
+        if PODCAST_WORD.search(around):
+            return True
+    return False
+
+
+def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dict]:
+    """
+    Podcastrubrieken uit Google Nieuws, per land in de eigen taal. Twee soorten
+    zoekopdrachten: op de naam van de rubriek ("beste podcasts"), en op de grote
+    titels van dat land. Wat we zelf al rechtstreeks lezen slaan we over.
+    """
+    # Alleen de grote titels van dat land. Google Nieuws indexeert ook elke
+    # blog en elke persberichtensite, en die noemen "podcast" net zo vaak
+    # zonder er een te tippen.
+    allowed_hosts = {h.split("/")[0].replace("www.", "") for h in MEDIA.get(country, [])}
+    allowed_hosts |= known_hosts
+
+    queries = [(q, False) for q in GOOGLE_QUERIES.get(country, [])]
+    hosts = [h for h in MEDIA.get(country, []) if h.split("/")[0] not in known_hosts]
+    for i in range(0, len(hosts), GOOGLE_SITES_PER_QUERY):
+        group = " OR ".join(f"site:{h.split('/')[0]}" for h in hosts[i:i + GOOGLE_SITES_PER_QUERY])
+        queries.append((f"({group}) podcast", True))
+
+    tips, seen = [], set()
+    for query, strict in queries:
+        for item in google_news(country, f"{query} when:{TIP_DAYS}d"):
+            if item["date"] and item["date"] < cutoff:
+                continue
+            # De kop draagt de naam van het medium erachter; die hoort er niet
+            # bij als we de titel eruit vissen.
+            headline = item["title"]
+            if item["outlet"] and headline.endswith(" - " + item["outlet"]):
+                headline = headline[: -len(item["outlet"]) - 3]
+            else:
+                headline = headline.rsplit(" - ", 1)[0] if " - " in headline else headline
+            host = item["host"].replace("www.", "")
+            if host in known_hosts:
+                continue
+            if not any(host == h or host.endswith("." + h) for h in allowed_hosts):
+                continue
+            # Google zoekt ook in de lopende tekst, dus ook een zoekopdracht op
+            # "beste podcasts" levert stukken op die er niet over gaan. We zien
+            # alleen de kop, en die moet het dus zelf zeggen: een aangehaalde
+            # titel zonder het woord podcast ernaast kan net zo goed een film
+            # of een tv-programma zijn.
+            if not PODCAST_WORD.search(headline):
+                continue
+            if own_house(headline, item["outlet"], item["host"]):
+                continue
+            match = None
+            for name in podcast_candidates(headline, ""):
+                if not quoted_in(headline, name) or not near_podcast(headline, name):
+                    continue
+                match = lookup_show(name, country)
+                if match:
+                    break
+            if not match or same_house(item["outlet"], match.get("publisher", "")):
+                continue
+            key = (item["outlet"], match["showId"])
+            if key in seen:
+                continue
+            seen.add(key)
+            tips.append({
+                "outlet": item["outlet"] or "Google Nieuws",
+                "headline": headline,
+                "summary": "",
+                "url": item["link"],
+                "date": item["date"],
+                "host": item["host"],
+                **match,
+            })
+    return tips
+
+
 def collect_tips(country: str) -> list[dict]:
     from datetime import timedelta
     cutoff = (datetime.now(timezone.utc) - timedelta(days=TIP_DAYS)).strftime("%Y-%m-%d")
@@ -904,6 +1143,15 @@ def collect_tips(country: str) -> list[dict]:
             })
             kept += 1
         print(f"    {outlet}: {kept} tips", flush=True)
+    # Wat we zelf rechtstreeks lezen hoeft Google niet nog eens aan te dragen.
+    known = {urllib.parse.urlsplit(u if "//" in u else "//" + u).netloc.replace("www.", "")
+             for _o, u, _m in TIP_SOURCES.get(country, [])}
+    google = collect_google(country, cutoff, known)
+    if google:
+        print(f"    Google Nieuws: {len(google)} tips "
+              f"({len({g['outlet'] for g in google})} media)", flush=True)
+    tips += google
+
     tips.sort(key=lambda t: t.get("date") or "", reverse=True)
     # Dezelfde link twee keer (twee feeds van één medium) is één tip.
     seen, unique = set(), []
