@@ -82,8 +82,9 @@ class LiveTipsReader(
             if (feed.kind == "google" && !allowed(item.sourceUrl, hosts)) continue
 
             val outlet = outletOf(item, feed)
+            val text = item.description.orEmpty()
             var kept = 0
-            for (name in namesIn(headline, item.description, feed.kind)) {
+            for (name in namesIn(headline, text, feed.kind)) {
                 if (kept >= MAX_SHOWS_PER_ITEM) break
                 if (feed.kind == "google" &&
                     !(TipRules.quotedIn(headline, name) && TipRules.nearPodcast(headline, name))
@@ -94,7 +95,7 @@ class LiveTipsReader(
                 tips += match.copy(
                     outlet = outlet,
                     headline = headline,
-                    summary = item.description?.take(300).orEmpty(),
+                    summary = text.take(300),
                     url = item.link.orEmpty(),
                     date = date,
                     logo = feed.logo
@@ -182,5 +183,6 @@ class LiveTipsReader(
 
         /** Zoveel titels proberen we hooguit op te zoeken per artikel. */
         const val MAX_NAMES_PER_ITEM = 12
+
     }
 }

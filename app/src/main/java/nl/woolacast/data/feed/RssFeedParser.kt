@@ -60,12 +60,14 @@ class RssFeedParser {
 
             if (event == XmlPullParser.START_TAG) {
                 when (name) {
-                    "item" -> item = MutableItem()
+                    // RSS noemt het <item>, Atom <entry>. Verder lijken ze
+                    // genoeg op elkaar om dezelfde weg te volgen.
+                    "item", "entry" -> item = MutableItem()
                     "image" -> if (item == null) inChannelImage = true
 
                     "title" -> if (item != null) item.title = text(parser) else channelTitle = text(parser)
 
-                    "description", "itunes:summary" ->
+                    "description", "itunes:summary", "summary", "content", "content:encoded" ->
                         if (item != null) {
                             if (item.description.isNullOrBlank()) item.description = text(parser)
                         } else if (channelDescription.isNullOrBlank()) {
@@ -90,7 +92,10 @@ class RssFeedParser {
                     }
 
                     "itunes:duration" -> if (item != null) item.duration = parseDuration(text(parser))
-                    "pubdate" -> if (item != null) item.releaseDate = parseDate(text(parser))
+                    "pubdate", "published", "updated", "dc:date" ->
+                        if (item != null && item.releaseDate == null) {
+                            item.releaseDate = parseDate(text(parser))
+                        }
                     "guid" -> if (item != null) item.guid = text(parser)
 
                     // Google Nieuws zet in <source url="..."> bij welk medium
@@ -99,11 +104,15 @@ class RssFeedParser {
                         item.sourceUrl = parser.getAttributeValue(null, "url")
                         item.sourceName = text(parser)
                     }
-                    "link" -> if (item != null && item.link == null) item.link = text(parser)
+                    // Atom zet het adres in een attribuut in plaats van in de tekst.
+                    "link" -> if (item != null && item.link == null) {
+                        val href = parser.getAttributeValue(null, "href")
+                        item.link = href ?: text(parser)
+                    }
                 }
             } else if (event == XmlPullParser.END_TAG) {
                 when (name) {
-                    "item" -> {
+                    "item", "entry" -> {
                         item?.build()?.let(episodes::add)
                         item = null
                     }
@@ -171,11 +180,23 @@ class RssFeedParser {
             }
         }
 
+        /**
+         * RSS schrijft "Wed, 02 Sep 2026 07:00:00 GMT", Atom
+         * "2026-09-02T07:00:00Z". Beide moeten een datum opleveren, want op de
+         * datum staat of een tip nog actueel is.
+         */
         fun parseDate(raw: String?): String? {
             val value = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
-            return runCatching {
-                Instant.from(RFC_1123.parse(value)).atZone(ZoneId.systemDefault()).toLocalDate().toString()
-            }.getOrElse { value.take(16) }
+            runCatching {
+                return Instant.from(RFC_1123.parse(value))
+                    .atZone(ZoneId.systemDefault()).toLocalDate().toString()
+            }
+            runCatching {
+                return java.time.OffsetDateTime.parse(value).toLocalDate().toString()
+            }
+            // Een kale datum vooraan telt ook: "2026-09-02T07:00:00+02:00".
+            if (value.length >= 10 && value[4] == '-' && value[7] == '-') return value.take(10)
+            return value.take(16)
         }
     }
 }
