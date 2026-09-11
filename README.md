@@ -220,13 +220,13 @@ Wat dat oplevert, gemeten:
 | --- | --- | --- |
 | US | 30 | Podcast Review, Rolling Stone |
 | NL | 19 | NOS, NPO, NPO Radio 1, Trouw |
-| GB | 18 | Financial Times, NME, The Guardian |
-| FR | 15 | Le Figaro, Le Monde, Nouvelobs.com, Radio France |
-| DE | 10 | BR, Deutschlandfunk, FAZ, STERN |
-| BR | 9 | Folha de S.Paulo, G1, Hugo Gloss, O GLOBO |
-| JP | 6 | Natalie.mu, Xtrend.nikkei.com, 産経ニュース |
+| GB | 17 | Financial Times, NME, The Guardian |
+| FR | 15 | Le Figaro, Le Monde, Le Nouvel Obs, Radio France |
+| DE | 11 | BR, Deutschlandfunk, FAZ, Spiegel |
+| BR | 9 | Folha de S.Paulo, G1, Hugogloss.uol.com, O GLOBO |
 | BE | 5 | De Standaard, HLN, Humo |
-| ES | 3 | Cadena SER, RTVE, elDiario |
+| JP | 5 | ナタリー, 日経クロストレンド, 産経ニュース |
+| ES | 4 | Cadena SER, RTVE, elDiario |
 | IE | 3 | Hot Press, The Irish Times |
 | MX | 3 | EL PAÍS, El Universal |
 | CA | 2 | CTV News, The Tyee |
@@ -239,6 +239,27 @@ De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
 Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
 vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
+
+### Eén woordpaar per vraag, niet tien in één
+
+Het ligt voor de hand om alle termen in één zoekopdracht te proppen:
+`"podcast tips" OR "podcasttip" OR "podcast recensie" OR …`. Dat is gemeten en
+het werkt averechts: die ene vraag gaf 44 artikelen en nul koppelingen, terwijl
+`podcast recensie` alleen er 76 gaf en zes koppelingen. Google geeft hooguit
+honderd artikelen per vraag terug, en een OR verdeelt die honderd over alle
+termen; de specifieke recensies verdwijnen dan tussen de rest.
+
+Dat is dezelfde reden waarom één zoekopdracht per krant beter werkt dan vijf
+kranten in één vraag. Een vraag is goedkoop, aandacht van de zoekmachine niet.
+
+Een hele lijst Nederlandse termen is zo langsgelopen, 43 stuks, van "podcast
+inspiratie" tot "verborgen parels podcast" en "true crime podcast tips".
+Daarvan leverde er één iets nieuws op dat we nog niet hadden:
+`podcast beoordeling`, met vier koppelingen. De thema-combinaties ("geschiedenis
+podcast tips" en zo) gaven alle negen nul. Dezelfde families zijn daarna in elke
+taal geprobeerd; dat bracht `podcast besprechung` en `podcast empfehlenswert`
+(Duits, met TAZ als nieuwe bron), `podcast avis` (Frans) en `podcast análisis`
+(Spaans, met RTVE).
 
 ### Een eigen podcast aanprijzen is geen tip
 
