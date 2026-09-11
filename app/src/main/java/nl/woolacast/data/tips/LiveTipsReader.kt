@@ -221,8 +221,11 @@ class LiveTipsReader(
     }
 
     private companion object {
-        /** Zoveel verzoeken doet één verversing hooguit, plus de opzoekingen. */
-        const val MAX_FEEDS = 16
+        /**
+         * Zoveel feeds leest een verversing hooguit, plus de opzoekingen bij
+         * Apple. Dat gebeurt een keer per dag per land, dus dit mag ruim.
+         */
+        const val MAX_FEEDS = 24
         const val MAX_ITEMS_PER_FEED = 40
         const val MAX_TIPS_PER_FEED = 8
 

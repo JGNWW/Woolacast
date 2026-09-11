@@ -1515,11 +1515,11 @@ def source_hosts(country: str) -> dict[str, str]:
 #   guide   de feed van een podcastrubriek: alles erin gaat al over podcasts
 #   news    een gewone nieuwsfeed: daar moet een tipwoord bij staan
 #   google  een zoekopdracht bij Google Nieuws, met de strengste regels
-FEEDS_PER_COUNTRY = 16
-FEEDS_PER_HOST = 3
+FEEDS_PER_COUNTRY = 24
+FEEDS_PER_HOST = 2
 
 # Zoveel kranten krijgen een eigen zoekopdracht in de catalogus van de app.
-GOOGLE_SITE_FEEDS = 5
+GOOGLE_SITE_FEEDS = 10
 
 # De app kijkt drie maanden terug. Verder terug hoeft niet: wat langer geleden
 # getipt is staat al in de gegevens van de verzamelaar.
@@ -1554,11 +1554,19 @@ def feed_catalogue(country: str, productive: set[str] | None = None) -> list[dic
 
         for query in GOOGLE_QUERIES.get(country, []):
             google.append(vraag(query))
-        # En een eigen vraag voor de kranten die deze ronde iets opleverden.
-        # Vijf kranten in een vraag verdringen elkaar; los van elkaar vindt
-        # Google er meer. Welke dat zijn weten we pas na het ophalen, dus die
-        # lijst komt uit de ronde zelf.
-        for host in sorted(productive or ())[:GOOGLE_SITE_FEEDS]:
+        # En een eigen vraag per krant. Vijf kranten in een vraag verdringen
+        # elkaar; los van elkaar vindt Google er meer. Wie deze ronde iets
+        # opleverde gaat voor, maar de rest hoort er ook bij: een krant die nu
+        # niets heeft kan morgen een recensie plaatsen.
+        gedaan = set()
+        for host in sorted(productive or ()):
+            gedaan.add(host)
+            google.append(vraag(f"site:{host} podcast"))
+        for host in MEDIA.get(country, []):
+            host = host.split("/")[0].replace("www.", "")
+            if host in gedaan or len(gedaan) >= GOOGLE_SITE_FEEDS:
+                continue
+            gedaan.add(host)
             google.append(vraag(f"site:{host} podcast"))
 
     entries, seen = [], set()
