@@ -218,23 +218,45 @@ Wat dat oplevert, gemeten:
 
 | Land | Tips | Media |
 | --- | --- | --- |
-| US | 28 | Podcast Review |
+| US | 31 | Podcast Review, Rolling Stone |
+| FR | 22 | Télérama, Slate, Radio France, Le Monde, Le Nouvel Obs |
+| NL | 20 | VPRO Podcastgids, Trouw, de Volkskrant, NOS, NPO |
 | IE | 19 | The Irish Times, RTÉ, Hot Press |
-| GB | 16 | The Guardian |
-| FR | 15 | Télérama, Slate, Radio France, Le Nouvel Obs |
-| NL | 13 | VPRO Podcastgids, Trouw, NOS |
-| ES | 9 | Cadena SER, La Vanguardia |
-| DE | 7 | NDR, FAZ, BR, Tagesspiegel |
-| AU · BR | 5 | Guardian Australia, news.com.au · Folha de S.Paulo, G1 |
-| BE | 4 | De Standaard, HLN, Humo |
-| MX | 2 | El Universal |
-| CA · DK · NO | 1 | The Tyee · Radio4 · NRK |
-| IT, SE, JP, IN | 0 | — |
+| GB | 18 | The Guardian, Financial Times, NME |
+| DE | 11 | NDR, FAZ, BR, Tagesspiegel |
+| BR | 7 | Folha de S.Paulo, G1, O Globo |
+| BE | 6 | De Standaard, HLN, Humo |
+| AU · JP | 5 | Guardian Australia, news.com.au · Natalie, Mainichi, Sankei, Nikkei |
+| MX | 3 | El País, El Universal |
+| CA · ES | 2 | The Tyee, CTV News · Cadena SER, La Vanguardia |
+| DK · NO · IN | 1 | Radio4 · NRK · The Indian Express |
+| IT, SE | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
 Repubblica koppelde zijn eigen programmapagina's aan zichzelf. Japan en India
 vragen om herkenning van titels in een ander schrift — dat kan de lezer nu niet.
+
+### Alle achttien landen even breed
+
+Elk land heeft nu twaalf grote titels in de lijst en vijf algemene zoekopdrachten
+in de eigen taal, van `"beste podcasts"` tot `"migliori podcast"` en
+`"podkastanbefaling"`. Daarbovenop krijgt elke titel een eigen zoekopdracht.
+
+Japan deed eerst niet mee omdat de regels het schrift niet aankonden. Drie dingen
+stonden in de weg: een titel staat daar tussen 「 en 」 in plaats van tussen
+aanhalingstekens, Japans kent geen hoofdletters (waardoor de regel "helemaal in
+hoofdletters is een rubriekskop" altijd toesloeg), en het woord podcast heet daar
+ポッドキャスト. Alle drie zijn opgelost, en Japan staat nu op vijf tips van
+Natalie, Mainichi, Sankei en Nikkei.
+
+Wat daarbij bovenkwam: Japanse kranten drukken podcast-persberichten af alsof het
+artikelen zijn. Een kop die met プレスリリース begint is geen tip, en dat geldt net
+zo goed voor "Persbericht", "Pressemitteilung" en "comunicado de prensa".
+
+Italië en Zweden blijven op nul. Daar noemen de koppen de podcast niet bij naam en
+zetten de gidsen hun keuzes alleen in het artikel, waar de verzamelaar bij hun
+rubrieken niet binnenkomt.
 
 ### Google Nieuws
 

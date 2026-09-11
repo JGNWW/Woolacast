@@ -400,10 +400,14 @@ def parse_any_date(raw: str) -> str | None:
 # \u2019 geen sluitteken maar een apostrof. Een sluitteken wordt niet gevolgd
 # door een letter.
 QUOTED = re.compile(
-    r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"'](?![\w])")
+    r"[\u2018\u201c\u00ab\u201e\u300c\u300e\"']"
+    r"([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\u300c\u300d\u300e\u300f\"']{2,70})"
+    r"[\u2019\u201d\u00bb\u300d\u300f\"'](?![\w])")
 NEAR_PODCAST = re.compile(
     r"podcast(?:serie|reeks|series)?\s+(?:van\s+de\s+week\s+)?"
-    r"[\u2018\u201c\u00ab\u201e\"']([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\"']{3,70})[\u2019\u201d\u00bb\"']",
+    r"[\u2018\u201c\u00ab\u201e\u300c\u300e\"']"
+    r"([^\u2018\u2019\u201c\u201d\u00ab\u00bb\u201e\u300c\u300d\u300e\u300f\"']{2,70})"
+    r"[\u2019\u201d\u00bb\u300d\u300f\"']",
     re.I)
 TITLE_PREFIX = re.compile(r"^podcast\s+(?:tip:?\s+)?([^:\u2013\u2014-]{3,60})[:\u2013\u2014-]", re.I)
 # Woorden die verraden dat een fragment een zin is, geen titel.
@@ -427,15 +431,28 @@ STOPWORDS = {
 }
 
 
+CJK = re.compile(r"[\u4e00-\u9fff\u3040-\u30ff]")
+
+# Japans zet een titel tussen \u300c en \u300d. Daar hoort geen regel bij over wat
+# erachter komt: in "\u300c\u2026\u300dがおすすめ" is dat gewoon het volgende woord, terwijl een
+# aanhalingsteken in het Latijnse schrift ook een afkappingsquote kan zijn.
+CJK_QUOTED = re.compile(
+    r"[\u300c\u300e]([^\u300c\u300d\u300e\u300f]{2,70})[\u300d\u300f]")
+
+
 def looks_like_title(name: str) -> bool:
     name = name.strip(" .,:;!?")
     if name.lower() in STOPWORDS or re.search(r"[{}\[\]<>|]", name):
         return False
-    # HELEMAAL IN HOOFDLETTERS is een rubriekskop, geen titel. En een naam in
-    # een ander schrift dan de pagina hoort er niet: dat is menu of advertentie.
-    if len(name) > 4 and name.upper() == name and " " not in name:
+    # Japans en Chinees kennen geen hoofdletters, schrijven zonder spaties en
+    # zijn korter. Die regels gelden daar dus niet, en dit moet vóór de rest:
+    # zonder hoofdletters is "HELEMAAL IN HOOFDLETTERS" altijd waar.
+    if re.search(r"[\u0400-\u04ff\u0600-\u06ff]", name):
         return False
-    if re.search(r"[\u0400-\u04ff\u4e00-\u9fff\u3040-\u30ff\u0600-\u06ff]", name):
+    if CJK.search(name):
+        return 2 <= len(name) <= 40
+    # HELEMAAL IN HOOFDLETTERS is een rubriekskop, geen titel.
+    if len(name) > 4 and name.upper() == name and " " not in name:
         return False
     if not (4 <= len(name) <= 60):
         return False
@@ -517,6 +534,8 @@ def podcast_candidates(title: str, summary: str) -> list[str]:
     # Apple's catalogus zijn, dus een citaat erbij kost geen nauwkeurigheid.
     for text in (title, summary):
         for m in QUOTED.findall(text or ""):
+            add(m)
+        for m in CJK_QUOTED.findall(text or ""):
             add(m)
     return found[:4]
 
@@ -918,35 +937,55 @@ GOOGLE_EDITION = {
 GOOGLE_QUERIES = {
     "nl": ['"beste podcasts"', "podcasttips", '"podcast van de week"',
            '"luistertip" OR "luistertips"', "podcastrecensie"],
-    "be": ['"beste podcasts"', "podcasttips", '"podcast van de week"'],
+    "be": ['"beste podcasts"', "podcasttips", '"podcast van de week"',
+           '"luistertip" OR "luistertips"', "podcastrecensie"],
     "de": ['"beste Podcasts"', '"Podcast-Tipps"', '"Podcast der Woche"',
-           '"Podcast Empfehlungen"'],
+           '"Podcast Empfehlungen"', '"Podcast-Kritik"'],
     "gb": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"'],
+           '"podcast review"', '"podcast recommendations"'],
     "us": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
-           '"podcast review"'],
-    "ie": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
-    "ca": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
-    "au": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
-    "in": ['"best podcasts"', '"podcast of the week"', '"podcast review"'],
+           '"podcast review"', '"podcast recommendations"'],
+    "ie": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"', '"podcast recommendations"'],
+    "ca": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"', '"podcast recommendations"'],
+    "au": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"', '"podcast recommendations"'],
+    "in": ['"best podcasts"', '"podcast of the week"', '"podcast picks"',
+           '"podcast review"', '"podcast recommendations"'],
     "fr": ['"meilleurs podcasts"', '"podcast de la semaine"',
-           '"s\u00e9lection de podcasts"', '"critique podcast"'],
+           '"s\u00e9lection de podcasts"', '"critique podcast"',
+           '"podcast \u00e0 \u00e9couter"'],
     "es": ['"mejores podcasts"', '"podcast de la semana"',
-           '"recomendaciones de podcasts"'],
+           '"recomendaciones de podcasts"', '"podcast recomendado"',
+           '"cr\u00edtica podcast"'],
     "mx": ['"mejores podcasts"', '"podcast de la semana"',
-           '"recomendaciones de podcasts"'],
-    "it": ['"migliori podcast"', '"podcast della settimana"', '"consigli podcast"'],
-    "se": ['"b\u00e4sta poddar"', '"veckans podd"', "poddtips"],
-    "dk": ['"bedste podcasts"', '"ugens podcast"', "podcastanbefalinger"],
-    "no": ['"beste podkaster"', '"ukens podkast"', "podkasttips"],
-    "br": ['"melhores podcasts"', '"podcast da semana"', '"indica\u00e7\u00f5es de podcast"'],
-    "jp": [],
+           '"recomendaciones de podcasts"', '"podcast recomendado"',
+           '"cr\u00edtica podcast"'],
+    "it": ['"migliori podcast"', '"podcast della settimana"', '"consigli podcast"',
+           '"podcast da ascoltare"', '"recensione podcast"'],
+    "se": ['"b\u00e4sta poddar"', '"veckans podd"', "poddtips",
+           '"poddrecension"', '"poddar att lyssna p\u00e5"'],
+    "dk": ['"bedste podcasts"', '"ugens podcast"', "podcastanbefalinger",
+           '"podcastanmeldelse"', '"podcasts du skal lytte til"'],
+    "no": ['"beste podkaster"', '"ukens podkast"', "podkasttips",
+           '"podkastanbefaling"', '"podkastanmeldelse"'],
+    "br": ['"melhores podcasts"', '"podcast da semana"',
+           '"indica\u00e7\u00f5es de podcast"', '"podcasts para ouvir"',
+           '"cr\u00edtica de podcast"'],
+    # Japans schrijft titels tussen \u300c en \u300d; die tekens kennen de regels nu.
+    "jp": ["\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u304a\u3059\u3059\u3081",
+           "\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u7279\u96c6",
+           "\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8 \u30ec\u30d3\u30e5\u30fc",
+           "\u4eca\u9031\u306e\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8"],
 }
 
 # In een kop uit een site-zoekopdracht moet het woord podcast zelf staan: die
 # zoekopdracht levert alles van die krant op, niet alleen podcastrecensies.
 PODCAST_WORD = re.compile(
-    r"podcast|podkast|podd|luistertip|h\u00f6rtipp|beluister", re.I)
+    # Ook het Japanse woord, en de afkorting die er in koppen van gemaakt wordt.
+    r"podcast|podkast|podd|luistertip|h\u00f6rtipp|beluister|"
+    r"\u30dd\u30c3\u30c9\u30ad\u30e3\u30b9\u30c8|\u30dd\u30c3\u30c9", re.I)
 # Zoveel kranten krijgen een eigen zoekopdracht per land, per dag.
 GOOGLE_SITE_QUERIES = 12
 
@@ -1046,7 +1085,8 @@ def quoted_in(headline: str, name: str) -> bool:
     betrouwbare teken dat het een titel is. "Creatine: is there truth behind
     the hype? - podcast" gaat over creatine, niet over een show die zo heet.
     """
-    quotes = "‘’“”«»„\"'"
+    # Ook de Japanse haken: 「 titel 」.
+    quotes = "‘’“”«»„「」『』\"'"
     for m in re.finditer(re.escape(name), headline, re.I):
         before = headline[max(0, m.start() - 2):m.start()].strip()
         after = headline[m.end():m.end() + 2].strip()
@@ -1059,6 +1099,15 @@ def quoted_in(headline: str, name: str) -> bool:
 # schrapt de halve Nederlandse pers.
 HOUSE_SKIP = {"de", "het", "een", "the", "la", "le", "el", "il", "los", "las",
               "les", "der", "die", "das", "van", "en", "and", "of", "nl", "be"}
+
+
+# Een krant die een persbericht overneemt tipt niets; die drukt af wat een
+# uitgever zelf rondstuurde. In elke taal die we raken herkenbaar aan een woord
+# vooraan de kop.
+PRESS_RELEASE = re.compile(
+    r"\u30d7\u30ec\u30b9\u30ea\u30ea\u30fc\u30b9|press release|pressemitteilung|"
+    r"persbericht|comunicado de prensa|communiqu\u00e9 de presse|comunicato stampa|"
+    r"pressmeddelande|pressemeddelelse", re.I)
 
 
 def own_house(headline: str, outlet: str, host: str) -> bool:
@@ -1138,6 +1187,8 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
             if not PODCAST_WORD.search(headline):
                 continue
             if own_house(headline, item["outlet"], item["host"]):
+                continue
+            if PRESS_RELEASE.search(headline):
                 continue
             match = None
             for name in podcast_candidates(headline, ""):
@@ -1275,35 +1326,52 @@ def collect_tips(country: str) -> list[dict]:
 MEDIA = {
     "nl": ["vpro.nl", "nos.nl", "nrc.nl", "volkskrant.nl", "trouw.nl", "parool.nl",
            "ad.nl", "telegraaf.nl", "nporadio1.nl", "npo.nl", "vn.nl", "groene.nl"],
-    "be": ["standaard.be", "demorgen.be", "hln.be", "vrt.be", "humo.be", "knack.be", "tijd.be"],
+    "be": ["standaard.be", "demorgen.be", "hln.be", "vrt.be", "humo.be", "knack.be",
+           "tijd.be", "nieuwsblad.be", "bruzz.be", "radio1.be", "mo.be", "vrt.be/vrtnws"],
     "de": ["zeit.de", "spiegel.de", "sueddeutsche.de", "faz.net", "tagesspiegel.de",
            "deutschlandfunk.de", "deutschlandfunkkultur.de", "br.de", "ndr.de", "wdr.de",
            "stern.de", "taz.de", "detektor.fm", "podwatch.io"],
-    "gb": ["theguardian.com", "radiotimes.com", "bbc.co.uk", "independent.co.uk", "telegraph.co.uk"],
-    "us": ["podcastreview.org", "vulture.com", "nytimes.com", "theatlantic.com", "npr.org", "time.com"],
+    "gb": ["theguardian.com", "radiotimes.com", "bbc.co.uk", "independent.co.uk",
+           "telegraph.co.uk", "thetimes.com", "standard.co.uk", "inews.co.uk",
+           "newstatesman.com", "spectator.co.uk", "nme.com", "ft.com"],
+    "us": ["podcastreview.org", "vulture.com", "nytimes.com", "theatlantic.com", "npr.org",
+           "time.com", "washingtonpost.com", "theverge.com", "wired.com",
+           "rollingstone.com", "avclub.com", "slate.com"],
     "fr": ["telerama.fr", "lemonde.fr", "liberation.fr", "radiofrance.fr", "lesinrocks.com",
-           "franceinfo.fr", "lefigaro.fr", "nouvelobs.com", "slate.fr", "lesechos.fr"],
+           "franceinfo.fr", "lefigaro.fr", "nouvelobs.com", "slate.fr", "lesechos.fr",
+           "lepoint.fr", "ouest-france.fr"],
     "es": ["elpais.com", "elmundo.es", "rtve.es", "eldiario.es", "lavanguardia.com",
-           "elconfidencial.com", "abc.es", "20minutos.es", "cadenaser.com", "elespanol.com"],
-    "it": ["ilpost.it", "repubblica.it", "corriere.it", "internazionale.it", "rainews.it"],
+           "elconfidencial.com", "abc.es", "20minutos.es", "cadenaser.com", "elespanol.com",
+           "elperiodico.com", "publico.es"],
+    "it": ["ilpost.it", "repubblica.it", "corriere.it", "internazionale.it", "rainews.it",
+           "lastampa.it", "wired.it", "ilsole24ore.com", "rollingstone.it",
+           "fanpage.it", "linkiesta.it", "esquire.it"],
     "se": ["dn.se", "svd.se", "sverigesradio.se", "svt.se", "aftonbladet.se", "expressen.se",
            "gp.se", "etc.se", "sydsvenskan.se", "poddtoppen.se", "dagensmedia.se"],
     "dk": ["politiken.dk", "dr.dk", "berlingske.dk", "information.dk", "jyllands-posten.dk",
            "soundvenue.com", "zetland.dk", "radio4.dk", "kristeligt-dagblad.dk", "bt.dk"],
-    "no": ["nrk.no", "aftenposten.no", "vg.no", "dagbladet.no", "morgenbladet.no"],
+    "no": ["nrk.no", "aftenposten.no", "vg.no", "dagbladet.no", "morgenbladet.no",
+           "klassekampen.no", "nettavisen.no", "bt.no", "adressa.no", "dn.no"],
     "ie": ["irishtimes.com", "rte.ie", "independent.ie", "thejournal.ie",
-           "irishexaminer.com", "hotpress.com", "businesspost.ie", "thecurrency.news"],
+           "irishexaminer.com", "hotpress.com", "businesspost.ie", "thecurrency.news",
+           "newstalk.com", "breakingnews.ie", "gcn.ie", "irishmirror.ie"],
     "ca": ["cbc.ca", "theglobeandmail.com", "thestar.com", "macleans.ca",
-           "nationalpost.com", "thewalrus.ca", "thetyee.ca", "cbc.ca/listen", "ctvnews.ca"],
+           "nationalpost.com", "thewalrus.ca", "thetyee.ca", "cbc.ca/listen", "ctvnews.ca",
+           "montrealgazette.com", "vancouversun.com", "quillandquire.com"],
     "au": ["abc.net.au", "smh.com.au", "theguardian.com", "theage.com.au", "news.com.au",
-           "afr.com", "crikey.com.au", "themonthly.com.au", "abc.net.au/listen"],
-    "br": ["folha.uol.com.br", "g1.globo.com", "estadao.com.br", "uol.com.br", "oglobo.globo.com"],
+           "afr.com", "crikey.com.au", "themonthly.com.au", "abc.net.au/listen",
+           "sbs.com.au", "theconversation.com", "junkee.com"],
+    "br": ["folha.uol.com.br", "g1.globo.com", "estadao.com.br", "uol.com.br",
+           "oglobo.globo.com", "terra.com.br", "veja.abril.com.br", "nexojornal.com.br",
+           "tecmundo.com.br", "r7.com", "gauchazh.clicrbs.com.br"],
     "mx": ["eluniversal.com.mx", "milenio.com", "eleconomista.com.mx", "reforma.com",
            "sopitas.com", "chilango.com", "eluniversal.com.mx/techbit", "excelsior.com.mx",
            "animalpolitico.com", "elpais.com/mexico"],
-    "jp": ["nhk.or.jp", "asahi.com", "yomiuri.co.jp", "nikkei.com"],
+    "jp": ["nhk.or.jp", "asahi.com", "yomiuri.co.jp", "nikkei.com", "mainichi.jp",
+           "sankei.com", "natalie.mu", "itmedia.co.jp", "gizmodo.jp", "cinra.net"],
     "in": ["thehindu.com", "indianexpress.com", "hindustantimes.com", "scroll.in",
-           "thewire.in", "livemint.com", "mid-day.com", "deccanherald.com", "theprint.in"],
+           "thewire.in", "livemint.com", "mid-day.com", "deccanherald.com", "theprint.in",
+           "firstpost.com", "news18.com", "thequint.com"],
 }
 
 # Paden waarachter een podcastrubriek pleegt te zitten, in de talen die we raken.

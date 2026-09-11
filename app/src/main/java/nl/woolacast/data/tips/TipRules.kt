@@ -13,7 +13,9 @@ object TipRules {
 
     /** Het woord zelf, in de talen die we raken. */
     private val PODCAST = Regex(
-        "podcast|podkast|poddar|poddradio|\\bpodd\\b|luistertip|h\\u00f6rtipp",
+        "podcast|podkast|poddar|poddradio|\\bpodd\\b|luistertip|h\\u00f6rtipp|" +
+            // Japans: het woord zelf en de afkorting die koppen ervan maken.
+            "ポッドキャスト|ポッド",
         RegexOption.IGNORE_CASE
     )
 
@@ -31,6 +33,14 @@ object TipRules {
 
     private const val OPEN = "‘“«„\"'"
     private const val CLOSE = "’”»\"'"
+
+    /**
+     * Japans zet een titel tussen 「 en 」. Daar hoort geen regel bij over wat
+     * erachter komt: in "「…」がおすすめ" is dat gewoon het volgende woord, terwijl
+     * een aanhalingsteken in ons schrift ook een afkappingsquote kan zijn.
+     */
+    private val CJK_QUOTED = Regex("[「『]([^「」『』]{2,70})[」』]")
+    private val CJK = Regex("[\\u4e00-\\u9fff\\u3040-\\u30ff]")
 
     /**
      * Een aangehaalde titel. Let op de afkappingsquote: in "'Afrika's grootste
@@ -75,6 +85,7 @@ object TipRules {
         TITLE_PREFIX.find(headline)?.let { add(it.groupValues[1]) }
         NEAR_PODCAST.findAll(headline).forEach { add(it.groupValues[1]) }
         QUOTED.findAll(headline).forEach { add(it.groupValues[1]) }
+        CJK_QUOTED.findAll(headline).forEach { add(it.groupValues[1]) }
         return found.take(4)
     }
 
@@ -123,8 +134,12 @@ object TipRules {
     }
 
     fun looksLikeTitle(name: String): Boolean {
-        if (name.length < 4 || name.length > 60) return false
         if (name.lowercase() in STOPWORDS) return false
+        // Japans en Chinees kennen geen hoofdletters, schrijven zonder spaties
+        // en zijn korter. Dit moet vóór de rest: zonder hoofdletters is
+        // "HELEMAAL IN HOOFDLETTERS" altijd waar.
+        if (CJK.containsMatchIn(name)) return name.length in 2..40
+        if (name.length < 4 || name.length > 60) return false
         if (name.count { it.isLetter() } < 4) return false
         if (name.split(' ').size > 8) return false
         if (name.endsWith("...") || name.endsWith("?") || name.endsWith("!")) return false
@@ -136,6 +151,7 @@ object TipRules {
     /** Staat de naam tussen aanhalingstekens? Uit een kop alleen is dat het bewijs. */
     fun quotedIn(headline: String, name: String): Boolean =
         QUOTED.findAll(headline).any { it.groupValues[1].equals(name, ignoreCase = true) } ||
+            CJK_QUOTED.findAll(headline).any { it.groupValues[1] == name } ||
             NEAR_PODCAST.findAll(headline).any { it.groupValues[1].equals(name, ignoreCase = true) }
 
     /**
@@ -164,6 +180,20 @@ object TipRules {
             from = at + 1
         }
     }
+
+    /**
+     * Een krant die een persbericht overneemt tipt niets; die drukt af wat een
+     * uitgever zelf rondstuurde. In elke taal die we raken herkenbaar aan een
+     * woord vooraan de kop.
+     */
+    private val PRESS_RELEASE = Regex(
+        "プレスリリース|press release|pressemitteilung|persbericht|" +
+            "comunicado de prensa|communiqué de presse|comunicato stampa|" +
+            "pressmeddelande|pressemeddelelse",
+        RegexOption.IGNORE_CASE
+    )
+
+    fun isPressRelease(headline: String): Boolean = PRESS_RELEASE.containsMatchIn(headline)
 
     /** Lidwoorden horen niet bij de naam van een medium. */
     private val HOUSE_SKIP = setOf(

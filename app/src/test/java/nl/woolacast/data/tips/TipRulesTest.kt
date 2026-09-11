@@ -124,6 +124,23 @@ class TipRulesTest {
     }
 
     @Test
+    fun `een Japanse titel staat tussen haken`() {
+        val kop = "ポッドキャスト「ゆる言語学ラジオ」がおすすめ"
+        assertTrue(TipRules.mentionsPodcast(kop))
+        assertTrue("ゆる言語学ラジオ" in TipRules.candidates(kop))
+        assertTrue(TipRules.quotedIn(kop, "ゆる言語学ラジオ"))
+        // Japans kent geen hoofdletters; die regel mag daar niet gelden.
+        assertTrue(TipRules.looksLikeTitle("ゆる言語学ラジオ"))
+    }
+
+    @Test
+    fun `een persbericht is geen tip`() {
+        assertTrue(TipRules.isPressRelease("プレスリリース：Podcast「深夜枠。」配信開始"))
+        assertTrue(TipRules.isPressRelease("Persbericht: nieuwe podcast van start"))
+        assertFalse(TipRules.isPressRelease("De podcast ‘Bandsplain’ legt uit waarom Madonna groot werd"))
+    }
+
+    @Test
     fun `rommel uit de opmaak van een pagina is geen titel`() {
         assertFalse(TipRules.looksLikeTitle("Lees meer"))
         assertFalse(TipRules.looksLikeTitle("PODCASTS"))

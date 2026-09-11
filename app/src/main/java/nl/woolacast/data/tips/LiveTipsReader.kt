@@ -77,6 +77,7 @@ class LiveTipsReader(
             // Uit een zoekmachine komt alleen de kop mee, zonder tekst eronder;
             // daar moet de kop het dus helemaal zelf zeggen.
             if (feed.kind == "google" && !TipRules.mentionsPodcast(headline)) continue
+            if (TipRules.isPressRelease(headline)) continue
             // Een zoekmachine levert ook blogs en persberichtensites op. Alleen
             // de media die in dit land meetellen doen mee.
             if (feed.kind == "google" && !allowed(item.sourceUrl, hosts)) continue
@@ -136,6 +137,7 @@ class LiveTipsReader(
             val headline = headlineOf(item, GOOGLE)
             if (!TipRules.mentionsPodcast(headline)) continue
             if (!TipRules.titleIn(headline, showTitle)) continue
+            if (TipRules.isPressRelease(headline)) continue
             if (!allowed(item.sourceUrl, hosts)) continue
             val outlet = outletOf(item, GOOGLE)
             if (TipRules.ownAnnouncement(headline, outlet, publisher)) continue
