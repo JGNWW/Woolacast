@@ -220,14 +220,16 @@ Wat dat oplevert, gemeten:
 | --- | --- | --- |
 | US | 28 | Podcast Review |
 | IE | 19 | The Irish Times, RTÉ, Hot Press |
-| GB · FR | 15 | The Guardian · Télérama, Slate, Radio France, Le Nouvel Obs |
-| NL | 9 | VPRO Podcastgids, NOS, NPO Radio 1 |
-| DE · ES | 7 | NDR, FAZ, BR, Tagesspiegel · Cadena SER, La Vanguardia |
+| GB | 16 | The Guardian |
+| FR | 15 | Télérama, Slate, Radio France, Le Nouvel Obs |
+| NL | 13 | VPRO Podcastgids, Trouw, NOS |
+| ES | 9 | Cadena SER, La Vanguardia |
+| DE | 7 | NDR, FAZ, BR, Tagesspiegel |
 | AU · BR | 5 | Guardian Australia, news.com.au · Folha de S.Paulo, G1 |
-| BE | 3 | HLN, Humo |
-| CA · MX | 2 | The Tyee, CTV News · El Universal |
-| DK | 1 | Radio4 |
-| IT, SE, NO, JP, IN | 0 | — |
+| BE | 4 | De Standaard, HLN, Humo |
+| MX | 2 | El Universal |
+| CA · DK · NO | 1 | The Tyee · Radio4 · NRK |
+| IT, SE, JP, IN | 0 | — |
 
 De aantallen liggen lager dan vóór de koppelingsregel, en dat is de bedoeling:
 WDR leverde veertien "tips" die menu-items van hun cultuurpagina bleken, la
@@ -274,6 +276,38 @@ De DPG-titels (Volkskrant, Trouw, Parool, AD) publiceren hun podcastrubriek niet
 in een feed en hun pagina's staan achter een toestemmingsscherm. Via Google
 Nieuws vangen we hun koppen wel op, maar het artikel zelf lezen we niet, en om
 dat scherm heen gaan we niet.
+
+### De app leest ook zelf
+
+De verzamelaar draait een keer per nacht. Wie 's ochtends kijkt ziet dus wat er
+gisteren was, en een podcastrubriek verschijnt juist vaak 's ochtends. Daarom
+leest de app de feeds ook zelf, bij het openen van het tipsscherm en met de knop
+rechtsboven.
+
+Waar hij moet kijken staat in `charts/feeds/{land}.json`: per land een handvol
+feeds met hun soort (`guide`, `news`, `google`) en de lijst media die in dat land
+meetellen. Dat is met opzet gegevens en geen code — een bron erbij vraagt geen
+nieuwe versie van de app.
+
+Wat de app niet doet is het artikel achter de kop lezen. Dat werk verschilt per
+site, breekt het vaakst, en een reparatie daar is een nieuw gegevensbestand in
+plaats van een nieuwe versie in de winkel. De app ziet alleen wat de feed geeft,
+en de regels (`TipRules`) zijn daarom strenger. Twee ervan dragen het meeste:
+
+- De opsomming onder een tiplijst. "Met deze week: Luister Anita, Dan Taberski's
+  Manifesto, Proces X en De onderwereld" is de enige plek waar een feed zijn
+  besproken podcasts bij naam noemt.
+- De naam achter het woord podcast zonder aanhalingstekens, woord voor woord
+  langer geprobeerd. Waar de zin ophoudt en de titel begint is van buiten niet te
+  zien, dus laat Apple's catalogus beslissen welke lengte bestaat.
+
+Voor Nederland levert een verversing dertien tips op. Wat de verzamelaar vond
+gaat voor bij het samenvoegen: daar is het artikel bij gelezen.
+
+Een intro per artikel ophalen (`og:description`) is gebouwd en weer weggehaald:
+28 artikelen in vier landen, nul extra koppelingen. De feeds die er toe doen
+geven hun opsomming al mee, en de rest staat achter een toestemmingsscherm of is
+geen tip.
 
 ### Zelf zoeken: de prospector
 
