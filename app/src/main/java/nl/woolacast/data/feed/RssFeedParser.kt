@@ -16,7 +16,10 @@ data class ParsedEpisode(
     val durationMillis: Long?,
     val releaseDate: String?,
     val imageUrl: String?,
-    val link: String?
+    val link: String?,
+    /** Bij een nieuwsbundelaar: van welk medium deze kop is. */
+    val sourceUrl: String? = null,
+    val sourceName: String? = null
 )
 
 data class ParsedFeed(
@@ -89,6 +92,13 @@ class RssFeedParser {
                     "itunes:duration" -> if (item != null) item.duration = parseDuration(text(parser))
                     "pubdate" -> if (item != null) item.releaseDate = parseDate(text(parser))
                     "guid" -> if (item != null) item.guid = text(parser)
+
+                    // Google Nieuws zet in <source url="..."> bij welk medium
+                    // een kop hoort. Een podcastfeed heeft dit niet.
+                    "source" -> if (item != null) {
+                        item.sourceUrl = parser.getAttributeValue(null, "url")
+                        item.sourceName = text(parser)
+                    }
                     "link" -> if (item != null && item.link == null) item.link = text(parser)
                 }
             } else if (event == XmlPullParser.END_TAG) {
@@ -126,6 +136,8 @@ class RssFeedParser {
         var releaseDate: String? = null
         var imageUrl: String? = null
         var link: String? = null
+        var sourceUrl: String? = null
+        var sourceName: String? = null
 
         fun build(): ParsedEpisode? {
             val heading = title ?: return null
@@ -137,7 +149,9 @@ class RssFeedParser {
                 durationMillis = duration,
                 releaseDate = releaseDate,
                 imageUrl = imageUrl,
-                link = link?.takeIf { it.startsWith("http") }
+                link = link?.takeIf { it.startsWith("http") },
+                sourceUrl = sourceUrl,
+                sourceName = Html.toPlainText(sourceName)
             )
         }
     }

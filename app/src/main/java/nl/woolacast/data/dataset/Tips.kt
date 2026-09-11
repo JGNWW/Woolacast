@@ -32,3 +32,30 @@ data class MediaTips(
     val outlets: List<String> = emptyList(),
     val entries: List<MediaTip> = emptyList()
 )
+
+/**
+ * Waar de app zelf kan kijken. De verzamelaar schrijft per land op welke feeds
+ * er zijn en wat voor soort ze zijn, zodat een nieuwe bron geen nieuwe versie
+ * van de app vraagt.
+ *
+ *   guide   de feed van een podcastrubriek: alles erin gaat al over podcasts
+ *   news    een gewone nieuwsfeed: daar moet een tipwoord bij staan
+ *   google  een zoekopdracht bij Google Nieuws, met de strengste regels
+ */
+@Serializable
+data class TipFeed(
+    val outlet: String = "",
+    val url: String = "",
+    val kind: String = "news",
+    val logo: String? = null
+)
+
+@Serializable
+data class TipFeeds(
+    val country: String = "",
+    val updated: String? = null,
+    val count: Int = 0,
+    /** De media die in dit land meetellen, voor wat uit een zoekmachine komt. */
+    val hosts: List<String> = emptyList(),
+    val entries: List<TipFeed> = emptyList()
+)

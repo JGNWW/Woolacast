@@ -72,6 +72,13 @@ fun Episode.toSaved() = SavedEpisode(
     durationMillis = durationMillis, releaseDate = releaseDate, link = link
 )
 
+/** Wat de app zelf uit de feeds haalde, met het moment erbij. */
+@Serializable
+data class CachedTips(
+    val fetchedAt: String,
+    val entries: List<nl.woolacast.data.dataset.MediaTip> = emptyList()
+)
+
 @Serializable
 private data class StoreData(
     val follows: List<FollowedShow> = emptyList(),
@@ -82,7 +89,9 @@ private data class StoreData(
     /** Waar je gebleven bent, per aflevering, in milliseconden. */
     val progress: Map<String, Long> = emptyMap(),
     /** "light", "dark" of "system"; standaard volgt de app het toestel. */
-    val theme: String = "system"
+    val theme: String = "system",
+    /** Tips die de app zelf uit de feeds las, per land. */
+    val liveTips: Map<String, CachedTips> = emptyMap()
 )
 
 /**
@@ -213,6 +222,14 @@ class LocalStore(private val file: File) {
 
     suspend fun cacheChart(queryKey: String, chart: CachedChart) = mutate {
         it.copy(charts = it.charts + (queryKey to chart))
+    }
+
+    /* ---- tips die de app zelf ophaalde ---- */
+
+    fun cachedTips(countryCode: String): CachedTips? = data.liveTips[countryCode]
+
+    suspend fun cacheTips(countryCode: String, tips: CachedTips) = mutate {
+        it.copy(liveTips = it.liveTips + (countryCode to tips))
     }
 
     private suspend fun mutate(block: (StoreData) -> StoreData) = withContext(Dispatchers.IO) {

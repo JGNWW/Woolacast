@@ -324,7 +324,11 @@ private fun NavGraphBuilder.tabScreens(
 
     composable("$prefix/tips") {
         val tipsViewModel: TipsViewModel = viewModel(
-            factory = viewModelFactory { initializer { TipsViewModel(container.dataset) } }
+            factory = viewModelFactory {
+                initializer {
+                    TipsViewModel(container.dataset, container.liveTips, container.store)
+                }
+            }
         )
         TipsScreen(
             viewModel = tipsViewModel,

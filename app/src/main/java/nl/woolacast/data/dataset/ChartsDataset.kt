@@ -101,6 +101,9 @@ interface ChartsDatasetApi {
 
     @GET
     suspend fun tips(@Url url: String): MediaTips
+
+    @GET
+    suspend fun feeds(@Url url: String): TipFeeds
 }
 
 /**
@@ -125,6 +128,7 @@ class ChartsDataset(
     private val showShards = mutableMapOf<String, Map<String, ShowRecord>?>()
     private val movers = mutableMapOf<String, DatasetMovers?>()
     private val tips = mutableMapOf<String, MediaTips?>()
+    private val feeds = mutableMapOf<String, TipFeeds?>()
 
     private fun ChartQuery.datasetPath(): String {
         val source = if (this.source == SourceId.SPOTIFY) "spotify" else "apple"
@@ -249,6 +253,21 @@ class ChartsDataset(
             }
             .takeIf { it != null && it.entries.isNotEmpty() }
             .also { tips[countryCode] = it }
+    }
+
+    /**
+     * De feeds die de app zelf mag lezen, per land. Hiermee blijven de tips
+     * vers tussen twee ronden van de verzamelaar door.
+     */
+    suspend fun feeds(countryCode: String): TipFeeds = mutex.withLock {
+        feeds[countryCode]?.let { return@withLock it }
+        val loaded = runCatching { api.feeds("$baseUrl/feeds/$countryCode.json") }
+            .getOrNull() ?: TipFeeds(country = countryCode)
+        val resolved = loaded.copy(entries = loaded.entries.map { feed ->
+            if (feed.logo == null) feed else feed.copy(logo = "$baseUrl/logos/${feed.logo}")
+        })
+        feeds[countryCode] = resolved
+        resolved
     }
 
     /** De tips over één show, om ze op de podcastpagina te tonen. */

@@ -36,6 +36,7 @@ import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.domain.Catalog
 import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.FilterChipBox
+import nl.woolacast.ui.common.IconAction
 import nl.woolacast.ui.common.Flag
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.PlayCircle
@@ -63,7 +64,16 @@ fun TipsScreen(
     val country = Catalog.country(state.countryCode.ifEmpty { countryCode })
 
     Column(modifier = modifier.fillMaxSize()) {
-        TitleBar("Tips van de media", onBack)
+        TitleBar("Tips van de media", onBack) {
+            if (state.reading) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp)
+                )
+            } else {
+                IconAction(WoolIcons.Refresh, "Ververs", viewModel::refresh)
+            }
+        }
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
@@ -106,7 +116,14 @@ fun TipsScreen(
             else -> LazyColumn(contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 16.dp)) {
                 item {
                     Text(
-                        "${state.visible.size} tips · ${state.outlets.size} media · uit hun podcastrubrieken",
+                        buildString {
+                            append("${state.visible.size} tips · ${state.outlets.size} media")
+                            if (state.fromFeeds > 0) {
+                                append(" · ${state.fromFeeds} nu zelf opgehaald")
+                            } else {
+                                append(" · uit hun podcastrubrieken")
+                            }
+                        },
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
                         color = LocalChartColors.current.muted,
                         modifier = Modifier.height(30.dp).padding(top = 8.dp)

@@ -455,6 +455,44 @@ def looks_like_title(name: str) -> bool:
     return name[0].isupper() or name[0].isdigit()
 
 
+# De opsomming onder een tiplijst: "Met deze week: Luister Anita, Dan Taberski's
+# Manifesto, Proces X en De onderwereld." Dat is de enige plek waar een feed de
+# besproken podcasts bij naam noemt, zonder het artikel erbij te halen.
+LIST_INTRO = re.compile(
+    r"(?:met deze week|deze week|met onder meer|met o\.a\.|this week|"
+    r"diese woche|esta semana|cette semaine|questa settimana)\s*:\s*(.+)", re.I)
+LIST_SPLIT = re.compile(r"\s*[,;]\s*|\s+(?:en|and|y|et|und|e)\s+", re.I)
+
+# "In de podcast Mijn taalmaatje wil naar huis volgt ..." — zonder aanhaling.
+# Waar de zin ophoudt en de titel begint is van buiten niet te zien, dus
+# proberen we hem woord voor woord langer en laat Apple's catalogus beslissen.
+AFTER_WORD = re.compile(
+    r"\bpodcast(?:serie|reeks)?\s+((?:[^\W\d_][\w'\u2019-]*\s+){1,6}[\w'\u2019-]*)")
+
+
+def list_candidates(text: str) -> list[str]:
+    intro = LIST_INTRO.search(text or "")
+    if not intro:
+        return []
+    names = []
+    for part in LIST_SPLIT.split(intro.group(1)):
+        part = part.strip(" .")
+        if looks_like_title(part):
+            names.append(part)
+    return names[:8]
+
+
+def after_word_candidates(text: str) -> list[str]:
+    names: list[str] = []
+    for match in AFTER_WORD.finditer(text or ""):
+        words = match.group(1).split()
+        for length in range(2, min(len(words), 6) + 1):
+            name = " ".join(words[:length]).strip(" .,")
+            if looks_like_title(name) and name not in names:
+                names.append(name)
+    return names[:8]
+
+
 def podcast_candidates(title: str, summary: str) -> list[str]:
     found = []
 
@@ -1091,6 +1129,17 @@ def collect_google(country: str, cutoff: str, known_hosts: set[str]) -> list[dic
     return tips
 
 
+def feed_candidates(item: dict) -> list[str]:
+    """Alle namen die een feeditem prijsgeeft, zonder het artikel erbij."""
+    text = f"{item['title']} {item.get('summary') or ''}"
+    names = list_candidates(text)
+    for name in (podcast_candidates(item["title"], item.get("summary") or "")
+                 + after_word_candidates(text)):
+        if name not in names:
+            names.append(name)
+    return names[:12]
+
+
 def collect_tips(country: str) -> list[dict]:
     from datetime import timedelta
     cutoff = (datetime.now(timezone.utc) - timedelta(days=TIP_DAYS)).strftime("%Y-%m-%d")
@@ -1114,7 +1163,7 @@ def collect_tips(country: str) -> list[dict]:
                     if item["date"] and item["date"] < cutoff:
                         continue
                     match = None
-                    for name in podcast_candidates(item["title"], item["summary"]):
+                    for name in feed_candidates(item):
                         match = lookup_show(name, country)
                         if match:
                             break
@@ -1146,7 +1195,7 @@ def collect_tips(country: str) -> list[dict]:
             if item["date"] and item["date"] < cutoff:
                 continue
             match = None
-            for name in podcast_candidates(item["title"], item["summary"]):
+            for name in feed_candidates(item):
                 match = lookup_show(name, country)
                 if match:
                     break
@@ -1421,6 +1470,76 @@ def source_hosts(country: str) -> dict[str, str]:
     return hosts
 
 
+# ------------------------------------------------- catalogus voor de app zelf
+
+# De app kan zelf feeds lezen: dat houdt de tips vers tussen twee ronden van de
+# verzamelaar door. Wat hij niet kan is een artikel uit elkaar halen — daar zit
+# het meeste vakwerk en dat verandert het vaakst. Dus schrijven we op wáár hij
+# moet kijken, en blijft het lezen van artikelen hier.
+#
+#   guide   de feed van een podcastrubriek: alles erin gaat al over podcasts
+#   news    een gewone nieuwsfeed: daar moet een tipwoord bij staan
+#   google  een zoekopdracht bij Google Nieuws, met de strengste regels
+FEEDS_PER_COUNTRY = 16
+FEEDS_PER_HOST = 3
+
+
+def feed_catalogue(country: str) -> list[dict]:
+    """De feeds die de app zelf kan lezen, op volgorde van opbrengst."""
+    guides, news, discovered = [], [], []
+    for outlet, url, mode in TIP_SOURCES.get(country, []):
+        if mode in ("guide-feed", "dedicated"):
+            guides.append({"outlet": outlet, "url": url, "kind": "guide"})
+        elif mode == "keyword":
+            news.append({"outlet": outlet, "url": url, "kind": "news"})
+        elif mode == "feeds":
+            host = url.replace("https://", "").strip("/")
+            for feed_url in discover_feeds(host)[:FEEDS_PER_HOST]:
+                discovered.append({"outlet": outlet, "url": feed_url, "kind": "news"})
+
+    google = []
+    edition = GOOGLE_EDITION.get(country)
+    if edition:
+        hl, gl, ceid = edition
+        for query in GOOGLE_QUERIES.get(country, []):
+            google.append({
+                "outlet": "Google Nieuws",
+                "url": (f"{GOOGLE_NEWS}?q={urllib.parse.quote(query + f' when:{TIP_DAYS}d')}"
+                        f"&hl={hl}&gl={gl}&ceid={ceid}"),
+                "kind": "google",
+            })
+
+    entries, seen = [], set()
+    for entry in guides + google + news + discovered:
+        if entry["url"] in seen:
+            continue
+        seen.add(entry["url"])
+        entries.append(entry)
+        if len(entries) >= FEEDS_PER_COUNTRY:
+            break
+    return entries
+
+
+def write_feeds(root: pathlib.Path, country: str, logos: dict[str, str]) -> int:
+    entries = feed_catalogue(country)
+    for entry in entries:
+        if logos.get(entry["outlet"]):
+            entry["logo"] = logos[entry["outlet"]]
+    folder = root / "feeds"
+    folder.mkdir(parents=True, exist_ok=True)
+    # De media die in dit land meetellen. Een zoekopdracht bij Google Nieuws
+    # levert ook blogs en persberichtensites op; die noemen "podcast" net zo
+    # vaak zonder er een te tippen.
+    hosts = sorted({h.split("/")[0].replace("www.", "") for h in MEDIA.get(country, [])}
+                   | {urllib.parse.urlsplit(u if "//" in u else "//" + u).netloc.replace("www.", "")
+                      for _o, u, _m in TIP_SOURCES.get(country, [])} - {""})
+    (folder / f"{country}.json").write_text(json.dumps({
+        "country": country, "updated": NOW, "count": len(entries),
+        "hosts": hosts, "entries": entries,
+    }, ensure_ascii=False, separators=(",", ":")))
+    return len(entries)
+
+
 def write_tips(root: pathlib.Path, country: str) -> int:
     tips = collect_tips(country)
     # Media uit Google Nieuws staan niet in TIP_SOURCES; hun adres komt uit de
@@ -1435,6 +1554,8 @@ def write_tips(root: pathlib.Path, country: str) -> int:
         tip.pop("host", None)
         if logos.get(tip["outlet"]):
             tip["logo"] = logos[tip["outlet"]]
+    print(f"    catalogus: {write_feeds(root, country, logos)} feeds voor de app",
+          flush=True)
     folder = root / "tips"
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{country}.json").write_text(json.dumps({
