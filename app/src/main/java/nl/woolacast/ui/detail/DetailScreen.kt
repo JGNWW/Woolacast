@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -574,64 +576,97 @@ private fun ActionRow(icon: ImageVector, label: String, active: Boolean, onClick
     }
 }
 
-/** Wat de media over deze podcast schreven, in de accentkleur onder de noteringen. */
+/**
+ * Wat de media over deze podcast schreven, als carrousel. Een regel tekst per
+ * medium werd een rijtje linkjes; als kaart is te zien wie het schreef, wanneer,
+ * en waar het over ging, en passen er meer in beeld dan drie.
+ */
 @Composable
 private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
     val context = LocalContext.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 13.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(9.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(9.dp)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Icon(
                 WoolIcons.News, null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(17.dp)
             )
             Text(
-                // "Getipt" alleen als het artikel gelezen is; wat de app zelf
-                // bij het openen vond kan ook nieuws over de podcast zijn.
-                when {
-                    tips.all { it.found } -> "Wat de media zegt"
-                    tips.size == 1 -> "Getipt door 1 medium"
-                    else -> "Getipt door ${tips.size} media"
-                },
+                // Eén kop voor alles wat de media over deze podcast schreven.
+                // Of het artikel bij ons is gelezen of alleen als kop langskwam
+                // is een verschil in herkomst, geen verschil in categorie.
+                "Wat de media zegt",
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
-        tips.take(3).forEach { tip ->
-            Row(
-                modifier = Modifier.clickable {
-                    runCatching {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(tip.url)))
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // De sleutel moet uniek zijn: twee media kunnen dezelfde kop dragen
+            // en een artikel zonder link zou twee lege sleutels opleveren.
+            itemsIndexed(tips.take(MEDIA_IN_CARROUSEL)) { index, tip ->
+                Column(
+                    modifier = Modifier
+                        .width(228.dp)
+                        .height(136.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable {
+                            runCatching {
+                                context.startActivity(
+                                    Intent(Intent.ACTION_VIEW, android.net.Uri.parse(tip.url))
+                                )
+                            }
+                        }
+                        .padding(13.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutletMark(tip.outlet, size = 22.dp, logoUrl = tip.logo)
+                        Text(
+                            tip.outlet,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
-                },
-                horizontalArrangement = Arrangement.spacedBy(9.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                OutletMark(tip.outlet, size = 20.dp, logoUrl = tip.logo)
-                Text(
-                    buildString {
-                        append(tip.outlet)
-                        shortDate(tip.date)?.let { append(" · ").append(it) }
-                        append(" — ").append(tip.headline)
-                    },
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp, lineHeight = 17.sp),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        tip.headline,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 12.5.sp, lineHeight = 16.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    shortDate(tip.date)?.let { datum ->
+                        Text(
+                            datum,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                    }
+                }
             }
         }
     }
 }
+
+/** Meer dan dit veegt niemand af; de rest staat in het tabblad Tips. */
+private const val MEDIA_IN_CARROUSEL = 10
 
 @Composable
 private fun PositionRow(countryCode: String, ranks: Map<SourceId, Int>) {
