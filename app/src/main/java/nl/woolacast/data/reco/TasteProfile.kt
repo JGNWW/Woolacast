@@ -92,7 +92,7 @@ object Recommender {
         val gezien = mutableSetOf<String>()
         return candidates
             .asSequence()
-            .filter { it.id !in profile.known && gezien.add(it.id) }
+            .filter { it.id.isNotBlank() && it.id !in profile.known && gezien.add(it.id) }
             .map { entry ->
                 val genreScore = (profile.genres[entry.genre] ?: 0) / zwaarste
                 val zelfdeMaker = entry.publisher.lowercase() in profile.publishers

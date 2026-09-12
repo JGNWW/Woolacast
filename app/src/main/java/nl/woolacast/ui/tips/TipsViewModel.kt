@@ -82,10 +82,14 @@ class TipsViewModel(
         }
     }
 
+    /** Hetzelfde artikel over dezelfde show is één tip, hoe het medium ook heet. */
+    private fun fingerprint(tip: MediaTip) =
+        (tip.showId ?: "") + "|" + tip.url + "|" + tip.outlet.lowercase().filter { it.isLetter() }
+
     private fun publish(countryCode: String, live: List<MediaTip>, updated: String?) {
         // Wat de verzamelaar vond gaat voor: daar is het artikel bij gelezen.
-        val seen = collected.map { it.outlet to (it.showId ?: it.url) }.toMutableSet()
-        val extra = live.filter { seen.add(it.outlet to (it.showId ?: it.url)) }
+        val seen = collected.map(::fingerprint).toMutableSet()
+        val extra = live.filter { seen.add(fingerprint(it)) }
         val all = (collected + extra).sortedByDescending { it.date ?: "" }
         _state.value = _state.value.copy(
             loading = false,

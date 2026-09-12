@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -120,7 +121,10 @@ fun DiscoverScreen(
                         contentPadding = PaddingValues(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(state.tips, key = { it.url + it.showId }) { tip ->
+                        // De plek in de lijst hoort in de sleutel: twee media kunnen
+                        // hetzelfde artikel over dezelfde show tippen, en dan zijn
+                        // adres en show-id gelijk.
+                        itemsIndexed(state.tips) { index, tip ->
                             TipCard(tip) {
                                 tip.showId?.let { onOpenPodcast(it, tip.feedUrl, tip.showTitle.orEmpty()) }
                             }

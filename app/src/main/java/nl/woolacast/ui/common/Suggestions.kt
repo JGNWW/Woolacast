@@ -55,7 +55,10 @@ fun SuggestionRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(suggestions, key = { it.entry.id }) { suggestion ->
+            // Een sleutel moet uniek zijn, anders valt Compose om. Een voorstel
+            // zonder id zou er twee lege sleutels van maken.
+            items(suggestions.filter { it.entry.id.isNotBlank() }.distinctBy { it.entry.id },
+                  key = { it.entry.id }) { suggestion ->
                 val entry = suggestion.entry
                 Column(
                     modifier = Modifier

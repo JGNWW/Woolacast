@@ -130,11 +130,15 @@ fun TipsScreen(
                     )
                 }
                 var lastGroup: String? = null
-                state.visible.forEach { tip ->
+                // De sleutel draagt de plek in de lijst. Twee media kunnen
+                // hetzelfde artikel over dezelfde show tippen, en dan zijn
+                // adres en show-id gelijk; Compose staat geen twee gelijke
+                // sleutels toe en liet de app daarop vallen.
+                state.visible.forEachIndexed { index, tip ->
                     val group = groupFor(tip.date)
                     if (group != lastGroup) {
                         lastGroup = group
-                        item(key = "h-$group-${tip.url}") {
+                        item(key = "kop-$index-$group") {
                             Text(
                                 group,
                                 style = MaterialTheme.typography.labelSmall,
@@ -143,7 +147,7 @@ fun TipsScreen(
                             )
                         }
                     }
-                    item(key = "${tip.url}-${tip.showId}") {
+                    item(key = "tip-$index-${tip.showId ?: tip.url}") {
                         TipRow(tip, onOpenPodcast)
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }

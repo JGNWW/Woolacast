@@ -33,8 +33,24 @@ class LiveTipsReader(
     private val catalog: AppleCatalogApi
 ) {
 
-    /** Titels die al opgezocht zijn, om niet twee keer hetzelfde te vragen. */
-    private val resolved = mutableMapOf<String, MediaTip?>()
+    /**
+     * Titels die al opgezocht zijn, om niet twee keer hetzelfde te vragen.
+     *
+     * Dit moet een kaart zijn die tegen gelijktijdig gebruik kan: een ronde
+     * leest vierentwintig feeds tegelijk en die schrijven hier allemaal in.
+     * Een gewone HashMap raakt daarvan van slag en nam de app mee. Een
+     * ConcurrentHashMap kent geen lege waarden, vandaar het doosje eromheen.
+     */
+    private class Answer(val tip: MediaTip?)
+
+    private val resolved = java.util.concurrent.ConcurrentHashMap<String, Answer>()
+
+    /**
+     * Zoveel opzoekingen doet één ronde hooguit. Zonder grens vuurt een feed met
+     * honderd items er honderden af, allemaal tegelijk met drieëntwintig andere
+     * feeds; dat is meer dan Apple wil en meer dan het toestel prettig vindt.
+     */
+    private val budget = java.util.concurrent.atomic.AtomicInteger(0)
 
     suspend fun read(
         countryCode: String,
@@ -43,6 +59,7 @@ class LiveTipsReader(
     ): List<MediaTip> = coroutineScope {
         val cutoff = LocalDate.now().minusDays(withinDays).toString()
         val hosts = catalogue.hosts.toSet()
+        budget.set(0)
         val perFeed = catalogue.entries.take(MAX_FEEDS).map { feed ->
             async(Dispatchers.IO) {
                 runCatching { readFeed(countryCode, feed, cutoff, hosts) }
@@ -202,7 +219,8 @@ class LiveTipsReader(
      */
     private suspend fun lookup(name: String, countryCode: String): MediaTip? {
         val key = "$countryCode:${TipRules.normalise(name)}"
-        if (resolved.containsKey(key)) return resolved[key]
+        resolved[key]?.let { return it.tip }
+        if (budget.incrementAndGet() > MAX_LOOKUPS) return null
         val found = withContext(Dispatchers.IO) {
             runCatching { catalog.search(term = name, country = countryCode, limit = 5) }
                 .getOrNull()
@@ -218,7 +236,7 @@ class LiveTipsReader(
                     )
                 }
         }
-        resolved[key] = found
+        resolved[key] = Answer(found)
         return found
     }
 
@@ -242,6 +260,9 @@ class LiveTipsReader(
 
         /** Zoveel titels proberen we hooguit op te zoeken per artikel. */
         const val MAX_NAMES_PER_ITEM = 12
+
+        /** En zoveel over de hele ronde, hoeveel feeds er ook meedoen. */
+        const val MAX_LOOKUPS = 200
 
     }
 }
