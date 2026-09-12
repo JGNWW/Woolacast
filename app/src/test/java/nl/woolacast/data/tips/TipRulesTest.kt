@@ -118,9 +118,9 @@ class TipRulesTest {
 
     @Test
     fun `een titel die we al kennen hoeft niet geraden te worden`() {
-        assertTrue(TipRules.titleIn("De podcast \u2018Bandsplain\u2019 legt uit", "Bandsplain"))
-        assertTrue(TipRules.titleIn("Proces X gaat over seriemoordenaars", "Proces X: Seriedoders"))
-        assertFalse(TipRules.titleIn("Serialiseren is een werkwoord", "Serial"))
+        assertTrue(TipRules.titleAsName("De podcast \u2018Bandsplain\u2019 legt uit", TipRules.coreTitle("Bandsplain")))
+        assertTrue(TipRules.titleAsName("Proces X gaat over seriemoordenaars", TipRules.coreTitle("Proces X: Seriedoders")))
+        assertFalse(TipRules.titleAsName("Serialiseren is een werkwoord", "Serial"))
     }
 
     @Test
@@ -177,5 +177,35 @@ class TipRulesTest {
         assertFalse(TipRules.looksLikeTitle("de"))
         assertFalse(TipRules.looksLikeTitle("Waarom gaan de leerprestaties van Nederlandse scholieren zo hard achteruit"))
         assertTrue(TipRules.looksLikeTitle("Helden op Pootjes"))
+    }
+
+    @Test
+    fun `de kern van een titel laat het woord podcast weg`() {
+        assertEquals("Spuiten en Slikken", TipRules.coreTitle("Spuiten en Slikken De Podcast"))
+        assertEquals("Man man man", TipRules.coreTitle("Man man man, de podcast"))
+        assertEquals("Zwarte Doos", TipRules.coreTitle("Zwarte Doos: de podcast"))
+        assertEquals("The Rest Is History", TipRules.coreTitle("The Rest Is History"))
+        // Een show die alleen maar Podcast heet houdt zijn naam.
+        assertEquals("Podcast", TipRules.coreTitle("Podcast"))
+    }
+
+    @Test
+    fun `de titel moet in de kop als naam geschreven staan`() {
+        assertTrue(TipRules.titleAsName("Jurre Geluk stopt bij Spuiten en Slikken", "Spuiten en Slikken"))
+        assertTrue(TipRules.titleAsName("SPUITEN EN SLIKKEN KRIJGT NIEUWE MAKERS", "Spuiten en Slikken"))
+        assertFalse(TipRules.titleAsName("Nieuwe feiten in onderzoek Dascha Graafsma", "Nieuwe Feiten"))
+        assertTrue(TipRules.titleAsName("Marc Didden luistert naar Nieuwe Feiten op Radio 1", "Nieuwe Feiten"))
+        assertFalse(TipRules.titleAsName("De zwarte doos van Trumps deportatieregime", "Zwarte Doos"))
+        // Geen halve woorden: Serial zit niet in serialiseren.
+        assertFalse(TipRules.titleAsName("Over het serialiseren van data", "Serial"))
+    }
+
+    @Test
+    fun `een korte alledaagse titel moet het woord podcast erbij hebben`() {
+        assertFalse(TipRules.strongTitle("Het Uur"))
+        assertFalse(TipRules.strongTitle("Zwarte Doos"))
+        assertTrue(TipRules.strongTitle("Spuiten en Slikken"))
+        assertTrue(TipRules.strongTitle("De Jortcast"))
+        assertTrue(TipRules.strongTitle("Boekestijn en De Wijk"))
     }
 }

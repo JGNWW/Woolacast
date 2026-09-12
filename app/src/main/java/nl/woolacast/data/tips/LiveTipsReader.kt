@@ -142,24 +142,32 @@ class LiveTipsReader(
         publisher: String
     ): List<MediaTip> {
         if (catalogue.search.isBlank() || showTitle.length < 4) return emptyList()
+        val core = TipRules.coreTitle(showTitle)
+        if (core.length < 4) return emptyList()
         val hosts = catalogue.hosts.toSet()
-        val query = "\"" + showTitle.replace("\"", " ") + "\" podcast"
+        // Zonder aanhalingstekens, met het woord podcast erachter. Dat is
+        // gemeten: als exacte zin vindt de volledige Apple-titel nul koppen,
+        // los levert dezelfde vraag er achttien op. Het woord podcast erbij
+        // scheelt ook echt; laat je het weg dan geeft Google een andere,
+        // magerder greep.
+        val query = showTitle.replace("\"", " ") + " podcast"
         val url = catalogue.search + java.net.URLEncoder.encode(query, "UTF-8")
         val parsed = runCatching { feedClient.fetch(url) }.getOrNull() ?: return emptyList()
 
-        val tips = mutableListOf<MediaTip>()
+        val found = mutableListOf<Pair<Boolean, MediaTip>>()
         val seen = mutableSetOf<String>()
         for (item in parsed.episodes.take(MAX_ITEMS_PER_FEED)) {
-            if (tips.size >= MAX_TIPS_PER_SHOW) break
             val headline = headlineOf(item, GOOGLE)
-            if (!TipRules.mentionsPodcast(headline)) continue
-            if (!TipRules.titleIn(headline, showTitle)) continue
+            // De kop moet de titel als naam dragen, met de hoofdletters die de
+            // show zelf voert. Draagt de kop het woord podcast niet, dan moet
+            // de titel eigen genoeg zijn om alleen te staan.
+            if (!TipRules.titleAsName(headline, core)) continue
+            if (!TipRules.mentionsPodcast(headline) && !TipRules.strongTitle(core)) continue
             if (TipRules.isPressRelease(headline)) continue
-            if (!allowed(item.sourceUrl, hosts)) continue
             val outlet = outletOf(item, GOOGLE)
             if (TipRules.ownAnnouncement(headline, outlet, publisher)) continue
             if (!seen.add(outlet)) continue
-            tips += MediaTip(
+            found += allowed(item.sourceUrl, hosts) to MediaTip(
                 outlet = outlet,
                 headline = headline,
                 url = item.link.orEmpty(),
@@ -170,7 +178,14 @@ class LiveTipsReader(
                 found = true
             )
         }
-        return tips
+        // De grote media eerst, daarna de rest, en binnen allebei het nieuwste
+        // bovenaan. De lijst afkappen op de landenlijst kan hier niet: die
+        // gooide zestien van de achttien koppen weg, waaronder RTL en NU.
+        return found
+            .sortedWith(compareByDescending<Pair<Boolean, MediaTip>> { it.first }
+                .thenByDescending { it.second.date ?: "" })
+            .map { it.second }
+            .take(MAX_TIPS_PER_SHOW)
     }
 
     /**

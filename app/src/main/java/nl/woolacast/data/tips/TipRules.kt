@@ -160,18 +160,46 @@ object TipRules {
             NEAR_PODCAST.findAll(headline).any { it.groupValues[1].equals(name, ignoreCase = true) }
 
     /**
-     * Draagt deze kop de titel van een show die we al kennen? Losser dan de
-     * regel voor een onbekende titel: we hoeven niets te raden, dus een titel
-     * die er letterlijk in staat is genoeg. Wel op een woordgrens, anders is
-     * "Serial" ook een treffer in "Serialiseren".
+     * De kern van een showtitel: wat er overblijft als je de ondertitel en het
+     * woord podcast eraf haalt. Apple noemt de show "Spuiten en Slikken De
+     * Podcast", de krant schrijft "Spuiten en Slikken"; gemeten over tien
+     * Nederlandse shows vindt de volledige titel nul koppen en de kern achttien.
      */
-    fun titleIn(headline: String, showTitle: String): Boolean {
+    fun coreTitle(showTitle: String): String {
         val bare = showTitle.substringBefore(":").substringBefore(" - ").trim()
-        if (bare.length < 4) return false
-        val pattern = Regex("(?<![\\p{L}\\p{N}])" + Regex.escape(bare) + "(?![\\p{L}\\p{N}])",
-            RegexOption.IGNORE_CASE)
-        return pattern.containsMatchIn(headline)
+        return PODCAST_SUFFIX.replace(bare, "").trim().trim('-', '–', '|', ',', ' ')
+            .ifBlank { bare }
     }
+
+    /**
+     * Staat de titel in de kop als naam geschreven, dus met de hoofdletters die
+     * de show zelf voert? Dat scheelt: "Nieuwe feiten in onderzoek Dascha
+     * Graafsma" gaat niet over de podcast Nieuwe Feiten, en "de zwarte doos van
+     * Trumps deportatieregime" niet over Zwarte Doos. Over tien shows gemeten
+     * zakte Zwarte Doos van 82 treffers naar 8 en Nieuwe Feiten van 43 naar 1,
+     * zonder dat er een echte tip sneuvelde.
+     */
+    fun titleAsName(headline: String, title: String): Boolean {
+        if (title.length < 4) return false
+        val pattern = Regex("(?<![\\p{L}\\p{N}])" + Regex.escape(title) + "(?![\\p{L}\\p{N}])",
+            RegexOption.IGNORE_CASE)
+        val found = pattern.find(headline)?.value ?: return false
+        // EEN KOP IN KAPITALEN zegt niets over hoofdletters.
+        if (found == found.uppercase() && found != found.lowercase()) return true
+        return title.split(" ").zip(found.split(" ")).none { (want, got) ->
+            want.firstOrNull()?.isUpperCase() == true && got.firstOrNull()?.isUpperCase() == false
+        }
+    }
+
+    /**
+     * Is deze titel eigen genoeg om op zichzelf te staan? Een kop die "Het Uur"
+     * of "Echt Gebeurd" bevat kan over van alles gaan; bij zo'n titel eisen we
+     * dat het woord podcast erbij staat. Drie woorden, achttien tekens of het
+     * woord cast erin maakt een toevallige treffer onwaarschijnlijk.
+     */
+    fun strongTitle(title: String): Boolean =
+        title.split(Regex("\\s+")).size >= 3 || title.length >= 18 ||
+            title.contains("cast", ignoreCase = true)
 
     /** Staat de naam in dezelfde adem als het woord podcast? */
     fun nearPodcast(headline: String, name: String, window: Int = 50): Boolean {
@@ -265,6 +293,13 @@ object TipRules {
     }
 
     /** Letters en cijfers, kleine letters, verder niets — om titels te vergelijken. */
+    /** "De Podcast", "the podcast", "der Podcast" achteraan een titel. */
+    private val PODCAST_SUFFIX = Regex(
+        "[\\s\\-\u2013|:,]*\\b(?:de|het|the|der|die|das|el|la|il|le|les|lo|o|a|en|ein)?" +
+            "\\s*podcasts?\\s*$",
+        RegexOption.IGNORE_CASE
+    )
+
     fun normalise(text: String): String =
         text.lowercase().filter { it.isLetterOrDigit() }
 

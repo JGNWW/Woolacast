@@ -128,7 +128,11 @@ class DetailViewModel(
      */
     private suspend fun addFoundTips(known: List<MediaTip>) {
         val reader = liveTips ?: return
-        val cached = store.cachedShowTips(showId)
+        // De sleutel draagt de versie van de zoekregels mee. Veranderen die
+        // regels, dan is een bewaard antwoord van gisteren onbruikbaar; zo
+        // vervalt het vanzelf in plaats van dat het een dag blijft hangen.
+        val key = "v2:" + showId
+        val cached = store.cachedShowTips(key)
         val found = if (cached != null && sameDay(cached.fetchedAt)) {
             cached.entries
         } else {
@@ -138,7 +142,7 @@ class DetailViewModel(
             val fresh = runCatching {
                 reader.forShow(catalogue, showId, title, publisher)
             }.getOrDefault(emptyList())
-            store.cacheShowTips(showId, CachedTips(Instant.now().toString(), fresh))
+            store.cacheShowTips(key, CachedTips(Instant.now().toString(), fresh))
             fresh
         }
         if (found.isEmpty()) return
