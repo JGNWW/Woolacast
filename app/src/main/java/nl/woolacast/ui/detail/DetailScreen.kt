@@ -78,6 +78,7 @@ fun DetailScreen(
     onBack: () -> Unit,
     onPlay: (Episode, String?) -> Unit,
     onOpenTracker: () -> Unit,
+    onOpenMaker: (publisher: String) -> Unit,
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit = { _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
@@ -160,13 +161,32 @@ fun DetailScreen(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Spacer(Modifier.height(5.dp))
-                            Text(
-                                podcast.publisher,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            // De maker is een ingang: erop tikken laat alles
+                            // zien wat hij uitgeeft.
+                            Row(
+                                modifier = Modifier
+                                    .clickable(enabled = podcast.publisher.isNotBlank()) {
+                                        onOpenMaker(podcast.publisher)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Text(
+                                    podcast.publisher,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                if (podcast.publisher.isNotBlank()) {
+                                    Icon(
+                                        WoolIcons.ChevronRight, null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
                             val facts = listOfNotNull(
                                 podcast.genre?.takeIf { it.isNotBlank() },
                                 state.cadence,

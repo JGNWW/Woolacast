@@ -67,6 +67,8 @@ import nl.woolacast.ui.discover.DiscoverScreen
 import nl.woolacast.ui.discover.DiscoverViewModel
 import nl.woolacast.ui.library.LibraryScreen
 import nl.woolacast.ui.library.LibraryViewModel
+import nl.woolacast.ui.maker.MakerScreen
+import nl.woolacast.ui.maker.MakerViewModel
 import nl.woolacast.ui.player.PlayerScreen
 import nl.woolacast.ui.search.SearchScreen
 import nl.woolacast.ui.search.SearchViewModel
@@ -394,8 +396,37 @@ private fun NavGraphBuilder.tabScreens(
                         "&feed=${Uri.encode(podcast?.feedUrl.orEmpty())}"
                 )
             },
+            onOpenMaker = { maker ->
+                navController.navigate(
+                    "$prefix/maker/${Uri.encode(maker)}?country=$countryCode" +
+                        "&from=${Uri.encode(showId)}"
+                )
+            },
             onBack = { navController.popBackStack() },
             onPlay = playAndOpen
+        )
+    }
+
+    composable("$prefix/maker/{publisher}?country={country}&from={from}") { entry ->
+        val publisher = entry.arguments?.getString("publisher").orEmpty()
+        val countryCode = entry.arguments?.getString("country") ?: chartsCountry
+        val makerViewModel: MakerViewModel = viewModel(
+            key = "maker-$publisher-$countryCode",
+            factory = viewModelFactory {
+                initializer {
+                    MakerViewModel(
+                        repository = container.searchRepository,
+                        publisher = publisher,
+                        countryCode = countryCode,
+                        fromShowId = entry.arguments?.getString("from")?.takeIf { it.isNotBlank() }
+                    )
+                }
+            }
+        )
+        MakerScreen(
+            viewModel = makerViewModel,
+            onBack = { navController.popBackStack() },
+            onOpenPodcast = openPodcast
         )
     }
 
