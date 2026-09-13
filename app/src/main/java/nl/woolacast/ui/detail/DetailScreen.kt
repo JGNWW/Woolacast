@@ -91,6 +91,9 @@ fun DetailScreen(
     var tab by remember { mutableStateOf(DetailTab.EPISODES) }
     var menuOpen by remember { mutableStateOf(false) }
     var descriptionOpen by remember { mutableStateOf(false) }
+    // Een feed van driehonderd afleveringen duwt alles eronder buiten beeld.
+    // Twintig is genoeg om te zien wat er speelt; de rest komt op verzoek.
+    var allEpisodes by remember(state.podcast?.id) { mutableStateOf(false) }
     var sheetEpisode by remember { mutableStateOf<Episode?>(null) }
 
     val podcast = state.podcast
@@ -305,7 +308,10 @@ fun DetailScreen(
                                 )
                             }
                         }
-                        items(state.episodes.size, key = { "$it-${state.episodes[it].id}" }) { index ->
+                        val shown =
+                            if (allEpisodes) state.episodes.size
+                            else minOf(EPISODES_AT_FIRST, state.episodes.size)
+                        items(shown, key = { "$it-${state.episodes[it].id}" }) { index ->
                             val episode = state.episodes[index]
                             EpisodeRow(
                                 episode = episode,
@@ -318,6 +324,16 @@ fun DetailScreen(
                                 onPlay = { onPlay(episode, labelFor(episode)) }
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        }
+                        if (shown < state.episodes.size) {
+                            item {
+                                WoolButton(
+                                    "Toon meer afleveringen",
+                                    onClick = { allEpisodes = true },
+                                    kind = ButtonKind.TONAL,
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
+                                )
+                            }
                         }
                     }
 
@@ -697,6 +713,9 @@ private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
 
 /** Meer dan dit veegt niemand af; de rest staat in het tabblad Tips. */
 private const val MEDIA_IN_CARROUSEL = 10
+
+/** Zoveel afleveringen staan er meteen; daaronder een knop voor de rest. */
+private const val EPISODES_AT_FIRST = 20
 
 @Composable
 private fun PositionRow(countryCode: String, ranks: Map<SourceId, ShowPositionLike>) {
