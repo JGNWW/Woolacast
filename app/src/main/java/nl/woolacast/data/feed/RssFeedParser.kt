@@ -8,6 +8,17 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import org.xmlpull.v1.XmlPullParser
 
+/**
+ * Android weigert sinds Pie gewoon verkeer zonder slot, en veel feeds geven hun
+ * plaatjes nog over http. De BBC schrijft in zijn feed
+ * http://ichef.bbci.co.uk/...; dat adres werkt prima met https, maar zoals het
+ * er staat komt het niet binnen en blijft er een leeg vlak staan. Dus proberen
+ * we het met slot. Een server die geen https kan gaf ons zo ook niets, dus er
+ * valt niets te verliezen.
+ */
+private fun secure(url: String?): String? =
+    if (url != null && url.startsWith("http://")) "https://" + url.removePrefix("http://") else url
+
 data class ParsedEpisode(
     val guid: String,
     val title: String,
@@ -128,7 +139,7 @@ class RssFeedParser {
             title = Html.toPlainText(channelTitle),
             author = Html.toPlainText(channelAuthor),
             description = Html.toPlainText(channelDescription),
-            imageUrl = channelImage?.trim(),
+            imageUrl = secure(channelImage?.trim()),
             episodes = episodes
         )
     }
@@ -154,10 +165,10 @@ class RssFeedParser {
                 guid = guid ?: audioUrl ?: heading,
                 title = Html.toPlainText(heading) ?: heading,
                 description = Html.toPlainText(description),
-                audioUrl = audioUrl,
+                audioUrl = secure(audioUrl),
                 durationMillis = duration,
                 releaseDate = releaseDate,
-                imageUrl = imageUrl,
+                imageUrl = secure(imageUrl),
                 link = link?.takeIf { it.startsWith("http") },
                 sourceUrl = sourceUrl,
                 sourceName = Html.toPlainText(sourceName)

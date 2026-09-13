@@ -29,8 +29,32 @@ class PodcastRepository(
             ?: searchFeedUrl(title, countryCode)
             ?: return lookupDetail(showId, countryCode)
 
-        return runCatching { fromFeed(showId, resolvedFeed) }
+        val detail = runCatching { fromFeed(showId, resolvedFeed) }
             .getOrElse { lookupDetail(showId, countryCode) }
+        return if (detail.podcast.artworkUrl.isNullOrBlank()) withArtwork(detail, showId, countryCode)
+        else detail
+    }
+
+    /**
+     * Sommige feeds dragen geen plaatje. In de hitlijst staat er dan wel een,
+     * want die komt van Apple; op de podcastpagina bleef een leeg vlak achter.
+     * Eén opzoeking haalt het alsnog, en alleen in dat geval.
+     */
+    private suspend fun withArtwork(
+        detail: PodcastDetail,
+        showId: String,
+        countryCode: String
+    ): PodcastDetail {
+        if (!showId.all { it.isDigit() }) return detail
+        val hit = runCatching { catalog.lookup(id = showId, country = countryCode, limit = 1) }
+            .getOrNull()?.results?.firstOrNull() ?: return detail
+        val art = hit.artworkUrl600 ?: hit.artworkUrl100 ?: return detail
+        return detail.copy(
+            podcast = detail.podcast.copy(artworkUrl = art),
+            episodes = detail.episodes.map {
+                if (it.artworkUrl.isNullOrBlank()) it.copy(artworkUrl = art) else it
+            }
+        )
     }
 
     private suspend fun fromFeed(showId: String, feedUrl: String): PodcastDetail {
