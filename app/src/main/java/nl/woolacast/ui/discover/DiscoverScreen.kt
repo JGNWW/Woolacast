@@ -217,7 +217,7 @@ fun DiscoverScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                                 Text(
-                                    "Top 200 · $sources ${if (sources == 1) "bron" else "bronnen"}",
+                                    "$sources ${if (sources == 1) "bron" else "bronnen"}",
                                     fontSize = 11.5.sp,
                                     color = LocalChartColors.current.muted,
                                     maxLines = 1,

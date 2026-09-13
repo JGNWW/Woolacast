@@ -183,21 +183,16 @@ fun FilterSheet(
                     kind = ButtonKind.OUTLINE
                 )
                 WoolButton(
-                    if (query.level.isRanking) "Toon ${expectedCount(source, query.level, category)} ${query.level.label.lowercase()}"
-                    else "Toon ${query.level.label.lowercase()}",
+                    // Zonder aantal. Hoe diep een lijst gaat bepaalt de bron, en
+                    // dat verschilt per land, per categorie en per dag; "Toon 50"
+                    // beloofde iets wat de knop niet waar kan maken.
+                    "Toon ${query.level.label.lowercase()}",
                     onClick = { onApply(source, country, category) },
                     modifier = Modifier.weight(1f)
                 )
             }
         }
     }
-}
-
-/** Hoe diep een lijst gaat; gemeten aan de bronnen zelf. */
-private fun expectedCount(source: SourceId, level: ChartLevel, category: Category): Int = when {
-    source == SourceId.APPLE && level == ChartLevel.EPISODES -> if (category.isAll) 100 else 50
-    !category.isAll -> 50
-    else -> 200
 }
 
 @Composable
