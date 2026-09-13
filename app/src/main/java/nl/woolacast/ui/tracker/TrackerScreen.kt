@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import nl.woolacast.data.dataset.ShowPosition
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.SourceId
 import nl.woolacast.ui.common.Artwork
@@ -193,8 +194,14 @@ fun TrackerScreen(
             }
 
             if (state.positions.isNotEmpty()) {
+                // De lijst over alles eerst, daarna de categorienoteringen.
                 val byCountry = state.positions.groupBy { it.country }.toList()
-                    .sortedBy { it.second.minOf { p -> p.rank } }
+                    .sortedWith(
+                        compareBy(
+                            { row -> row.second.none { it.genreId == null } },
+                            { row -> row.second.minOf { it.rank } }
+                        )
+                    )
                 val shown = if (allCountries) byCountry else byCountry.take(COUNTRY_SHORTLIST)
                 item {
                     Row(
@@ -215,7 +222,7 @@ fun TrackerScreen(
                 item { SourceColumnsHeader(Modifier.padding(top = 6.dp)) }
                 items(shown.size) { index ->
                     val (country, ranks) = shown[index]
-                    CountryRow(country, ranks.associate { it.source to it.rank })
+                    CountryRow(country, ranks.associate { it.source to it })
                     if (index < shown.lastIndex) {
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
                     }
@@ -413,23 +420,36 @@ private fun RankChart(lines: List<TrackLine>, countryLabel: String) {
 }
 
 @Composable
-private fun CountryRow(countryCode: String, ranks: Map<SourceId, Int>) {
+private fun CountryRow(countryCode: String, ranks: Map<SourceId, ShowPosition>) {
     val country = Catalog.country(countryCode)
+    // Komt de plek uit een categorielijst, dan hoort dat erbij: zesde in
+    // Geschiedenis is geen zesde plek van het land.
+    val category = ranks.values.firstNotNullOfOrNull { Catalog.categoryOrNull(it.genreId) }
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(46.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Flag(countryCode, width = 26.dp, height = 18.dp, corner = 4.dp)
-        Text(
-            country.label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                country.label,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (category != null) {
+                Text(
+                    "in ${category.label}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                    color = LocalChartColors.current.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
         listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
-            val rank = ranks[source]
+            val rank = ranks[source]?.rank
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 SourceDot(source, active = rank != null)
                 Text(

@@ -1980,24 +1980,49 @@ def write_shows(root: pathlib.Path, country: str, charts: list[dict]) -> None:
     Waar noteert een show, op welke plek, bij welke bron. Dat is wat de tracker
     nodig heeft en het enige wat je niet uit één lijst kunt afleiden.
 
-    Zo krap mogelijk: alleen land, bron en rang. Titel en artwork weet de app
-    al, en dit bestand wordt elke dag opnieuw geschreven — wat er niet in staat,
-    hoeft ook niet elke dag door de geschiedenis van de repo.
+    Zo krap mogelijk: land, bron en rang, en alleen als de notering uit een
+    categorielijst komt het genre erachter. Titel en artwork weet de app al, en
+    dit bestand wordt elke dag opnieuw geschreven — wat er niet in staat, hoeft
+    ook niet elke dag door de geschiedenis van de repo.
 
     Verdeeld over honderd bestanden op de laatste twee cijfers van het id, zodat
     de app er één van een paar kilobyte ophaalt in plaats van alles.
 
     Apple en Spotify delen geen id, dus die worden op naam gekoppeld.
     """
-    apple_by_name, spotify_by_name = {}, {}
-    for chart in charts:
-        if chart["level"] != "shows":
-            continue
-        target = apple_by_name if chart["source"] == "apple" else spotify_by_name
-        for entry in chart["entries"]:
-            key = normalise(entry["title"])
-            if key and (key not in target or entry["rank"] < target[key]["rank"]):
-                target[key] = entry
+    def per_source(source: str) -> tuple[dict, dict]:
+        """
+        De grote lijst en de categorielijsten apart. Dat scheelt: een show kan
+        zesde staan in Geschiedenis en vijfenzeventigste in de lijst over alles,
+        en dat zijn twee verschillende noteringen. Ze door elkaar husselen en de
+        laagste nemen — wat hier eerst gebeurde — maakte van #75 een #6, en de
+        tracker liet naast diezelfde show #75 zien.
+        """
+        top, cat = {}, {}
+        for chart in charts:
+            if chart["level"] != "shows" or chart["source"] != source:
+                continue
+            bucket = top if chart["genreId"] == ROOT_GENRE else cat
+            for entry in chart["entries"]:
+                key = normalise(entry["title"])
+                if not key:
+                    continue
+                staand = bucket.get(key)
+                if staand is None or entry["rank"] < staand["rank"]:
+                    bucket[key] = {**entry, "genreId": chart["genreId"]}
+        return top, cat
+
+    apple_top, apple_cat = per_source("apple")
+    spotify_top, spotify_cat = per_source("spotify")
+
+    def notering(top: dict, cat: dict, key: str) -> tuple[dict, int | None] | None:
+        """De grote lijst gaat voor; alleen wie daar niet in staat krijgt zijn
+        beste categorie, met het genre erbij zodat de app het erbij kan zetten."""
+        if key in top:
+            return top[key], None
+        if key in cat:
+            return cat[key], cat[key]["genreId"]
+        return None
 
     shards: dict[str, dict] = {}
 
@@ -2008,17 +2033,20 @@ def write_shows(root: pathlib.Path, country: str, charts: list[dict]) -> None:
             shards[name] = json.loads(path.read_text()) if path.exists() else {}
         return shards[name]
 
-    for key, entry in apple_by_name.items():
+    for key in set(apple_top) | set(apple_cat):
+        entry, genre = notering(apple_top, apple_cat, key)
         shard = shard_for(entry["id"])
         record = shard.get(entry["id"]) or {}
         positions = [p for p in record.get("p", []) if p[0] != country]
-        positions.append([country, "a", entry["rank"]])
+        positions.append([country, "a", entry["rank"]] + ([genre] if genre else []))
 
-        twin = spotify_by_name.get(key)
+        twin = notering(spotify_top, spotify_cat, key)
         if twin:
-            positions.append([country, "s", twin["rank"]])
+            tweeling, twin_genre = twin
+            positions.append([country, "s", tweeling["rank"]] +
+                             ([twin_genre] if twin_genre else []))
             # De Spotify-uri is nodig om diens historie op te kunnen zoeken.
-            record["u"] = twin["id"]
+            record["u"] = tweeling["id"]
 
         record["p"] = sorted(positions, key=lambda p: (p[2], p[0]))
         shard[entry["id"]] = record

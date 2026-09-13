@@ -115,4 +115,11 @@ object Catalog {
 
     fun country(code: String) = countries.firstOrNull { it.code == code } ?: defaultCountry
     fun category(genreId: Int?) = categories.firstOrNull { it.appleGenreId == genreId } ?: defaultCategory
+
+    /**
+     * Zonder terugval, en zonder antwoord op "geen genre": dat betekent hier de
+     * lijst over alles, niet de eerste categorie uit de rij.
+     */
+    fun categoryOrNull(genreId: Int?) =
+        genreId?.let { id -> categories.firstOrNull { it.appleGenreId == id } }
 }

@@ -113,9 +113,13 @@ fun DetailScreen(
     // Het label dat de speler laat zien: eerst de aflevering zelf, anders de show.
     fun labelFor(episode: Episode): String? {
         state.episodeRanks[episode.id]?.let { return "#$it in Top afleveringen $countryLabel" }
-        val here = state.positions.filter { it.country == state.countryCode }.minByOrNull { it.rank }
+        val here = state.positions.filter { it.country == state.countryCode }
+            .minWithOrNull(compareBy({ it.genreId != null }, { it.rank }))
             ?: return null
-        return "Podcast op #${here.rank} · ${here.source.label} $countryLabel"
+        // Een categorienotering noemen we bij naam; anders lijkt hij van het land.
+        val waar = Catalog.categoryOrNull(here.genreId)?.let { "${it.label} $countryLabel" }
+            ?: countryLabel
+        return "Podcast op #${here.rank} · ${here.source.label} $waar"
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -328,12 +332,19 @@ fun DetailScreen(
                                 )
                             }
                         } else {
+                            // Een plek in de lijst over alles weegt zwaarder dan
+                            // een plek in een categorie, hoe laag het getal daar ook is.
                             val byCountry = state.positions.groupBy { it.country }.toList()
-                                .sortedBy { it.second.minOf { p -> p.rank } }
+                                .sortedWith(
+                                    compareBy(
+                                        { row -> row.second.none { it.genreId == null } },
+                                        { row -> row.second.minOf { it.rank } }
+                                    )
+                                )
                             item { SourceColumnsHeader(Modifier.padding(top = 12.dp)) }
                             items(byCountry.size) { index ->
                                 val (country, ranks) = byCountry[index]
-                                PositionRow(country, ranks.associate { it.source to it.rank })
+                                PositionRow(country, ranks.associate { it.source to it })
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
                             }
                             item {
@@ -689,23 +700,37 @@ private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
 private const val MEDIA_IN_CARROUSEL = 10
 
 @Composable
-private fun PositionRow(countryCode: String, ranks: Map<SourceId, Int>) {
+private fun PositionRow(countryCode: String, ranks: Map<SourceId, ShowPositionLike>) {
     val country = Catalog.country(countryCode)
+    // Staat een show alleen in een categorielijst, dan is dat een andere
+    // notering dan een plek in de lijst over alles. Dat hoort erbij te staan,
+    // anders lijkt zesde in Geschiedenis een zesde plek van het land.
+    val category = ranks.values.firstNotNullOfOrNull { Catalog.categoryOrNull(it.genreId) }
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(46.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Flag(countryCode, width = 26.dp, height = 18.dp, corner = 4.dp)
-        Text(
-            country.label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                country.label,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (category != null) {
+                Text(
+                    "in ${category.label}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                    color = LocalChartColors.current.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
         listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
-            val rank = ranks[source]
+            val rank = ranks[source]?.rank
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 SourceDot(source, active = rank != null)
                 Text(
@@ -748,7 +773,11 @@ private fun ChartStrip(
         Icon(WoolIcons.Bars, null, tint = colors.onPanel, modifier = Modifier.size(20.dp))
         var first = true
         listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
-            val best = here[source]?.minByOrNull { it.rank } ?: return@forEach
+            // Een plek in de lijst over alles gaat voor een plek in een
+            // categorie; alleen als er niets anders is telt de categorie.
+            val best = here[source]
+                ?.minWithOrNull(compareBy({ it.genreId != null }, { it.rank }))
+                ?: return@forEach
             if (!first) {
                 Box(Modifier.width(1.dp).height(26.dp).background(colors.onPanel.copy(alpha = 0.18f)))
             }
@@ -763,10 +792,15 @@ private fun ChartStrip(
                     letterSpacing = (-0.5).sp
                 )
                 Text(
-                    source.label.substringBefore(' '),
+                    buildString {
+                        append(source.label.substringBefore(' '))
+                        Catalog.categoryOrNull(best.genreId)?.let { append(" \u00b7 ").append(it.label) }
+                    },
                     color = colors.onPanelMuted,
                     fontSize = 10.5.sp,
                     fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
             }

@@ -79,7 +79,17 @@ data class ShowRecord(
     val u: String? = null
 )
 
-data class ShowPosition(val country: String, val source: SourceId, val rank: Int)
+data class ShowPosition(
+    val country: String,
+    val source: SourceId,
+    val rank: Int,
+    /**
+     * Staat er een genre bij, dan komt deze plek uit een categorielijst en niet
+     * uit de lijst over alles. Dat is een ander soort notering en hoort ook zo
+     * getoond te worden: zesde in Geschiedenis is niet zesde van het land.
+     */
+    val genreId: Int? = null
+)
 
 data class ShowTracking(
     val positions: List<ShowPosition> = emptyList(),
@@ -322,7 +332,8 @@ class ChartsDataset(
             ShowPosition(
                 country = row[0].content,
                 source = if (row[1].content == "s") SourceId.SPOTIFY else SourceId.APPLE,
-                rank = rank
+                rank = rank,
+                genreId = row.getOrNull(3)?.content?.toIntOrNull()
             )
         }
         return ShowTracking(positions, record.u)
