@@ -384,7 +384,6 @@ fun DetailScreen(
                     item {
                         SuggestionRow(
                             title = "Lijkt hierop",
-                            subtitle = "Gevonden op je toestel, uit de lijsten en de maker",
                             suggestions = state.similar,
                             onOpen = onOpenPodcast,
                             modifier = Modifier.padding(top = 22.dp, bottom = 8.dp)
