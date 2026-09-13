@@ -651,7 +651,7 @@ private fun TipBox(tips: List<nl.woolacast.data.dataset.MediaTip>) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutletMark(tip.outlet, size = 22.dp, logoUrl = tip.logo)
+                        OutletMark(tip.outlet, size = 22.dp, logoUrl = tip.logo, host = tip.host)
                         Text(
                             tip.outlet,
                             fontSize = 12.sp,

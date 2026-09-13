@@ -6,9 +6,10 @@ name: Podcasttips van de media (dagelijks)
 # bij Apple per genoemde titel. We houden ons aan robots.txt en komen langs
 # onder onze eigen naam.
 #
-# Let op: GitHub draait een schema alleen vanaf de standaardtak. Zolang dit werk
-# op een aparte tak staat, moet je hem hier met de hand starten; na samenvoegen
-# loopt hij vanzelf. Wijs dan ook DEFAULT_BASE_URL in de app naar die tak.
+# Let op: GitHub draait een schema alleen vanaf de standaardtak. Die is hier
+# claude/android-podcast-app-mockup-weuhxw, dezelfde tak waar DEFAULT_BASE_URL
+# in de app naar wijst, dus het schema loopt. Verandert de standaardtak, dan
+# moet dit met de hand gestart worden tot het schema daar ook staat.
 on:
   schedule:
     - cron: "40 4 * * *"

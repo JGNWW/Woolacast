@@ -31,6 +31,10 @@ data class TipsUiState(
     val logos: Map<String, String> get() =
         all.mapNotNull { tip -> tip.logo?.let { tip.outlet to it } }.toMap()
 
+    /** En de site per medium, voor de media zonder beeldmerk in de gegevens. */
+    val hosts: Map<String, String> get() =
+        all.mapNotNull { tip -> tip.host?.let { tip.outlet to it } }.toMap()
+
     /** Wat er getoond wordt: alles, of alleen het gekozen medium. */
     val visible: List<MediaTip> get() = all.filter { outlet == null || it.outlet == outlet }
 }

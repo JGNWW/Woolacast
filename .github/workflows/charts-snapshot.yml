@@ -5,7 +5,8 @@ name: Hitlijsten vastleggen (goedkoop)
 # te draaien: stijgers en de tracker kunnen niet met terugwerkende kracht — wie
 # gisteren niet heeft vastgelegd, heeft gisteren niet.
 #
-# Haal de cron uit het commentaar om hem aan te zetten.
+# Dit draait elke ochtend. Zonder die dagelijkse gang is er maar één meetpunt
+# en blijft de tracker leeg: een verloop van één dag is geen verloop.
 on:
   workflow_dispatch:
     inputs:
@@ -15,8 +16,8 @@ on:
       limit:
         description: "Diepte per lijst"
         default: "100"
-  # schedule:
-  #   - cron: "20 5 * * *"
+  schedule:
+    - cron: "20 5 * * *"
 
 permissions:
   contents: write

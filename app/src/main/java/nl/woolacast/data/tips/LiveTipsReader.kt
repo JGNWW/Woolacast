@@ -82,6 +82,9 @@ class LiveTipsReader(
         hosts: Set<String>
     ): List<MediaTip> {
         val parsed = feedClient.fetch(feed.url)
+        // Een RSS-kanaal draagt zijn eigen beeldmerk. Heeft de verzamelaar er
+        // geen klaargezet, dan is dat van het medium zelf het beste wat er is.
+        val feedLogo = feed.logo ?: parsed.imageUrl
         val tips = mutableListOf<MediaTip>()
         for (item in parsed.episodes.take(MAX_ITEMS_PER_FEED)) {
             if (tips.size >= MAX_TIPS_PER_FEED) break
@@ -116,7 +119,8 @@ class LiveTipsReader(
                     summary = text.take(300),
                     url = item.link.orEmpty(),
                     date = date,
-                    logo = feed.logo
+                    logo = feedLogo,
+                    host = hostOf(item.sourceUrl ?: feed.url)
                 )
                 kept++
             }
@@ -175,7 +179,8 @@ class LiveTipsReader(
                 showId = showId,
                 showTitle = showTitle,
                 publisher = publisher,
-                found = true
+                found = true,
+                host = hostOf(item.sourceUrl)
             )
         }
         // De grote media eerst, daarna de rest, en binnen allebei het nieuwste
@@ -222,10 +227,13 @@ class LiveTipsReader(
 
     private fun allowed(sourceUrl: String?, hosts: Set<String>): Boolean {
         if (hosts.isEmpty()) return true
-        val host = (sourceUrl ?: return false)
-            .substringAfter("//").substringBefore("/").removePrefix("www.")
+        val host = hostOf(sourceUrl) ?: return false
         return hosts.any { host == it || host.endsWith(".$it") }
     }
+
+    private fun hostOf(url: String?): String? = url
+        ?.substringAfter("//")?.substringBefore("/")?.removePrefix("www.")
+        ?.takeIf { it.contains('.') }
 
     /**
      * Zoekt de genoemde titel op bij Apple. Alleen een show die exact zo heet

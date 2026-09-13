@@ -23,6 +23,12 @@ data class MediaTip(
     /** Bestandsnaam van het beeldmerk; de dataset maakt er een adres van. */
     val logo: String? = null,
     /**
+     * De site waar dit artikel staat. Daar valt een beeldmerk uit af te leiden
+     * als de verzamelaar er geen heeft klaargezet, en dat is bij een medium dat
+     * alleen via de zoekmachine langskomt altijd zo.
+     */
+    val host: String? = null,
+    /**
      * Waar deze tip vandaan komt. Wat de verzamelaar vond is een echte tip: daar
      * is het artikel bij gelezen. Wat de app zelf bij het openen van een podcast
      * vond is alleen een kop, en die kan ook nieuws óver de podcast zijn. Dat

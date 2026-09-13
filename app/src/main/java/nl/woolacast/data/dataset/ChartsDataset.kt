@@ -248,7 +248,13 @@ class ChartsDataset(
                 // het een adres, zodat de app niet bij de uitgever hoeft aan
                 // te kloppen om te weten hoe een medium eruitziet.
                 loaded.copy(entries = loaded.entries.map { tip ->
-                    if (tip.logo == null) tip else tip.copy(logo = "$baseUrl/logos/${tip.logo}")
+                    tip.copy(
+                        logo = tip.logo?.let { "$baseUrl/logos/$it" },
+                        // Staat er geen site bij, dan staat hij vaak nog in het
+                        // adres van het artikel — behalve als dat een omweg
+                        // langs de zoekmachine is.
+                        host = tip.host ?: hostOf(tip.url)
+                    )
                 })
             }
             .takeIf { it != null && it.entries.isNotEmpty() }
@@ -341,6 +347,10 @@ class ChartsDataset(
             ranks[showId]?.let { day to it }
         }
     }
+
+    private fun hostOf(url: String): String? = url
+        .substringAfter("//").substringBefore("/").removePrefix("www.")
+        .takeIf { it.contains('.') && !it.endsWith("google.com") }
 
     companion object {
         /**

@@ -148,7 +148,19 @@ fun TrackerScreen(
 
             if (state.lines.isNotEmpty()) {
                 item { StatTiles(state.lines) }
-                item { RankChart(state.lines, state.countryLabel) }
+                // Van één meting valt geen lijn te tekenen. Dat hoort er te
+                // staan, anders lijkt het of de grafiek stuk is.
+                if (state.lines.all { it.days < 2 }) {
+                    item {
+                        NoticePanel(
+                            title = "Eén meting tot nu toe",
+                            message = "De lijsten worden elke ochtend vastgelegd. " +
+                                "Vanaf de tweede meting verschijnt hier het verloop."
+                        )
+                    }
+                } else {
+                    item { RankChart(state.lines, state.countryLabel) }
+                }
             }
 
             state.peak?.let { peak ->

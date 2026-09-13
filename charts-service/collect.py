@@ -1539,6 +1539,9 @@ def find_logo(host: str) -> tuple[bytes, str] | None:
         found = _logo_from(candidate)
         if found:
             return found
+    # Verder gaan we niet. De pictogramdienst van Google zou elk medium een
+    # png geven, maar die staat in hun robots.txt op slot en wij houden ons
+    # daaraan; de app leidt zelf een icoon af als hier niets uit komt.
     return None
 
 
@@ -1727,7 +1730,10 @@ def write_tips(root: pathlib.Path, country: str) -> int:
     # opruimen van het adres gebeuren, anders is de lijst leeg.
     productive = {t["host"].replace("www.", "") for t in tips if t.get("host")}
     for tip in tips:
-        tip.pop("host", None)
+        # De site blijft staan. Lukt een beeldmerk niet, dan leidt de app er
+        # zelf een icoon uit af; zonder host blijft er een leeg vakje over.
+        if tip.get("host"):
+            tip["host"] = tip["host"].replace("www.", "").strip("/")
         if logos.get(tip["outlet"]):
             tip["logo"] = logos[tip["outlet"]]
     print(f"    catalogus: {write_feeds(root, country, logos, productive)} feeds voor de app",

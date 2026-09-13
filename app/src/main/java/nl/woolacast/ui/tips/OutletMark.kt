@@ -27,34 +27,61 @@ private val MARK_COLORS = listOf(
 )
 
 /**
- * Het beeldmerk van een medium, met de beginletters als terugval. Het logo komt
- * uit onze eigen verzameling en niet rechtstreeks van de uitgever: zo weet die
- * niet wie er in de app leest, en blijft het staan als hun site verandert.
+ * Het beeldmerk van een medium, in drie stappen.
+ *
+ * Eerst onze eigen verzameling: die is door de verzamelaar opgehaald, staat in
+ * de gegevens en verraadt de uitgever niet wie er in de app leest. Heeft een
+ * medium daar geen beeldmerk — en dat heeft elk medium dat alleen via de
+ * zoekmachine langskomt — dan halen we het icoon van zijn site op via de
+ * pictogramdienst van Google. Ook dat gaat niet langs de uitgever zelf, en
+ * Google zag die naam toch al: de kop kwam van hun nieuwsdienst. Lukt ook dat
+ * niet, dan blijven de beginletters over.
  */
 @Composable
 fun OutletMark(
     outlet: String,
     modifier: Modifier = Modifier,
     size: Dp = 20.dp,
-    logoUrl: String? = null
+    logoUrl: String? = null,
+    host: String? = null
 ) {
     val shape = RoundedCornerShape(size / 3.5f)
-    if (logoUrl != null) {
-        SubcomposeAsyncImage(
-            model = logoUrl,
-            contentDescription = outlet,
-            contentScale = ContentScale.Crop,
-            modifier = modifier
-                .size(size)
-                .clip(shape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-            loading = { InitialsMark(outlet, size, shape) },
-            error = { InitialsMark(outlet, size, shape) }
-        )
+    val fallback = host?.takeIf { it.contains('.') }?.let { iconUrl(it) }
+    val model = logoUrl ?: fallback
+    if (model == null) {
+        InitialsMark(outlet, size, shape, modifier)
         return
     }
-    InitialsMark(outlet, size, shape, modifier)
+    SubcomposeAsyncImage(
+        model = model,
+        contentDescription = outlet,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .size(size)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        loading = { InitialsMark(outlet, size, shape) },
+        error = {
+            // Ons eigen beeldmerk kan verdwenen zijn; dan is de site er nog.
+            if (model != fallback && fallback != null) {
+                SubcomposeAsyncImage(
+                    model = fallback,
+                    contentDescription = outlet,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(size).clip(shape),
+                    loading = { InitialsMark(outlet, size, shape) },
+                    error = { InitialsMark(outlet, size, shape) }
+                )
+            } else {
+                InitialsMark(outlet, size, shape)
+            }
+        }
+    )
 }
+
+/** 128 pixels is ruim genoeg voor een merkje van twintig tot dertig dp. */
+private fun iconUrl(host: String): String =
+    "https://www.google.com/s2/favicons?sz=128&domain=" + host
 
 @Composable
 private fun InitialsMark(
