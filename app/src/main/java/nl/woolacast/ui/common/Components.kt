@@ -252,14 +252,21 @@ fun UnderlineTabs(
 @Composable
 fun RankNumber(rank: Int, modifier: Modifier = Modifier, size: Dp = 26.dp, fontSize: androidx.compose.ui.unit.TextUnit = 19.sp) {
     val colors = LocalChartColors.current
+    // De kolom is even breed voor elke rij, anders lopen de titels niet gelijk.
+    // Drie cijfers passen daar niet in op deze grootte, en dan brak de tekst af
+    // naar een tweede regel: de 100 stond als "10" met een "0" eronder. Een
+    // kleiner korps houdt het getal heel en de kolom op zijn plek.
+    val scale = if (rank >= 100) 0.78f else 1f
     Text(
         text = rank.toString(),
         modifier = modifier.width(size),
         textAlign = TextAlign.End,
         fontFamily = DisplayFamily,
-        fontSize = fontSize,
+        fontSize = fontSize * scale,
         fontWeight = FontWeight.ExtraBold,
         letterSpacing = (-0.6).sp,
+        maxLines = 1,
+        softWrap = false,
         color = if (rank <= 3) colors.rankAccent else colors.muted
     )
 }

@@ -1956,6 +1956,9 @@ def write_movers(root: pathlib.Path, country: str, charts: list[dict]) -> None:
                     "rank": entry["rank"], "previousRank": entry["previousRank"],
                     "move": entry["move"], "source": chart["source"],
                     "level": chart["level"], "genreLabel": chart["genreLabel"],
+                    # Het id erbij: daar hangt het tekeningetje in de app aan,
+                    # en dat overleeft een vertaalde naam.
+                    "genreId": chart["genreId"],
                 })
 
     best = {}

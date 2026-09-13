@@ -25,6 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,6 +82,9 @@ fun DiscoverScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(countryCode) { viewModel.load(countryCode) }
+    // Het land waar de categorietegels op slaan. Begint bij het land van de
+    // hitlijsten en blijft staan zolang je op Ontdek bent.
+    var tileCountry by rememberSaveable(countryCode) { mutableStateOf(countryCode) }
 
     Column(modifier = modifier.fillMaxSize()) {
         MarkBar {
@@ -147,7 +153,10 @@ fun DiscoverScreen(
             }
 
             item {
-                SectionHeader("Grootste stijgers", action = "Sinds gisteren")
+                SectionHeader(
+                    "Grootste stijgers",
+                    action = "${Catalog.country(countryCode).label} \u00b7 sinds gisteren"
+                )
                 if (state.movers.isEmpty()) {
                     Text(
                         if (state.loading) "Stijgers laden…"
@@ -162,9 +171,17 @@ fun DiscoverScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.movers.take(20), key = { it.source + it.id }) { mover ->
-                            MoverCard(mover) {
-                                mover.showId?.let { onOpenPodcast(it, mover.feedUrl, mover.title) }
-                            }
+                            MoverCard(
+                                mover = mover,
+                                onOpen = {
+                                    mover.showId?.let { onOpenPodcast(it, mover.feedUrl, mover.title) }
+                                },
+                                // Het merkje opent de lijst waarin hij steeg, voor
+                                // dit land: dat is de lijst die het cijfer verklaart.
+                                onOpenGenre = { category ->
+                                    onPick(Catalog.country(countryCode), category)
+                                }
+                            )
                         }
                     }
                 }
@@ -214,7 +231,48 @@ fun DiscoverScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            item { SectionHeader("Categorieën") }
+            item {
+                SectionHeader("Categorie\u00ebn", action = Catalog.country(tileCountry).label)
+                // Een categorie bestaat alleen binnen een land. Welk land dat is
+                // stond alleen in het tabblad Hitlijsten; nu kies je het hier.
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    items(Catalog.countries, key = { it.code }) { country ->
+                        val chosen = country.code == tileCountry
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(
+                                    if (chosen) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceContainerLowest
+                                )
+                                .border(
+                                    1.dp,
+                                    if (chosen) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outline,
+                                    RoundedCornerShape(999.dp)
+                                )
+                                .clickable { tileCountry = country.code }
+                                .padding(start = 8.dp, end = 13.dp, top = 6.dp, bottom = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(7.dp)
+                        ) {
+                            Flag(country.code, width = 20.dp, height = 14.dp, corner = 3.dp)
+                            Text(
+                                country.label,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (chosen) MaterialTheme.colorScheme.onPrimary
+                                else LocalChartColors.current.muted,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
 
             val categories = Catalog.categories.filterNot { it.isAll }
             items(categories.chunked(2)) { pair ->
@@ -232,19 +290,28 @@ fun DiscoverScreen(
                                 .height(62.dp)
                                 .clip(RoundedCornerShape(14.dp))
                                 .background(colour)
-                                .clickable { onPick(null, category) }
+                                .clickable { onPick(Catalog.country(tileCountry), category) }
                                 .padding(horizontal = 14.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            Text(
-                                category.label,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = (-0.15).sp,
-                                color = if (colour.luminance() > 0.45f) TILE_INK_DARK else TILE_INK,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            val ink = if (colour.luminance() > 0.45f) TILE_INK_DARK else TILE_INK
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                WoolIcons.genre(category.appleGenreId)?.let { teken ->
+                                    Icon(teken, null, tint = ink, modifier = Modifier.size(21.dp))
+                                }
+                                Text(
+                                    category.label,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = (-0.15).sp,
+                                    color = ink,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                     if (pair.size == 1) Box(Modifier.weight(1f))
@@ -310,13 +377,21 @@ private fun TipCard(tip: MediaTip, onClick: () -> Unit) {
 }
 
 @Composable
-private fun MoverCard(mover: DatasetMover, onClick: () -> Unit) {
+private fun MoverCard(
+    mover: DatasetMover,
+    onOpen: () -> Unit,
+    onOpenGenre: (Category) -> Unit
+) {
     val colors = LocalChartColors.current
+    // Uit welke lijst dit cijfer komt. Het genre-id staat in de gegevens; voor
+    // wat er al lag valt het nog uit de naam te halen.
+    val category = Catalog.categoryOrNull(mover.genreId)
+        ?: Catalog.categories.firstOrNull { it.label == mover.genreLabel && !it.isAll }
     Column(
         modifier = Modifier
             .width(124.dp)
             .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
+            .clickable(onClick = onOpen)
     ) {
         Artwork(mover.artworkUrl, 124.dp, corner = 14.dp)
         Spacer(Modifier.height(9.dp))
@@ -342,15 +417,40 @@ private fun MoverCard(mover: DatasetMover, onClick: () -> Unit) {
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            listOfNotNull(
-                mover.publisher.takeIf { it.isNotBlank() },
-                mover.genreLabel.takeIf { it.isNotBlank() && !it.startsWith("Alle") }
-            ).joinToString(" · "),
+            mover.publisher,
             fontSize = 11.5.sp,
             color = colors.muted,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 2.dp)
         )
+        // De lijst waarin hij steeg, als merkje op een eigen regel. Achter de
+        // maker viel hij er bijna altijd af, en zonder die lijst zegt een sprong
+        // van tachtig plaatsen niet veel.
+        Spacer(Modifier.height(6.dp))
+        val teken = category?.let { WoolIcons.genre(it.appleGenreId) }
+        val ink = if (category != null) MaterialTheme.colorScheme.onPrimaryContainer else colors.muted
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(999.dp))
+                .background(
+                    if (category != null) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+                .clickable(enabled = category != null) { category?.let(onOpenGenre) }
+                .padding(start = if (teken != null) 6.dp else 9.dp, end = 9.dp, top = 3.dp, bottom = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            teken?.let { Icon(it, null, tint = ink, modifier = Modifier.size(14.dp)) }
+            Text(
+                category?.label ?: "Alle categorieën",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = ink,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }

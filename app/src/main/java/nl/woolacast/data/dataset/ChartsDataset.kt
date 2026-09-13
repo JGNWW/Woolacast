@@ -51,7 +51,9 @@ data class DatasetMover(
     val move: Int = 0,
     val source: String = "",
     val level: String = "",
-    val genreLabel: String = ""
+    val genreLabel: String = "",
+    /** Het genre-id van Apple; 26 of leeg betekent de lijst over alles. */
+    val genreId: Int? = null
 )
 
 @Serializable
