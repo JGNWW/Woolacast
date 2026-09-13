@@ -26,6 +26,6 @@ class FeedClient(
     }
 
     private companion object {
-        const val USER_AGENT = "Woolacast/0.1 (+https://github.com/jgnww/Woolacast)"
+        const val USER_AGENT = "Toadcast/0.1 (+https://github.com/jgnww/Woolacast)"
     }
 }

@@ -91,7 +91,7 @@ class TrackerViewModel(
             "${line.source.label}: #${line.current ?: "–"}" +
                 (line.change?.let { c -> if (c > 0) " (▲$c in ${line.days} dgn)" else if (c < 0) " (▼${-c} in ${line.days} dgn)" else " (stabiel)" } ?: "")
         }
-        return "${s.title} in ${s.countryLabel}\n$lines\n— Woolacast"
+        return "${s.title} in ${s.countryLabel}\n$lines\n— Toadcast"
     }
 
     init {

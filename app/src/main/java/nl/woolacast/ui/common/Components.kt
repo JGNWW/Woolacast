@@ -92,7 +92,7 @@ fun IconAction(
 @Composable
 fun Wordmark(modifier: Modifier = Modifier) {
     Text(
-        "WOOLACAST",
+        "TOADCAST",
         style = MaterialTheme.typography.labelSmall,
         letterSpacing = 1.7.sp,
         color = MaterialTheme.colorScheme.primary,

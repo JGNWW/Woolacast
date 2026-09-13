@@ -34,7 +34,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
-UA = "Woolacast-charts/1.0 (+https://github.com/JGNWW/Woolacast)"
+UA = "Toadcast-charts/1.0 (+https://github.com/JGNWW/Woolacast)"
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 

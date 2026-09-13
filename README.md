@@ -1,4 +1,4 @@
-# Woolacast
+# Toadcast
 
 Een Android-podcastapp waarvan de kern een hitlijsten-browser is: dezelfde lijst
 bekijken per **bron**, **land**, **categorie** en **niveau** (podcast of
@@ -158,7 +158,7 @@ RSS-first, geen backend.
 
 Hun code overnemen kan ook, maar dat is een licentiekeuze:
 
-- **AntennaPod** is GPL-3.0. Code daaruit gebruiken maakt Woolacast ook GPL-3.0.
+- **AntennaPod** is GPL-3.0. Code daaruit gebruiken maakt Toadcast ook GPL-3.0.
 - **Pocket Casts** is MPL-2.0 (Automattic). Soepeler: per bestand copyleft.
 
 Geen van beide heeft trouwens hitlijsten — dat is nou juist wat deze app toevoegt.
@@ -452,7 +452,7 @@ hoort af en toe te draaien, niet elke ochtend.
 ### Wat we niet doen
 
 De verzamelaar leest `robots.txt` van elke host en houdt zich eraan, en stelt
-zich voor als `Woolacast-charts/1.0` met een adres erbij. Geen browser nadoen,
+zich voor als `Toadcast-charts/1.0` met een adres erbij. Geen browser nadoen,
 geen 403 omzeilen: wie ons niet wil, krijgt ons niet. Dat kost bereik —
 Google News heeft bijvoorbeeld een prima RSS-zoekfunctie die per land en taal
 werkt, maar hun `robots.txt` verbiedt `/rss/` voor iedereen, dus die route ligt

@@ -26,7 +26,7 @@ object Network {
     private val userAgent = Interceptor { chain ->
         chain.proceed(
             chain.request().newBuilder()
-                .header("User-Agent", "Woolacast/0.1 (+https://github.com/jgnww/Woolacast)")
+                .header("User-Agent", "Toadcast/0.1 (+https://github.com/jgnww/Woolacast)")
                 .build()
         )
     }
