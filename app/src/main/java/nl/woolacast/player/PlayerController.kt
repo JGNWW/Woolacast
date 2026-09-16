@@ -4,8 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -164,17 +162,7 @@ class PlayerController(
             return
         }
 
-        val item = MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setUri(audioUrl)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(episode.title)
-                    .setArtist(episode.showTitle)
-                    .setArtworkUri(episode.artworkUrl?.let(android.net.Uri::parse))
-                    .build()
-            )
-            .build()
+        val item = episode.toMediaItem(audioUrl)
 
         val resumeAt = resumePosition(episode.id)
         _state.value = PlaybackState(
@@ -286,19 +274,8 @@ class PlayerController(
     private fun restoreFromPlayer(player: Player) {
         if (_state.value.episode != null) return
         val item = player.currentMediaItem ?: return
-        val meta = item.mediaMetadata
         _state.value = _state.value.copy(
-            episode = Episode(
-                id = item.mediaId,
-                showId = "",
-                showTitle = meta.artist?.toString().orEmpty(),
-                title = meta.title?.toString().orEmpty(),
-                description = null,
-                artworkUrl = meta.artworkUri?.toString(),
-                audioUrl = item.localConfiguration?.uri?.toString(),
-                durationMillis = player.duration.takeIf { it > 0L },
-                releaseDate = null
-            )
+            episode = item.toEpisode(player.duration.takeIf { it > 0L })
         )
     }
 

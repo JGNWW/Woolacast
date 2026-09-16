@@ -274,7 +274,7 @@ fun PlayerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SkipButton(WoolIcons.Back15, "${SKIP_BACK_MS / 1000}", "15 seconden terug") { onSeekBy(-SKIP_BACK_MS) }
+                    SkipButton(WoolIcons.Back15, SKIP_BACK_MS, "terug") { onSeekBy(-SKIP_BACK_MS) }
                     TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
                     Box(
                         modifier = Modifier
@@ -297,7 +297,7 @@ fun PlayerScreen(
                         WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
                         enabled = queue.isNotEmpty()
                     )
-                    SkipButton(WoolIcons.Forward30, "${SKIP_FORWARD_MS / 1000}", "30 seconden vooruit") { onSeekBy(SKIP_FORWARD_MS) }
+                    SkipButton(WoolIcons.Forward30, SKIP_FORWARD_MS, "vooruit") { onSeekBy(SKIP_FORWARD_MS) }
                 }
 
                 Spacer(Modifier.height(26.dp))
@@ -489,9 +489,14 @@ private fun TransportButton(
     }
 }
 
-/** Het rondje-met-pijl plus het getal erin, zoals 15 en 30 in de mockup. */
+/**
+ * Het rondje-met-pijl plus het getal erin, zoals 15 en 30 in de mockup. Het
+ * getal en wat de schermlezer voorleest komen allebei uit de sprong zelf, zodat
+ * ze niet uit elkaar kunnen lopen.
+ */
 @Composable
-private fun SkipButton(icon: ImageVector, seconds: String, contentDescription: String, onClick: () -> Unit) {
+private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onClick: () -> Unit) {
+    val seconds = skipMs / 1000
     Box(
         modifier = Modifier
             .size(56.dp)
@@ -499,9 +504,9 @@ private fun SkipButton(icon: ImageVector, seconds: String, contentDescription: S
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription, modifier = Modifier.size(32.dp))
+        Icon(icon, "$seconds seconden $direction", modifier = Modifier.size(32.dp))
         Text(
-            seconds,
+            "$seconds",
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = (-0.3).sp,

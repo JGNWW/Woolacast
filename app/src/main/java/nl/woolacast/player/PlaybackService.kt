@@ -3,6 +3,7 @@ package nl.woolacast.player
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
@@ -22,7 +23,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import nl.woolacast.R
 import nl.woolacast.container
@@ -30,8 +33,15 @@ import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.data.local.toSaved
 import nl.woolacast.ui.common.speedLabel
 
-/** Wat de melding kan wat Media3 niet uit zichzelf kent. */
+/**
+ * De knoppen die Media3 niet uit zichzelf kent. Ook de sprongen staan hier als
+ * eigen opdracht: vanaf Android 13 bouwt het systeem zijn mediabediening uit de
+ * sessie en niet uit onze melding, en daar tellen alleen eigen acties mee —
+ * terugspoelen en vooruitspoelen krijgen daar geen eigen plek.
+ */
 private const val ACTION_SPEED = "nl.woolacast.SPEED"
+private const val ACTION_BACK = "nl.woolacast.BACK"
+private const val ACTION_FORWARD = "nl.woolacast.FORWARD"
 private const val ACTION_SAVE = "nl.woolacast.SAVE"
 
 /**
@@ -42,6 +52,12 @@ private const val ACTION_SAVE = "nl.woolacast.SAVE"
  * afspelen/pauzeren, +30 en bewaren. Media3's eigen rij is die van een
  * muziekspeler — vorige, afspelen, volgende — en dat is precies wat je bij een
  * gesprek van twee uur niet nodig hebt.
+ *
+ * Die rij moet op twee plekken landen, en dat gaat op twee manieren: de melding
+ * tekenen we zelf, maar vanaf Android 13 bouwt het systeem zijn eigen
+ * mediabediening uit de sessie. Daar tellen alleen eigen opdrachten mee, dus
+ * staan de vier knoppen naast afspelen ook alle vier in de indeling die de
+ * sessie uitdeelt.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class PlaybackService : MediaSessionService() {
@@ -90,9 +106,14 @@ class PlaybackService : MediaSessionService() {
 
         setMediaNotificationProvider(WoolNotification(this))
 
-        // De ster hoort te kloppen, ook als er elders in de app bewaard wordt.
+        // De ster hoort te kloppen, ook als er elders in de app bewaard wordt —
+        // maar alleen de aflevering die speelt zegt hier iets.
         scope.launch {
-            container.store.saved.drop(1).collect { publishButtons() }
+            container.store.saved
+                .map { isCurrentEpisodeSaved() }
+                .distinctUntilChanged()
+                .drop(1)
+                .collect { publishButtons() }
         }
     }
 
@@ -118,37 +139,58 @@ class PlaybackService : MediaSessionService() {
     /* ---- de knoppen ---- */
 
     /**
-     * De rij zoals hij in de melding en op het vergrendelscherm staat. De
-     * middelste drie — terug, afspelen, vooruit — staan ook in de ingeklapte
-     * melding; snelheid en ster verschijnen zodra je hem uitklapt.
+     * De rij zoals hij in de melding staat. De middelste drie — terug,
+     * afspelen, vooruit — staan ook in de ingeklapte melding; snelheid en ster
+     * verschijnen zodra je hem uitklapt. Een sprong die de speler nu niet aankan
+     * laten we weg in plaats van hem dood te tonen.
      */
-    private fun notificationButtons(showPause: Boolean): ImmutableList<CommandButton> =
-        ImmutableList.of(
-            speedButton(),
-            CommandButton.Builder(CommandButton.ICON_SKIP_BACK_15)
-                .setPlayerCommand(Player.COMMAND_SEEK_BACK)
-                .setDisplayName("15 seconden terug")
-                .setExtras(compactAt(0))
-                .setEnabled(true)
-                .build(),
-            CommandButton.Builder(if (showPause) CommandButton.ICON_PAUSE else CommandButton.ICON_PLAY)
-                .setPlayerCommand(Player.COMMAND_PLAY_PAUSE)
-                .setDisplayName(if (showPause) "Pauzeren" else "Afspelen")
-                .setExtras(compactAt(1))
-                .setEnabled(true)
-                .build(),
-            CommandButton.Builder(CommandButton.ICON_SKIP_FORWARD_30)
-                .setPlayerCommand(Player.COMMAND_SEEK_FORWARD)
-                .setDisplayName("30 seconden vooruit")
-                .setExtras(compactAt(2))
-                .setEnabled(true)
-                .build(),
-            saveButton()
-        )
+    private fun notificationButtons(showPause: Boolean): ImmutableList<CommandButton> {
+        // Media3 leest de plek in de ingeklapte melding uit de extra's, en er
+        // passen er drie: wat hier als eerste om een plek vraagt, krijgt hem.
+        var taken = 0
+        fun inCompactView() = Bundle().apply {
+            putInt(DefaultMediaNotificationProvider.COMMAND_KEY_COMPACT_VIEW_INDEX, taken++)
+        }
 
-    /** Wat een andere bediening — Android Auto, een horloge — erbij krijgt. */
-    private fun extraButtons(): ImmutableList<CommandButton> =
-        ImmutableList.of(speedButton(), saveButton())
+        val row = mutableListOf(speedButton())
+        if (canSeek(Player.COMMAND_SEEK_BACK)) row += skipButton(back = true, extras = inCompactView())
+        row += CommandButton.Builder(if (showPause) CommandButton.ICON_PAUSE else CommandButton.ICON_PLAY)
+            .setPlayerCommand(Player.COMMAND_PLAY_PAUSE)
+            .setDisplayName(if (showPause) "Pauzeren" else "Afspelen")
+            .setExtras(inCompactView())
+            .setEnabled(true)
+            .build()
+        if (canSeek(Player.COMMAND_SEEK_FORWARD)) row += skipButton(back = false, extras = inCompactView())
+        row += saveButton()
+        return ImmutableList.copyOf(row)
+    }
+
+    /**
+     * Wat het systeem en andere bedieningen — het vergrendelscherm, Android
+     * Auto, een horloge — naast afspelen en pauzeren te zien krijgen. Alleen
+     * eigen opdrachten halen die lijst; afspelen zit er al in.
+     */
+    private fun extraButtons(): ImmutableList<CommandButton> {
+        val row = mutableListOf(speedButton())
+        if (canSeek(Player.COMMAND_SEEK_BACK)) row += skipButton(back = true)
+        if (canSeek(Player.COMMAND_SEEK_FORWARD)) row += skipButton(back = false)
+        row += saveButton()
+        return ImmutableList.copyOf(row)
+    }
+
+    /** Zolang er niets klaarstaat, staat ook nog niet vast of er te zoeken valt. */
+    private fun canSeek(command: Int): Boolean =
+        mediaSession?.player?.isCommandAvailable(command) != false
+
+    private fun skipButton(back: Boolean, extras: Bundle = Bundle.EMPTY): CommandButton {
+        val seconds = (if (back) SKIP_BACK_MS else SKIP_FORWARD_MS) / 1000
+        return CommandButton.Builder(skipIcon(back))
+            .setSessionCommand(SessionCommand(if (back) ACTION_BACK else ACTION_FORWARD, Bundle.EMPTY))
+            .setDisplayName("$seconds seconden ${if (back) "terug" else "vooruit"}")
+            .setExtras(extras)
+            .setEnabled(true)
+            .build()
+    }
 
     private fun speedButton(): CommandButton {
         val speed = mediaSession?.player?.playbackParameters?.speed ?: 1f
@@ -160,7 +202,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun saveButton(): CommandButton {
-        val saved = currentEpisode()?.let { container.store.isSaved(it.id) } == true
+        val saved = isCurrentEpisodeSaved()
         return CommandButton.Builder(
             if (saved) CommandButton.ICON_STAR_FILLED else CommandButton.ICON_STAR_UNFILLED
         )
@@ -170,24 +212,27 @@ class PlaybackService : MediaSessionService() {
             .build()
     }
 
-    /** Media3 leest de plek in de ingeklapte melding uit de extra's. */
-    private fun compactAt(index: Int) = Bundle().apply {
-        putInt(DefaultMediaNotificationProvider.COMMAND_KEY_COMPACT_VIEW_INDEX, index)
-    }
-
     /**
      * De melding volgt de speler, maar niet de snelheid en niet wat er bewaard
-     * is; die twee tekenen we hier zelf opnieuw.
+     * is; die twee tekenen we hier zelf opnieuw. Alleen zolang de melding er
+     * staat: wie hem heeft weggeveegd, wil hem niet terug omdat er elders in de
+     * app op een ster is getikt.
      */
     private fun publishButtons() {
         val session = mediaSession ?: return
         session.setCustomLayout(extraButtons())
-        if (session.player.currentMediaItem != null) onUpdateNotification(session, false)
+        if (notificationIsShowing()) onUpdateNotification(session, false)
     }
+
+    private fun notificationIsShowing(): Boolean =
+        NotificationManagerCompat.from(this).activeNotifications.any {
+            it.id == DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID
+        }
 
     /**
      * Wat er nu speelt, als bewaarbare aflevering. Meestal weet de app het
-     * zelf; is de speler ouder dan het scherm, dan is de metadata genoeg.
+     * zelf; is de speler ouder dan het scherm, dan is de metadata genoeg —
+     * daar reist alles in mee wat een aflevering terugvindbaar maakt.
      */
     private fun currentEpisode(): SavedEpisode? {
         val player = mediaSession?.player ?: return null
@@ -195,21 +240,17 @@ class PlaybackService : MediaSessionService() {
         container.player.state.value.episode
             ?.takeIf { it.id == item.mediaId }
             ?.let { return it.toSaved() }
-        val meta = item.mediaMetadata
-        return SavedEpisode(
-            id = item.mediaId,
-            showId = "",
-            showTitle = meta.artist?.toString().orEmpty(),
-            title = meta.title?.toString().orEmpty(),
-            artworkUrl = meta.artworkUri?.toString(),
-            audioUrl = item.localConfiguration?.uri?.toString(),
-            durationMillis = player.duration.takeIf { it > 0L }
-        )
+        return item.toEpisode(player.duration.takeIf { it > 0L }).toSaved()
+    }
+
+    private fun isCurrentEpisodeSaved(): Boolean {
+        val id = mediaSession?.player?.currentMediaItem?.mediaId ?: return false
+        return container.store.isSaved(id)
     }
 
     private fun toggleSaved() {
         val episode = currentEpisode() ?: return
-        // De verzameling 'bewaard' wordt hierboven gevolgd; die tekent de ster.
+        // De verzameling 'bewaard' wordt gevolgd in onCreate; die tekent de ster.
         scope.launch { container.store.toggleSaved(episode) }
     }
 
@@ -225,7 +266,22 @@ class PlaybackService : MediaSessionService() {
                 .setAvailableSessionCommands(
                     MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
                         .add(SessionCommand(ACTION_SPEED, Bundle.EMPTY))
+                        .add(SessionCommand(ACTION_BACK, Bundle.EMPTY))
+                        .add(SessionCommand(ACTION_FORWARD, Bundle.EMPTY))
                         .add(SessionCommand(ACTION_SAVE, Bundle.EMPTY))
+                        .build()
+                )
+                // 'Vorige' en 'volgende' bezetten in de systeembediening een
+                // vaste plek, en bij een wachtrij van één aflevering doen ze
+                // daar niets. Weg ermee, dan is er ruimte voor de sprongen.
+                .setAvailablePlayerCommands(
+                    MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+                        .removeAll(
+                            Player.COMMAND_SEEK_TO_PREVIOUS,
+                            Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM,
+                            Player.COMMAND_SEEK_TO_NEXT,
+                            Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM
+                        )
                         .build()
                 )
                 .setCustomLayout(extraButtons())
@@ -241,6 +297,8 @@ class PlaybackService : MediaSessionService() {
                 ACTION_SPEED -> session.player.setPlaybackSpeed(
                     nextSpeed(session.player.playbackParameters.speed)
                 )
+                ACTION_BACK -> session.player.seekBack()
+                ACTION_FORWARD -> session.player.seekForward()
                 ACTION_SAVE -> toggleSaved()
                 else -> return Futures.immediateFuture(
                     SessionResult(SessionError.ERROR_NOT_SUPPORTED)
@@ -274,6 +332,21 @@ class PlaybackService : MediaSessionService() {
         ): ImmutableList<CommandButton> = service.notificationButtons(showPauseButton)
     }
 }
+
+/**
+ * Media3 heeft sprongiconen voor 5, 10, 15 en 30 seconden. Wijkt de sprong
+ * daarvan af, dan liever een kale pijl dan een icoon dat het verkeerde getal
+ * draagt.
+ */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+private fun skipIcon(back: Boolean): Int =
+    when ((if (back) SKIP_BACK_MS else SKIP_FORWARD_MS) / 1000L) {
+        5L -> if (back) CommandButton.ICON_SKIP_BACK_5 else CommandButton.ICON_SKIP_FORWARD_5
+        10L -> if (back) CommandButton.ICON_SKIP_BACK_10 else CommandButton.ICON_SKIP_FORWARD_10
+        15L -> if (back) CommandButton.ICON_SKIP_BACK_15 else CommandButton.ICON_SKIP_FORWARD_15
+        30L -> if (back) CommandButton.ICON_SKIP_BACK_30 else CommandButton.ICON_SKIP_FORWARD_30
+        else -> if (back) CommandButton.ICON_SKIP_BACK else CommandButton.ICON_SKIP_FORWARD
+    }
 
 /** Het cijfer op de snelheidsknop; Media3 levert er een icoon per stap bij. */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
