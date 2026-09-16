@@ -96,6 +96,16 @@ class PlayerController(
     private val _state = MutableStateFlow(PlaybackState())
     val state: StateFlow<PlaybackState> = _state.asStateFlow()
 
+    /**
+     * De aflevering die de app zélf heeft klaargezet. Een mediaitem kan ook van
+     * buiten komen — elke app op het toestel mag deze sessie bedienen, dat hoort
+     * bij een mediasessie — en zo'n item vertelt over zichzelf wat het wil.
+     * [restoreFromPlayer] bouwt daaruit wel een aflevering om te tónen, maar
+     * alleen wat hier staat is van ons en mag de bibliotheek in.
+     */
+    var ownEpisodeId: String? = null
+        private set
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = syncFromPlayer()
 
@@ -148,6 +158,8 @@ class PlayerController(
             _state.value = _state.value.copy(error = "Deze aflevering heeft geen audiobestand in de feed.")
             return
         }
+        ownEpisodeId = episode.id
+
         val player = controller
         if (player == null) {
             pending = episode to chartLabel

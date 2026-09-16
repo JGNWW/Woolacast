@@ -88,6 +88,21 @@ _robots: dict[str, "urllib.robotparser.RobotFileParser | None"] = {}
 ROBOTS_EXCEPTIONS = {"news.google.com"}
 
 
+# Alleen het web, en niets anders. urlopen() spreekt ook file:, ftp: en data:,
+# en de adressen die hier binnenkomen staan in andermans RSS en HTML: een
+# <link> die file:///... zegt laat de verzamelaar een bestand van deze machine
+# lezen en dat als tipomschrijving de openbare repo in schrijven. Op een
+# bouwmachine is dat het token dat actions/checkout in .git/config achterlaat.
+# Vandaar één slot op de enige twee deuren naar buiten, en nog eens na een
+# omleiding: de omleidingsafhandeling van Python laat ftp: namelijk wel door.
+WEB_SCHEMES = ("http", "https")
+
+
+def is_web_url(url: str) -> bool:
+    parts = urllib.parse.urlsplit(url)
+    return parts.scheme in WEB_SCHEMES and bool(parts.netloc)
+
+
 def allowed(url: str) -> bool:
     """
     Leest robots.txt van de host en houdt zich eraan. Een onbereikbare
@@ -95,6 +110,8 @@ def allowed(url: str) -> bool:
     Disallow is een nee waar we niet omheen gaan.
     """
     import urllib.robotparser
+    if not is_web_url(url):
+        return False
     parts = urllib.parse.urlsplit(url)
     if parts.netloc in ROBOTS_EXCEPTIONS:
         return True
@@ -115,15 +132,20 @@ def allowed(url: str) -> bool:
 
 def fetch(url: str, *, raw: bool = False, tries: int = 3, headers: dict | None = None,
           timeout: int = 30):
-    if not allowed(url):
+    # Twee keer vragen: allowed() gaat over robots.txt, is_web_url() over het
+    # soort adres. Dat is opzet — wie hier later een aanroep bij zet, moet niet
+    # op de beleefdheidsregel hoeven vertrouwen voor de veiligheidsregel.
+    if not is_web_url(url) or not allowed(url):
         return None
     for attempt in range(tries):
         try:
             request = urllib.request.Request(
                 url, headers={"User-Agent": UA, **(headers or {})})
             with urllib.request.urlopen(request, timeout=timeout) as response:
-                body = response.read()
                 final = response.geturl()
+                if not is_web_url(final):
+                    return None
+                body = response.read()
             return (body.decode("utf-8", "replace"), final) if raw else json.loads(body)
         except Exception:
             if attempt == tries - 1:
@@ -1520,11 +1542,13 @@ def logo_slug(outlet: str) -> str:
 
 
 def fetch_bytes(url: str, timeout: int = 15) -> bytes | None:
-    if not allowed(url):
+    if not is_web_url(url) or not allowed(url):
         return None
     try:
         request = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "image/*"})
         with urllib.request.urlopen(request, timeout=timeout) as response:
+            if not is_web_url(response.geturl()):
+                return None
             return response.read(400_000)
     except Exception:
         return None

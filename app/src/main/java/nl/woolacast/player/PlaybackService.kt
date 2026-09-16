@@ -230,18 +230,28 @@ class PlaybackService : MediaSessionService() {
         }
 
     /**
-     * Wat er nu speelt, als bewaarbare aflevering. Meestal weet de app het
-     * zelf; is de speler ouder dan het scherm, dan is de metadata genoeg —
-     * daar reist alles in mee wat een aflevering terugvindbaar maakt.
+     * Wat er nu speelt, als bewaarbare aflevering — en alleen als de app hem
+     * zelf heeft klaargezet. De metadata van een mediaitem komt over dezelfde
+     * lijn binnen als de knoppen, en een vreemde app mag er een neerleggen:
+     * titel, plaatje, audio-URL en link zouden dan verzonnen zijn, en via
+     * Bewaard belanden ze in een lijst die eruitziet alsof de app hem vulde.
+     * Dan liever niets bewaren.
      */
     private fun currentEpisode(): SavedEpisode? {
-        val player = mediaSession?.player ?: return null
-        val item = player.currentMediaItem ?: return null
-        container.player.state.value.episode
-            ?.takeIf { it.id == item.mediaId }
-            ?.let { return it.toSaved() }
-        return item.toEpisode(player.duration.takeIf { it > 0L }).toSaved()
+        val id = mediaSession?.player?.currentMediaItem?.mediaId ?: return null
+        if (container.player.ownEpisodeId != id) return null
+        return container.player.state.value.episode?.takeIf { it.id == id }?.toSaved()
     }
+
+    /**
+     * Bewaren is de enige knop die iets wégschrijft. Afspelen en spoelen raken
+     * alleen wat er nu klinkt, maar bewaren raakt de bibliotheek, en deze
+     * sessie staat open voor elke app op het toestel. Die knop is er dus voor
+     * onszelf en voor wat Android vertrouwt met mediabediening — het systeem,
+     * het vergrendelscherm, Android Auto — en niet voor de rest.
+     */
+    private fun maySave(controller: MediaSession.ControllerInfo): Boolean =
+        controller.packageName == packageName || controller.isTrusted
 
     private fun isCurrentEpisodeSaved(): Boolean {
         val id = mediaSession?.player?.currentMediaItem?.mediaId ?: return false
@@ -268,7 +278,9 @@ class PlaybackService : MediaSessionService() {
                         .add(SessionCommand(ACTION_SPEED, Bundle.EMPTY))
                         .add(SessionCommand(ACTION_BACK, Bundle.EMPTY))
                         .add(SessionCommand(ACTION_FORWARD, Bundle.EMPTY))
-                        .add(SessionCommand(ACTION_SAVE, Bundle.EMPTY))
+                        .apply {
+                            if (maySave(controller)) add(SessionCommand(ACTION_SAVE, Bundle.EMPTY))
+                        }
                         .build()
                 )
                 // 'Vorige' en 'volgende' bezetten in de systeembediening een
@@ -299,7 +311,12 @@ class PlaybackService : MediaSessionService() {
                 )
                 ACTION_BACK -> session.player.seekBack()
                 ACTION_FORWARD -> session.player.seekForward()
-                ACTION_SAVE -> toggleSaved()
+                ACTION_SAVE -> {
+                    if (!maySave(controller)) return Futures.immediateFuture(
+                        SessionResult(SessionError.ERROR_PERMISSION_DENIED)
+                    )
+                    toggleSaved()
+                }
                 else -> return Futures.immediateFuture(
                     SessionResult(SessionError.ERROR_NOT_SUPPORTED)
                 )
