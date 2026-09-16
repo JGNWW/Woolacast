@@ -4,8 +4,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -19,6 +17,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.woolacast.domain.Episode
+
+/**
+ * De sprongen van de twee vaste knoppen. Ze staan hier omdat zowel het
+ * spelerscherm als de melding ze gebruikt en ze hetzelfde moeten doen.
+ */
+const val SKIP_BACK_MS = 15_000L
+const val SKIP_FORWARD_MS = 30_000L
+
+/**
+ * De snelheden die de app aanbiedt. De melding heeft geen ruimte voor een
+ * keuzelijst en loopt ze rond; vandaar dat het scherm dezelfde rij gebruikt.
+ */
+val SPEEDS = listOf(0.8f, 1f, 1.2f, 1.5f, 1.8f, 2f)
+
+/** De eerstvolgende snelheid, en na de laatste weer de eerste. */
+fun nextSpeed(current: Float): Float {
+    val index = SPEEDS.indexOfFirst { it > current + 0.01f }
+    return if (index == -1) SPEEDS.first() else SPEEDS[index]
+}
 
 /** Wanneer de speler zichzelf stilzet. */
 sealed interface SleepTimer {
@@ -79,6 +96,16 @@ class PlayerController(
     private val _state = MutableStateFlow(PlaybackState())
     val state: StateFlow<PlaybackState> = _state.asStateFlow()
 
+    /**
+     * De aflevering die de app zélf heeft klaargezet. Een mediaitem kan ook van
+     * buiten komen — elke app op het toestel mag deze sessie bedienen, dat hoort
+     * bij een mediasessie — en zo'n item vertelt over zichzelf wat het wil.
+     * [restoreFromPlayer] bouwt daaruit wel een aflevering om te tónen, maar
+     * alleen wat hier staat is van ons en mag de bibliotheek in.
+     */
+    var ownEpisodeId: String? = null
+        private set
+
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = syncFromPlayer()
 
@@ -131,6 +158,8 @@ class PlayerController(
             _state.value = _state.value.copy(error = "Deze aflevering heeft geen audiobestand in de feed.")
             return
         }
+        ownEpisodeId = episode.id
+
         val player = controller
         if (player == null) {
             pending = episode to chartLabel
@@ -145,17 +174,7 @@ class PlayerController(
             return
         }
 
-        val item = MediaItem.Builder()
-            .setMediaId(episode.id)
-            .setUri(audioUrl)
-            .setMediaMetadata(
-                MediaMetadata.Builder()
-                    .setTitle(episode.title)
-                    .setArtist(episode.showTitle)
-                    .setArtworkUri(episode.artworkUrl?.let(android.net.Uri::parse))
-                    .build()
-            )
-            .build()
+        val item = episode.toMediaItem(audioUrl)
 
         val resumeAt = resumePosition(episode.id)
         _state.value = PlaybackState(
@@ -267,19 +286,8 @@ class PlayerController(
     private fun restoreFromPlayer(player: Player) {
         if (_state.value.episode != null) return
         val item = player.currentMediaItem ?: return
-        val meta = item.mediaMetadata
         _state.value = _state.value.copy(
-            episode = Episode(
-                id = item.mediaId,
-                showId = "",
-                showTitle = meta.artist?.toString().orEmpty(),
-                title = meta.title?.toString().orEmpty(),
-                description = null,
-                artworkUrl = meta.artworkUri?.toString(),
-                audioUrl = item.localConfiguration?.uri?.toString(),
-                durationMillis = player.duration.takeIf { it > 0L },
-                releaseDate = null
-            )
+            episode = item.toEpisode(player.duration.takeIf { it > 0L })
         )
     }
 

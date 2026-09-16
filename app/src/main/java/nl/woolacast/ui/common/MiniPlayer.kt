@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import nl.woolacast.player.PlaybackState
+import nl.woolacast.player.SKIP_FORWARD_MS
 import nl.woolacast.ui.theme.LocalChartColors
 
 /** De donkere kaart boven de navigatie (.mini): tikken klapt de speler uit. */
@@ -76,6 +77,9 @@ fun MiniPlayer(
             tint = colors.onPanel,
             iconSize = 24.dp
         )
-        IconAction(WoolIcons.SkipForward, "30 seconden vooruit", onSkipForward, tint = colors.onPanel, iconSize = 24.dp)
+        IconAction(
+            WoolIcons.SkipForward, "${SKIP_FORWARD_MS / 1000} seconden vooruit", onSkipForward,
+            tint = colors.onPanel, iconSize = 24.dp
+        )
     }
 }

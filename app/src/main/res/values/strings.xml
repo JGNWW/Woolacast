@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Toadcast</string>
+    <!-- De naam van het meldingskanaal, zoals hij in de instellingen staat. -->
+    <string name="playback_channel">Afspelen</string>
 </resources>

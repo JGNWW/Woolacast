@@ -56,6 +56,7 @@ import nl.woolacast.domain.ChartLevel
 import nl.woolacast.domain.ChartQuery
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.SourceId
+import nl.woolacast.player.SKIP_FORWARD_MS
 import nl.woolacast.ui.charts.ChartListScreen
 import nl.woolacast.ui.charts.ChartsScreen
 import nl.woolacast.ui.charts.ChartsViewModel
@@ -172,7 +173,7 @@ fun WoolacastNav(container: AppContainer) {
                         state = playback,
                         onExpand = openPlayer,
                         onTogglePlay = container.player::togglePlayPause,
-                        onSkipForward = { container.player.seekBy(30_000L) }
+                        onSkipForward = { container.player.seekBy(SKIP_FORWARD_MS) }
                     )
                     Spacer(Modifier.height(6.dp))
                 }

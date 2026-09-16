@@ -54,6 +54,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.player.PlaybackState
+import nl.woolacast.player.SKIP_BACK_MS
+import nl.woolacast.player.SKIP_FORWARD_MS
+import nl.woolacast.player.SPEEDS
 import nl.woolacast.player.SleepTimer
 import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.FilterChipBox
@@ -65,8 +68,6 @@ import nl.woolacast.ui.common.shortDate
 import nl.woolacast.ui.common.speedLabel
 import nl.woolacast.ui.theme.DisplayFamily
 import nl.woolacast.ui.theme.LocalChartColors
-
-private val SPEEDS = listOf(0.8f, 1f, 1.2f, 1.5f, 1.75f, 2f)
 
 /**
  * Het volledige spelerscherm, zoals in de mockup: artwork, titel, waar de
@@ -273,7 +274,7 @@ fun PlayerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SkipButton(WoolIcons.Back15, "15", "15 seconden terug") { onSeekBy(-15_000L) }
+                    SkipButton(WoolIcons.Back15, SKIP_BACK_MS, "terug") { onSeekBy(-SKIP_BACK_MS) }
                     TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
                     Box(
                         modifier = Modifier
@@ -296,7 +297,7 @@ fun PlayerScreen(
                         WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
                         enabled = queue.isNotEmpty()
                     )
-                    SkipButton(WoolIcons.Forward30, "30", "30 seconden vooruit") { onSeekBy(30_000L) }
+                    SkipButton(WoolIcons.Forward30, SKIP_FORWARD_MS, "vooruit") { onSeekBy(SKIP_FORWARD_MS) }
                 }
 
                 Spacer(Modifier.height(26.dp))
@@ -488,9 +489,14 @@ private fun TransportButton(
     }
 }
 
-/** Het rondje-met-pijl plus het getal erin, zoals 15 en 30 in de mockup. */
+/**
+ * Het rondje-met-pijl plus het getal erin, zoals 15 en 30 in de mockup. Het
+ * getal en wat de schermlezer voorleest komen allebei uit de sprong zelf, zodat
+ * ze niet uit elkaar kunnen lopen.
+ */
 @Composable
-private fun SkipButton(icon: ImageVector, seconds: String, contentDescription: String, onClick: () -> Unit) {
+private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onClick: () -> Unit) {
+    val seconds = skipMs / 1000
     Box(
         modifier = Modifier
             .size(56.dp)
@@ -498,9 +504,9 @@ private fun SkipButton(icon: ImageVector, seconds: String, contentDescription: S
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Icon(icon, contentDescription, modifier = Modifier.size(32.dp))
+        Icon(icon, "$seconds seconden $direction", modifier = Modifier.size(32.dp))
         Text(
-            seconds,
+            "$seconds",
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = (-0.3).sp,
