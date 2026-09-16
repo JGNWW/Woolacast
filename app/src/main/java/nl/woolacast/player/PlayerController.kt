@@ -20,6 +20,25 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.woolacast.domain.Episode
 
+/**
+ * De sprongen van de twee vaste knoppen. Ze staan hier omdat zowel het
+ * spelerscherm als de melding ze gebruikt en ze hetzelfde moeten doen.
+ */
+const val SKIP_BACK_MS = 15_000L
+const val SKIP_FORWARD_MS = 30_000L
+
+/**
+ * De snelheden die de app aanbiedt. De melding heeft geen ruimte voor een
+ * keuzelijst en loopt ze rond; vandaar dat het scherm dezelfde rij gebruikt.
+ */
+val SPEEDS = listOf(0.8f, 1f, 1.2f, 1.5f, 1.8f, 2f)
+
+/** De eerstvolgende snelheid, en na de laatste weer de eerste. */
+fun nextSpeed(current: Float): Float {
+    val index = SPEEDS.indexOfFirst { it > current + 0.01f }
+    return if (index == -1) SPEEDS.first() else SPEEDS[index]
+}
+
 /** Wanneer de speler zichzelf stilzet. */
 sealed interface SleepTimer {
     data object Off : SleepTimer

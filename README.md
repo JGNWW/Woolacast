@@ -502,6 +502,7 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Speler: snelheid, slaaptimer, wachtrij, delen, bewaren | werkt |
 | Wachtrij speelt vanzelf door na de huidige aflevering | werkt |
 | Afspelen (Media3, achtergrond, vergrendelscherm) | gebouwd, nog niet op een toestel getest |
+| Melding en vergrendelscherm: snelheid, −15, afspelen, +30, bewaren | gebouwd, nog niet op een toestel getest |
 | Volgen + bibliotheek: "2 nieuw" / "bijgewerkt di" per gevolgde show | werkt (leest de feeds) |
 | Chart-alerts op shows die je volgt | werkt zodra er twee dagen historie is |
 | Chart-tracker: tegels, grafiek met assen, hoogste notering, landen | werkt |
@@ -524,7 +525,8 @@ app/src/main/java/nl/woolacast/
     spotify/  het chart-endpoint van podcastcharts.byspotify.com
     feed/     RSS-parser en -client: de route zonder tussenpersoon
     local/    volgen, momentopnames en de offline cache in één JSON-bestand
-  player/     Media3-service met een StateFlow-laag eromheen
+  player/     Media3-service met een StateFlow-laag eromheen; de melding
+              krijgt hier zijn eigen knoppenrij
   ui/         Compose-schermen, thema, navigatie
               common/ bouwstenen uit de mockup: iconen, vlaggen, tabs, knoppen
               player/ het uitklapbare spelerscherm
