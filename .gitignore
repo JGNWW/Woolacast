@@ -4,6 +4,7 @@
 local.properties
 .idea/
 build/
+.kotlin/
 captures/
 .externalNativeBuild/
 .cxx/

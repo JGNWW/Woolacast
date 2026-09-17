@@ -19,6 +19,7 @@ import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -362,13 +363,18 @@ class PlaybackService : MediaSessionService() {
  * en valt daarop terug. De tekening is van onszelf, want Media3's snelheidscijfer
  * staat er versmald in en zijn sprongpijlen dragen het aantal seconden — allebei
  * een vlek op een knop van 24 dp.
+ *
+ * De speler kan op elke snelheid staan, ook op een die een andere app heeft
+ * gezet. Welke stap dat is, vraagt SPEEDS: dan staat het rijtje op één plek en
+ * lopen de knop en het spelerscherm niet uiteen.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-private fun speedIcons(speed: Float): Pair<Int, Int> = when {
-    speed < 0.9f -> CommandButton.ICON_PLAYBACK_SPEED_0_8 to R.drawable.ic_media_speed_0_8
-    speed < 1.1f -> CommandButton.ICON_PLAYBACK_SPEED_1_0 to R.drawable.ic_media_speed_1
-    speed < 1.35f -> CommandButton.ICON_PLAYBACK_SPEED_1_2 to R.drawable.ic_media_speed_1_2
-    speed < 1.65f -> CommandButton.ICON_PLAYBACK_SPEED_1_5 to R.drawable.ic_media_speed_1_5
-    speed < 1.9f -> CommandButton.ICON_PLAYBACK_SPEED_1_8 to R.drawable.ic_media_speed_1_8
-    else -> CommandButton.ICON_PLAYBACK_SPEED_2_0 to R.drawable.ic_media_speed_2
-}
+private fun speedIcons(speed: Float): Pair<Int, Int> =
+    when (SPEEDS.minBy { abs(it - speed) }) {
+        0.8f -> CommandButton.ICON_PLAYBACK_SPEED_0_8 to R.drawable.ic_media_speed_0_8
+        1.2f -> CommandButton.ICON_PLAYBACK_SPEED_1_2 to R.drawable.ic_media_speed_1_2
+        1.5f -> CommandButton.ICON_PLAYBACK_SPEED_1_5 to R.drawable.ic_media_speed_1_5
+        1.8f -> CommandButton.ICON_PLAYBACK_SPEED_1_8 to R.drawable.ic_media_speed_1_8
+        2f -> CommandButton.ICON_PLAYBACK_SPEED_2_0 to R.drawable.ic_media_speed_2
+        else -> CommandButton.ICON_PLAYBACK_SPEED_1_0 to R.drawable.ic_media_speed_1
+    }
