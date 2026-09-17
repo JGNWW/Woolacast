@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- De snelheidsknop draagt zijn eigen waarde: 1,5×. Uit LiberationSans-Bold
+     naar paden gezet, want een vector kent geen tekst. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M1.00 15.14V13.94H3.01V8.41L1.06 9.63V8.36L3.09 7.04H4.62V13.94H6.48V15.14ZM9.29 14.76Q9.29 15.45 9.14 15.98Q8.99 16.51 8.67 16.96H7.60Q7.94 16.55 8.16 16.06Q8.37 15.57 8.37 15.14H7.63V13.39H9.29ZM16.29 12.44Q16.29 13.73 15.49 14.49Q14.69 15.25 13.29 15.25Q12.07 15.25 11.34 14.70Q10.61 14.16 10.44 13.11L12.05 12.98Q12.18 13.50 12.50 13.74Q12.82 13.97 13.31 13.97Q13.91 13.97 14.27 13.59Q14.63 13.20 14.63 12.48Q14.63 11.84 14.29 11.46Q13.95 11.07 13.34 11.07Q12.67 11.07 12.25 11.60H10.67L10.95 7.04H15.82V8.24H12.42L12.29 10.29Q12.87 9.77 13.75 9.77Q14.91 9.77 15.60 10.49Q16.29 11.21 16.29 12.44ZM17.11 13.26 19.16 11.21 17.14 9.18 18.05 8.29 20.07 10.30 22.09 8.28 23.00 9.18 20.98 11.22 23.00 13.23 22.09 14.15 20.07 12.11 18.02 14.17Z"
+        android:fillColor="#FFFFFF" />
+</vector>

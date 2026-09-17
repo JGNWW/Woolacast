@@ -184,7 +184,10 @@ class PlaybackService : MediaSessionService() {
 
     private fun skipButton(back: Boolean, extras: Bundle = Bundle.EMPTY): CommandButton {
         val seconds = (if (back) SKIP_BACK_MS else SKIP_FORWARD_MS) / 1000
-        return CommandButton.Builder(skipIcon(back))
+        return CommandButton.Builder(
+            if (back) CommandButton.ICON_SKIP_BACK else CommandButton.ICON_SKIP_FORWARD
+        )
+            .setIconResId(if (back) R.drawable.ic_media_back else R.drawable.ic_media_forward)
             .setSessionCommand(SessionCommand(if (back) ACTION_BACK else ACTION_FORWARD, Bundle.EMPTY))
             .setDisplayName("$seconds seconden ${if (back) "terug" else "vooruit"}")
             .setExtras(extras)
@@ -194,7 +197,9 @@ class PlaybackService : MediaSessionService() {
 
     private fun speedButton(): CommandButton {
         val speed = mediaSession?.player?.playbackParameters?.speed ?: 1f
-        return CommandButton.Builder(speedIcon(speed))
+        val (icon, drawing) = speedIcons(speed)
+        return CommandButton.Builder(icon)
+            .setIconResId(drawing)
             .setSessionCommand(SessionCommand(ACTION_SPEED, Bundle.EMPTY))
             .setDisplayName("Snelheid ${speedLabel(speed)}")
             .setEnabled(true)
@@ -206,6 +211,7 @@ class PlaybackService : MediaSessionService() {
         return CommandButton.Builder(
             if (saved) CommandButton.ICON_STAR_FILLED else CommandButton.ICON_STAR_UNFILLED
         )
+            .setIconResId(if (saved) R.drawable.ic_media_star_filled else R.drawable.ic_media_star)
             .setSessionCommand(SessionCommand(ACTION_SAVE, Bundle.EMPTY))
             .setDisplayName(if (saved) "Niet meer bewaren" else "Bewaren")
             .setEnabled(true)
@@ -351,27 +357,18 @@ class PlaybackService : MediaSessionService() {
 }
 
 /**
- * Media3 heeft sprongiconen voor 5, 10, 15 en 30 seconden. Wijkt de sprong
- * daarvan af, dan liever een kale pijl dan een icoon dat het verkeerde getal
- * draagt.
+ * Het merk van de knop en de tekening erop. Het merk is van Media3 en gaat mee
+ * naar buiten: een bediening in een andere app kan onze tekening niet opzoeken
+ * en valt daarop terug. De tekening is van onszelf, want Media3's snelheidscijfer
+ * staat er versmald in en zijn sprongpijlen dragen het aantal seconden — allebei
+ * een vlek op een knop van 24 dp.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-private fun skipIcon(back: Boolean): Int =
-    when ((if (back) SKIP_BACK_MS else SKIP_FORWARD_MS) / 1000L) {
-        5L -> if (back) CommandButton.ICON_SKIP_BACK_5 else CommandButton.ICON_SKIP_FORWARD_5
-        10L -> if (back) CommandButton.ICON_SKIP_BACK_10 else CommandButton.ICON_SKIP_FORWARD_10
-        15L -> if (back) CommandButton.ICON_SKIP_BACK_15 else CommandButton.ICON_SKIP_FORWARD_15
-        30L -> if (back) CommandButton.ICON_SKIP_BACK_30 else CommandButton.ICON_SKIP_FORWARD_30
-        else -> if (back) CommandButton.ICON_SKIP_BACK else CommandButton.ICON_SKIP_FORWARD
-    }
-
-/** Het cijfer op de snelheidsknop; Media3 levert er een icoon per stap bij. */
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-private fun speedIcon(speed: Float): Int = when {
-    speed < 0.9f -> CommandButton.ICON_PLAYBACK_SPEED_0_8
-    speed < 1.1f -> CommandButton.ICON_PLAYBACK_SPEED_1_0
-    speed < 1.35f -> CommandButton.ICON_PLAYBACK_SPEED_1_2
-    speed < 1.65f -> CommandButton.ICON_PLAYBACK_SPEED_1_5
-    speed < 1.9f -> CommandButton.ICON_PLAYBACK_SPEED_1_8
-    else -> CommandButton.ICON_PLAYBACK_SPEED_2_0
+private fun speedIcons(speed: Float): Pair<Int, Int> = when {
+    speed < 0.9f -> CommandButton.ICON_PLAYBACK_SPEED_0_8 to R.drawable.ic_media_speed_0_8
+    speed < 1.1f -> CommandButton.ICON_PLAYBACK_SPEED_1_0 to R.drawable.ic_media_speed_1
+    speed < 1.35f -> CommandButton.ICON_PLAYBACK_SPEED_1_2 to R.drawable.ic_media_speed_1_2
+    speed < 1.65f -> CommandButton.ICON_PLAYBACK_SPEED_1_5 to R.drawable.ic_media_speed_1_5
+    speed < 1.9f -> CommandButton.ICON_PLAYBACK_SPEED_1_8 to R.drawable.ic_media_speed_1_8
+    else -> CommandButton.ICON_PLAYBACK_SPEED_2_0 to R.drawable.ic_media_speed_2
 }
