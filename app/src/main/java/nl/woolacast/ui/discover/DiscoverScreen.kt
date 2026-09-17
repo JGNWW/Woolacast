@@ -413,6 +413,7 @@ private fun MoverCard(
             fontWeight = FontWeight.SemiBold,
             lineHeight = 17.sp,
             letterSpacing = (-0.1).sp,
+            minLines = 2,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
