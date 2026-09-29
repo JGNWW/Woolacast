@@ -22,6 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
@@ -157,6 +160,11 @@ class BeeldgloedScreenshots {
             current = index
             settle { !models[index].state.value.loading }
             save("podcast-${show.key}")
+            // Gescrold: de gloed moet vloeiend tot in de afleveringen doorlopen,
+            // en de bovenbalk wordt dicht zodra de hoes weg is.
+            compose.onNode(hasScrollAction()).performTouchInput { swipeUp(startY = bottom * 0.8f, endY = top + bottom * 0.2f) }
+            settle()
+            save("podcast-${show.key}-gescrold")
         }
     }
 

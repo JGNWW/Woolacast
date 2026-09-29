@@ -42,6 +42,8 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -178,6 +180,9 @@ private val canBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
  *
  * [fade] is het verloop terug naar de basis: punten (ontwerp-dp vanaf de
  * bovenkant, dekking). Na het laatste punt blijft die dekking staan.
+ *
+ * [extendTo] rekt het uitlopende deel op tot dat punt (vanaf de bovenkant van
+ * de pagina), zodat de gloed ook bij een lange kop tot in de lijst doorloopt.
  */
 @Composable
 fun CoverBackdrop(
@@ -189,13 +194,22 @@ fun CoverBackdrop(
     blurTo: Float = 950f,
     fade: List<Pair<Float, Float>> = listOf(440f to 0f, 700f to 0.35f, 920f to 0.75f, 1080f to 1f),
     blurTop: Float = 170f,
-    showCover: Boolean = true
+    showCover: Boolean = true,
+    extendTo: Dp? = null
 ) {
     val base = MaterialTheme.colorScheme.background
     BoxWithConstraints(modifier.fillMaxSize()) {
         val width = maxWidth
         val k = width / 390.dp
         fun d(v: Float): Dp = (v * k).dp
+        // Alles onder de hoes (vanaf 440) schaalt mee naar het gevraagde eindpunt.
+        val lastY = fade.last().first
+        val endY = extendTo?.let { maxOf(lastY, it.value / k) } ?: lastY
+        val s = if (lastY > 440f) (endY - 440f) / (lastY - 440f) else 1f
+        fun stretch(y: Float) = if (y <= 440f) y else 440f + (y - 440f) * s
+        @Suppress("NAME_SHADOWING") val fade = fade.map { stretch(it.first) to it.second }
+        @Suppress("NAME_SHADOWING") val glowTo = stretch(glowTo)
+        @Suppress("NAME_SHADOWING") val blurTo = stretch(blurTo)
         Box(
             Modifier
                 .fillMaxWidth()
@@ -227,8 +241,29 @@ fun CoverBackdrop(
                         .offset(y = d(blurTop))
                         .requiredWidth(width + d(180f))
                         .requiredHeight(d(blurTo - blurTop))
-                        .alpha(colors.bleedAlpha)
-                        .blur(64.dp, BlurredEdgeTreatment.Unbounded)
+                        // Dekking en vervaging in één laag die niet knipt: Modifier.alpha
+                        // knipt wel, en dan kreeg de vervaagde kopie harde randen.
+                        .graphicsLayer {
+                            alpha = colors.bleedAlpha
+                            val radius = 64.dp.toPx()
+                            renderEffect = BlurEffect(radius, radius, TileMode.Decal)
+                            clip = false
+                        }
+                        // Boven- en onderrand lopen al vóór het vervagen weg, zodat er
+                        // nergens een rand van de kopie te zien is.
+                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(
+                                Brush.verticalGradient(
+                                    0f to Color.Transparent,
+                                    0.2f to Color.Black,
+                                    0.65f to Color.Black,
+                                    1f to Color.Transparent
+                                ),
+                                blendMode = BlendMode.DstIn
+                            )
+                        }
                 )
             }
             // 3. Terug naar de basis: geleidelijk, zodat de gloed doorloopt in de lijst.

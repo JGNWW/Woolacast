@@ -60,6 +60,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -149,12 +153,21 @@ fun DetailScreen(
     val scrollPx = rememberListScrollPx(listState)
     val cover = rememberCoverColors(podcast?.artworkUrl)
     val soft = softInk()
+    val density = LocalDensity.current
+    // Waar de tabs staan, gemeten vanaf de bovenkant van de pagina. De kop is
+    // per podcast anders lang (media, noteringen, omschrijving); zo loopt de
+    // gloed altijd nog een paar afleveringen door, hoe lang de kop ook is.
+    var tabsPageY by remember(podcast?.id) { mutableStateOf<Float?>(null) }
 
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
     Box(modifier = modifier.fillMaxSize()) {
 
         if (podcast != null && !state.loading && state.error == null) {
-            CoverBackdrop(podcast.artworkUrl, cover, scrollPx = scrollPx)
+            CoverBackdrop(
+                podcast.artworkUrl, cover,
+                scrollPx = scrollPx,
+                extendTo = tabsPageY?.let { with(density) { it.toDp() } + GLOW_INTO_LIST }
+            )
         }
 
         when {
@@ -303,7 +316,14 @@ fun DetailScreen(
                         labels = DetailTab.entries.map { it.label },
                         selected = DetailTab.entries.indexOf(tab),
                         onSelect = { tab = DetailTab.entries[it] },
-                        indicator = MaterialTheme.colorScheme.onSurface
+                        indicator = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            val scrolled = scrollPx()
+                            if (scrolled != Float.MAX_VALUE) {
+                                val y = coordinates.positionInRoot().y + scrolled
+                                if (tabsPageY.let { it == null || kotlin.math.abs(it - y) > 2f }) tabsPageY = y
+                            }
+                        }
                     )
                 }
 
@@ -418,6 +438,44 @@ fun DetailScreen(
                         )
                     }
                 }
+            }
+        }
+
+        // Voorbij de hoes wordt de balk dicht, met de titel erin: anders schuift
+        // de pagina onder de klok en de knoppen door.
+        if (podcast != null) {
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val coverPx = with(density) { maxWidth.toPx() }
+                val barPx = with(density) { 120.dp.toPx() }
+                val shown = {
+                    val y = scrollPx()
+                    if (y == Float.MAX_VALUE) 1f else ((y - (coverPx - 2 * barPx)) / barPx).coerceIn(0f, 1f)
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer { alpha = shown() }
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .height(52.dp)
+                        .padding(start = 66.dp, end = 66.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        podcast.title,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                // Een dunne lijn als de balk dicht is.
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    modifier = Modifier
+                        .graphicsLayer { alpha = shown() }
+                        .statusBarsPadding()
+                        .padding(top = 52.dp)
+                )
             }
         }
 
@@ -767,6 +825,9 @@ private const val MEDIA_IN_CARROUSEL = 10
 
 /** Zoveel afleveringen staan er meteen; daaronder een knop voor de rest. */
 private const val EPISODES_AT_FIRST = 20
+
+/** Hoe ver de hoesgloed onder de tabs doorloopt: ongeveer drie afleveringen. */
+private val GLOW_INTO_LIST = 260.dp
 
 @Composable
 private fun PositionRow(countryCode: String, ranks: Map<SourceId, ShowPositionLike>) {

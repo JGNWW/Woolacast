@@ -185,7 +185,8 @@ fun WoolacastNav(container: AppContainer) {
         // De podcastpagina en de speler lopen door tot onder de statusbalk: daar
         // staat de hoes over de volle breedte.
         val route = currentRoute?.route.orEmpty()
-        val fullBleed = route == PLAYER_ROUTE || route.contains("/podcast/")
+        // Hitlijsten ook: daar gloeit de hoes van de nummer 1 tot in de statusbalk.
+        val fullBleed = route == PLAYER_ROUTE || route.contains("/podcast/") || route == Tab.CHARTS.home
         NavHost(
             navController = navController,
             startDestination = Tab.CHARTS.route,
