@@ -506,19 +506,20 @@ fun ScrubBar(
                 )
         )
         if (enabled) {
-            Box(Modifier.fillMaxWidth()) {
-                Box(Modifier.fillMaxWidth(progress.coerceIn(0f, 1f))) {
-                    // Het handvat staat gecentreerd op het einde van de vulling.
-                    Box(
-                        Modifier
-                            .align(Alignment.CenterEnd)
-                            .offset(x = 8.dp)
-                            .size(16.dp)
-                            .shadow(3.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.onSurface)
-                    )
-                }
+            // Het handvat is altijd een hele stip: op 0 staat hij links tegen het
+            // begin, op 1 rechts tegen het eind, en daartussen schuift hij mee.
+            // (Eerst zat hij in een vak zo breed als de vulling; aan het begin
+            // werd hij daardoor tot een streepje geperst.)
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val thumb = 16.dp
+                Box(
+                    Modifier
+                        .offset(x = (maxWidth - thumb) * progress.coerceIn(0f, 1f))
+                        .size(thumb)
+                        .shadow(3.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
             }
         }
     }

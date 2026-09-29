@@ -171,13 +171,14 @@ class BeeldgloedScreenshots {
     @Test
     fun player() {
         var current by mutableStateOf(0)
+        var justStarted by mutableStateOf(false)
         compose.setContent {
             val index = current
             val show = shows[index]
             val state = PlaybackState(
                 episode = episode(show, 2),
                 isPlaying = true,
-                positionMs = 24 * 60_000L + 37_000L,
+                positionMs = if (justStarted) 4_000L else 24 * 60_000L + 37_000L,
                 durationMs = 42 * 60_000L + 39_000L,
                 speed = 1.2f,
                 chartLabel = "#3 in Top afleveringen NL"
@@ -199,6 +200,12 @@ class BeeldgloedScreenshots {
             settle()
             save("speler-${show.key}")
         }
+        // Net begonnen: het handvat moet een hele stip zijn, links op de balk.
+        current = 0
+        justStarted = true
+        settle()
+        save("speler-${shows[0].key}-begin")
+        justStarted = false
         // De wachtrij open, over de speler met de blauwgroene hoes.
         current = 1
         settle()
