@@ -210,7 +210,8 @@ fun UnderlineTabs(
     selected: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    height: Dp = 46.dp
+    height: Dp = 46.dp,
+    indicator: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -239,7 +240,7 @@ fun UnderlineTabs(
                                 .fillMaxWidth()
                                 .height(3.dp)
                                 .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-                                .background(MaterialTheme.colorScheme.primary)
+                                .background(indicator)
                         )
                     }
                 }
@@ -276,7 +277,7 @@ fun RankNumber(rank: Int, modifier: Modifier = Modifier, size: Dp = 26.dp, fontS
 fun MovementBadge(movement: Movement, modifier: Modifier = Modifier) {
     val colors = LocalChartColors.current
     Row(
-        modifier = modifier.width(40.dp),
+        modifier = modifier.width(46.dp),
         horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.End),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -295,13 +296,25 @@ fun MovementBadge(movement: Movement, modifier: Modifier = Modifier) {
                 }
             }
 
-            Movement.New -> Text(
-                "NIEUW",
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.8.sp
-            )
+            // Een eigen vorm, zodat nieuw nooit met dalen of het merk verward wordt.
+            Movement.New -> Box(
+                Modifier
+                    .height(20.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(horizontal = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "NIEUW",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.6.sp,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
 
             Movement.Flat -> Text("–", color = colors.muted, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 

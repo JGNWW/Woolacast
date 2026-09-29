@@ -2,6 +2,20 @@ package nl.woolacast.ui.player
 
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.graphics.Color
+import nl.woolacast.ui.common.AccentPlayButton
+import nl.woolacast.ui.common.CoverBackdrop
+import nl.woolacast.ui.common.Equalizer
+import nl.woolacast.ui.common.GlassColor
+import nl.woolacast.ui.common.GlassIconButton
+import nl.woolacast.ui.common.OutlineCircleButton
+import nl.woolacast.ui.common.outlineOnGlow
+import nl.woolacast.ui.common.rememberCoverColors
+import nl.woolacast.ui.common.softInk
+import nl.woolacast.ui.theme.NightInk
+import nl.woolacast.ui.theme.NightInkSoft
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -36,6 +50,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -116,33 +132,57 @@ fun PlayerScreen(
         }
     }
 
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    val cover = rememberCoverColors(state.artworkUrl)
+    val soft = softInk()
+    val sleeping = state.sleepAtEnd || state.sleepRemainingMs != null
 
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // De hoes over de volle breedte; zijn kleur loopt door tot onderaan.
+        CoverBackdrop(
+            state.artworkUrl, cover,
+            glowTo = 844f, blurTo = 850f,
+            fade = listOf(440f to 0f, 620f to 0.35f, 844f to 0.7f)
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth().height(52.dp).padding(start = 8.dp, end = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconAction(WoolIcons.ChevronDown, "Speler inklappen", onCollapse, iconSize = 24.dp)
+                GlassIconButton(WoolIcons.ChevronDown, "Speler inklappen", onCollapse)
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(GlassColor)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         "SPEELT NU UIT",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.96.sp,
+                        color = NightInkSoft
                     )
                     Text(
                         state.showTitle,
-                        style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp, fontWeight = FontWeight.Bold),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = NightInk,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp)
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Box {
-                    IconAction(WoolIcons.More, "Meer", { menuOpen = true })
+                    GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                         DropdownMenuItem(
                             text = { Text("Ga naar podcast") },
@@ -152,81 +192,81 @@ fun PlayerScreen(
                             text = { Text("Aflevering delen") },
                             onClick = { menuOpen = false; share() }
                         )
-                        DropdownMenuItem(
-                            text = { Text(if (isSaved) "Niet meer bewaren" else "Bewaren") },
-                            onClick = { menuOpen = false; onToggleSave() }
-                        )
                     }
                 }
             }
 
-            // Statisch, geen scrollen: het artwork krimpt mee op een klein scherm,
-            // de rest houdt zijn maat.
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 20.dp)
-                    .navigationBarsPadding()
-            ) {
-                Spacer(Modifier.height(14.dp))
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val side = minOf(298.dp, maxWidth, maxHeight)
-                    Artwork(state.artworkUrl, side, corner = 24.dp, elevation = 18.dp)
+            // Wat onder de hoes staat, zakt naar beneden: de titel valt over de
+            // oplossende onderrand, hoe hoog het scherm ook is.
+            Spacer(Modifier.weight(1f))
+
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            state.title,
+                            fontFamily = DisplayFamily,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 31.sp,
+                            letterSpacing = (-0.6).sp,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.heightIn(min = 32.dp).clickable(onClick = onOpenPodcast),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                listOfNotNull(
+                                    state.showTitle.takeIf { it.isNotBlank() },
+                                    shortDate(episode?.releaseDate)
+                                ).joinToString(" · "),
+                                fontSize = 14.sp,
+                                color = soft,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
+                            )
+                            Icon(WoolIcons.ChevronRight, null, tint = soft, modifier = Modifier.size(14.dp))
+                        }
+                    }
+                    OutlineCircleButton(
+                        if (isSaved) WoolIcons.Saved else WoolIcons.Save,
+                        if (isSaved) "Niet meer bewaren" else "Bewaren",
+                        onToggleSave,
+                        filled = isSaved,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
                 }
 
-                Spacer(Modifier.height(26.dp))
-                Text(
-                    state.title,
-                    fontFamily = DisplayFamily,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 28.sp,
-                    letterSpacing = (-0.6).sp,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    listOfNotNull(
-                        state.showTitle.takeIf { it.isNotBlank() },
-                        shortDate(episode?.releaseDate),
-                        minutes(state.durationMs.takeIf { it > 0L } ?: episode?.durationMillis)
-                    ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
                 state.chartLabel?.let { label ->
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(12.dp))
                     Row(
                         modifier = Modifier
-                            .height(34.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 13.dp),
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(20.dp))
+                            .clickable(onClick = onOpenPodcast)
+                            .padding(start = 12.dp, end = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            WoolIcons.Bars, null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(14.dp)
-                        )
+                        Icon(WoolIcons.Bars, null, modifier = Modifier.size(15.dp))
                         Text(
                             label,
-                            style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp, fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
 
                 state.error?.let { error ->
-                    Spacer(Modifier.height(14.dp))
+                    Spacer(Modifier.height(12.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -248,27 +288,29 @@ fun PlayerScreen(
                     }
                 }
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(18.dp))
                 ScrubBar(
                     progress = progress,
                     buffering = state.isBuffering,
                     enabled = state.durationMs > 0L,
+                    accent = cover.accent,
                     onScrub = { scrubbing = it },
                     onScrubEnd = { value ->
                         onSeekTo(value)
                         scrubbing = null
                     }
                 )
-                Spacer(Modifier.height(9.dp))
+                Spacer(Modifier.height(6.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TimeLabel(clock(positionMs))
+                    TimeLabel(clock(positionMs), soft)
                     TimeLabel(
                         if (state.durationMs > 0L) "-" + clock(state.durationMs - positionMs)
-                        else if (state.isBuffering) "laden…" else "–:––"
+                        else if (state.isBuffering) "laden…" else "–:––",
+                        soft
                     )
                 }
 
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -276,23 +318,12 @@ fun PlayerScreen(
                 ) {
                     SkipButton(WoolIcons.Back15, SKIP_BACK_MS, "terug") { onSeekBy(-SKIP_BACK_MS) }
                     TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
-                    Box(
-                        modifier = Modifier
-                            .size(76.dp)
-                            .shadow(6.dp, CircleShape, clip = false, ambientColor = MaterialTheme.colorScheme.primary,
-                                spotColor = MaterialTheme.colorScheme.primary)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                            .clickable(onClick = onTogglePlay),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            if (state.isPlaying) WoolIcons.Pause else WoolIcons.Play,
-                            contentDescription = if (state.isPlaying) "Pauzeren" else "Afspelen",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(34.dp)
-                        )
-                    }
+                    AccentPlayButton(
+                        playing = state.isPlaying,
+                        colors = cover,
+                        onClick = onTogglePlay,
+                        size = 76.dp
+                    )
                     TransportButton(
                         WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
                         enabled = queue.isNotEmpty()
@@ -300,11 +331,11 @@ fun PlayerScreen(
                     SkipButton(WoolIcons.Forward30, SKIP_FORWARD_MS, "vooruit") { onSeekBy(SKIP_FORWARD_MS) }
                 }
 
-                Spacer(Modifier.height(26.dp))
+                Spacer(Modifier.height(20.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Tool(WoolIcons.Speed, speedLabel(state.speed), active = state.speed != 1f) { sheet = Sheet.SPEED }
                     Tool(
@@ -314,42 +345,43 @@ fun PlayerScreen(
                             state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
                             else -> "Timer"
                         },
-                        active = state.sleepAtEnd || state.sleepRemainingMs != null
+                        active = sleeping
                     ) { sheet = Sheet.TIMER }
                     Tool(
                         WoolIcons.Queue,
-                        if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}",
-                        active = queue.isNotEmpty()
+                        if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}"
                     ) { sheet = Sheet.QUEUE }
                     Tool(WoolIcons.Share, "Delen", onClick = share)
-                    Tool(
-                        if (isSaved) WoolIcons.Saved else WoolIcons.Save,
-                        if (isSaved) "Bewaard" else "Bewaar",
-                        active = isSaved,
-                        onClick = onToggleSave
-                    )
                 }
-                Spacer(Modifier.height(22.dp))
             }
+
+            Spacer(Modifier.height(16.dp))
+            queue.firstOrNull()?.let { next ->
+                UpNextCard(next, onClick = { sheet = Sheet.QUEUE })
+            }
+            Spacer(Modifier.height(12.dp))
         }
+    }
     }
 
     when (sheet) {
-        Sheet.SPEED -> ModalBottomSheet(onDismissRequest = { sheet = null }) {
+        Sheet.SPEED -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle("Snelheid")
             SpeedPicker(state.speed) { onSpeed(it); sheet = null }
             Spacer(Modifier.height(24.dp))
         }
 
-        Sheet.TIMER -> ModalBottomSheet(onDismissRequest = { sheet = null }) {
+        Sheet.TIMER -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle("Slaaptimer")
             TimerPicker(state) { onSleep(it); sheet = null }
             Spacer(Modifier.height(24.dp))
         }
 
-        Sheet.QUEUE -> ModalBottomSheet(onDismissRequest = { sheet = null }) {
+        Sheet.QUEUE -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle(if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}")
             QueueList(
+                state = state,
+                accent = cover.accent,
                 queue = queue,
                 onPlay = { onPlayQueued(it); sheet = null },
                 onRemove = onRemoveQueued
@@ -358,6 +390,43 @@ fun PlayerScreen(
         }
 
         null -> Unit
+    }
+}
+
+/** "Hierna": het eerste uit de wachtrij, onderaan de speler. Tikken opent de wachtrij. */
+@Composable
+private fun UpNextCard(next: SavedEpisode, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(14.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .clip(shape)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+            .clickable(onClick = onClick)
+            .padding(start = 10.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Artwork(next.artworkUrl, 40.dp, corner = 8.dp, elevation = 0.dp)
+        Column(Modifier.weight(1f)) {
+            Text(
+                "HIERNA",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.96.sp,
+                color = LocalChartColors.current.muted
+            )
+            Text(
+                listOfNotNull(next.title, next.showTitle.takeIf { it.isNotBlank() }).joinToString(" · "),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Icon(WoolIcons.ChevronUp, "Wachtrij openen", tint = LocalChartColors.current.muted, modifier = Modifier.size(20.dp))
     }
 }
 
@@ -373,13 +442,8 @@ private fun SheetTitle(text: String) {
 }
 
 @Composable
-private fun TimeLabel(text: String) {
-    Text(
-        text,
-        fontSize = 11.5.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = LocalChartColors.current.muted
-    )
+private fun TimeLabel(text: String, color: Color) {
+    Text(text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = color)
 }
 
 /**
@@ -393,7 +457,8 @@ fun ScrubBar(
     enabled: Boolean,
     onScrub: (Float) -> Unit,
     onScrubEnd: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    accent: Color = MaterialTheme.colorScheme.primary
 ) {
     var width by remember { mutableStateOf(1f) }
     var dragValue by remember { mutableStateOf(progress) }
@@ -431,18 +496,18 @@ fun ScrubBar(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(5.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
         )
         Box(
             Modifier
                 .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .height(5.dp)
-                .clip(RoundedCornerShape(3.dp))
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
                 .background(
                     if (buffering && progress == 0f) MaterialTheme.colorScheme.outline
-                    else MaterialTheme.colorScheme.primary
+                    else accent
                 )
         )
         if (enabled) {
@@ -452,13 +517,11 @@ fun ScrubBar(
                     Box(
                         Modifier
                             .align(Alignment.CenterEnd)
-                            .offset(x = 7.dp)
-                            .size(15.dp)
+                            .offset(x = 8.dp)
+                            .size(16.dp)
+                            .shadow(3.dp, CircleShape)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.background)
-                            .padding(3.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
+                            .background(MaterialTheme.colorScheme.onSurface)
                     )
                 }
             }
@@ -515,24 +578,24 @@ private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onCli
     }
 }
 
+/** Gereedschap: omlijnde cirkel met een label eronder; actief = wit vlak, zoals een gekozen chip. */
 @Composable
 private fun Tool(icon: ImageVector, label: String, active: Boolean = false, onClick: () -> Unit) {
-    val tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = Modifier
-            .width(60.dp)
-            .height(56.dp)
+            .width(76.dp)
             .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Icon(icon, label, tint = tint, modifier = Modifier.size(21.dp))
+        OutlineCircleButton(icon, null, onClick, filled = active)
         Text(
             label,
-            fontSize = 10.5.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
-            color = tint,
+            color = if (active) MaterialTheme.colorScheme.onSurface else softInk(),
             maxLines = 1,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis
@@ -587,53 +650,88 @@ private fun TimerPicker(state: PlaybackState, onPick: (SleepTimer) -> Unit) {
 
 @Composable
 private fun QueueList(
+    state: PlaybackState,
+    accent: Color,
     queue: List<SavedEpisode>,
     onPlay: (SavedEpisode) -> Unit,
     onRemove: (String) -> Unit
 ) {
-    if (queue.isEmpty()) {
-        Text(
-            "Niets in de wachtrij. Zet afleveringen erin vanaf een podcastpagina; " +
-                "ze spelen vanzelf door na de huidige.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-        )
-        return
-    }
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
-        queue.forEachIndexed { index, item ->
+    val muted = LocalChartColors.current.muted
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        if (state.hasEpisode) {
+            QueueLabel("NU")
+            // Wat nu speelt: hoeskleur en equalizer, net als op de podcastpagina.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onPlay(item) }
-                    .padding(vertical = 10.dp),
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f))
+                    .padding(start = 20.dp, end = 26.dp, top = 10.dp, bottom = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    "${index + 1}",
-                    fontFamily = DisplayFamily,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = LocalChartColors.current.muted,
-                    modifier = Modifier.width(18.dp),
-                    textAlign = TextAlign.End
-                )
-                Artwork(item.artworkUrl, 44.dp, corner = 9.dp)
+                Artwork(state.artworkUrl, 48.dp, corner = 8.dp, elevation = 0.dp)
                 Column(Modifier.weight(1f)) {
-                    Text(item.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(state.title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text(
-                        listOfNotNull(item.showTitle.takeIf { it.isNotBlank() }, minutes(item.durationMillis)).joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        listOfNotNull(
+                            state.showTitle.takeIf { it.isNotBlank() },
+                            if (state.durationMs > 0L) nl.woolacast.ui.common.remaining(state.remainingMs) else null
+                        ).joinToString(" · "),
+                        fontSize = 14.sp,
+                        color = muted,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                IconAction(WoolIcons.Close, "Uit wachtrij", { onRemove(item.id) }, tint = MaterialTheme.colorScheme.onSurfaceVariant, iconSize = 18.dp)
+                Equalizer(accent)
             }
-            if (index < queue.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
+        QueueLabel("HIERNA")
+        if (queue.isEmpty()) {
+            Text(
+                "Niets in de wachtrij. Zet afleveringen erin vanaf een podcastpagina; " +
+                    "ze spelen vanzelf door na de huidige.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+        }
+        queue.forEach { item ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onPlay(item) }
+                    .padding(start = 20.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Artwork(item.artworkUrl, 48.dp, corner = 8.dp, elevation = 0.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(item.title, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        listOfNotNull(item.showTitle.takeIf { it.isNotBlank() }, minutes(item.durationMillis)).joinToString(" · "),
+                        fontSize = 14.sp,
+                        color = muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                IconAction(WoolIcons.Close, "Uit wachtrij", { onRemove(item.id) }, tint = muted, iconSize = 18.dp)
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
+}
+
+@Composable
+private fun QueueLabel(text: String) {
+    Text(
+        text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.96.sp,
+        color = LocalChartColors.current.muted,
+        modifier = Modifier.padding(start = 20.dp, top = 14.dp, bottom = 8.dp)
+    )
 }

@@ -1,6 +1,8 @@
 package nl.woolacast.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,13 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.player.SKIP_FORWARD_MS
 import nl.woolacast.ui.theme.LocalChartColors
 
-/** De donkere kaart boven de navigatie (.mini): tikken klapt de speler uit. */
+/**
+ * De kaart boven de navigatie (.mini): getint naar de hoes van wat er speelt,
+ * met de voortgang in de hoeskleur. Tikken klapt de speler uit.
+ */
 @Composable
 fun MiniPlayer(
     state: PlaybackState,
@@ -32,54 +41,69 @@ fun MiniPlayer(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalChartColors.current
-    val shape = RoundedCornerShape(15.dp)
-    Row(
+    val cover = rememberCoverColors(state.artworkUrl)
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val onMini = if (dark) colors.onPanel else Color(0xFFF6EFE5)
+    val onMiniMuted = onMini.copy(alpha = 0.75f)
+    val shape = RoundedCornerShape(14.dp)
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
+            .padding(horizontal = 10.dp)
             .shadow(6.dp, shape, clip = false)
             .clip(shape)
-            .background(colors.panel)
+            .background(cover.mini)
+            .border(1.dp, Color.White.copy(alpha = 0.06f), shape)
             .clickable(onClick = onExpand)
-            .height(60.dp)
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Artwork(state.artworkUrl, 44.dp, corner = 9.dp, elevation = 0.dp)
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                state.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = colors.onPanel,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+        Row(
+            modifier = Modifier.fillMaxWidth().height(62.dp).padding(start = 9.dp, end = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Artwork(state.artworkUrl, 44.dp, corner = 8.dp, elevation = 0.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    state.title,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                    color = onMini,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    listOfNotNull(
+                        state.showTitle.takeIf { it.isNotBlank() },
+                        when {
+                            state.isBuffering && state.durationMs == 0L -> "laden…"
+                            state.durationMs > 0L -> remaining(state.remainingMs)
+                            else -> null
+                        }
+                    ).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    color = onMiniMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            IconAction(
+                if (state.isPlaying) WoolIcons.Pause else WoolIcons.Play,
+                if (state.isPlaying) "Pauzeren" else "Afspelen",
+                onTogglePlay,
+                tint = onMini,
+                iconSize = 24.dp
             )
-            Text(
-                listOfNotNull(
-                    state.showTitle.takeIf { it.isNotBlank() },
-                    when {
-                        state.isBuffering && state.durationMs == 0L -> "laden…"
-                        state.durationMs > 0L -> remaining(state.remainingMs)
-                        else -> null
-                    }
-                ).joinToString(" · "),
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onPanelMuted,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            IconAction(
+                WoolIcons.SkipForward, "${SKIP_FORWARD_MS / 1000} seconden vooruit", onSkipForward,
+                tint = onMini, iconSize = 24.dp
             )
         }
-        IconAction(
-            if (state.isPlaying) WoolIcons.Pause else WoolIcons.Play,
-            if (state.isPlaying) "Pauzeren" else "Afspelen",
-            onTogglePlay,
-            tint = colors.onPanel,
-            iconSize = 24.dp
-        )
-        IconAction(
-            WoolIcons.SkipForward, "${SKIP_FORWARD_MS / 1000} seconden vooruit", onSkipForward,
-            tint = colors.onPanel, iconSize = 24.dp
+        // Voortgang in de hoeskleur, als dunne lijn langs de onderrand.
+        Box(
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth(state.progress.coerceIn(0f, 1f))
+                .height(2.dp)
+                .background(cover.accent)
         )
     }
 }

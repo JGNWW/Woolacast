@@ -58,6 +58,7 @@ object WoolIcons {
     val Filter = stroke("filter", 1.9f, StrokeCap.Round, "M4 7h16", "M7 12h10", "M10 17h4")
     val Back = stroke("back", 2f, StrokeCap.Round, "M15 5l-7 7 7 7")
     val ChevronDown = stroke("chevron-down", 2f, StrokeCap.Round, "M6 9l6 6 6-6")
+    val ChevronUp = stroke("chevron-up", 2f, StrokeCap.Round, "M6 15l6-6 6 6")
     val ChevronRight = stroke("chevron-right", 2.2f, StrokeCap.Round, "M9 6l6 6-6 6")
     val Close = stroke("close", 2f, StrokeCap.Round, "M6 6l12 12", "M18 6L6 18")
     val Plus = stroke("plus", 2.2f, StrokeCap.Round, "M12 5v14", "M5 12h14")

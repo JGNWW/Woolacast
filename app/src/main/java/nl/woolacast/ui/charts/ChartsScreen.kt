@@ -1,6 +1,8 @@
 package nl.woolacast.ui.charts
 
 import androidx.compose.foundation.background
+import nl.woolacast.ui.common.CoverBackdrop
+import nl.woolacast.ui.common.rememberCoverColors
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -90,7 +92,20 @@ fun ChartsScreen(
         }
     }
 
+    // Bovenaan gloeit de hoes van de nummer 1 na: hetzelfde uitlekken als op de
+    // podcastpagina, maar zonder de hoes zelf.
+    val leader = state.chart?.entries?.firstOrNull()?.artworkUrl
+    val leaderColors = rememberCoverColors(leader)
+
     Box(modifier = modifier.fillMaxSize()) {
+        if (leader != null) {
+            CoverBackdrop(
+                leader, leaderColors,
+                showCover = false,
+                glowTo = 560f, blurTop = 120f, blurTo = 500f,
+                fade = listOf(260f to 0f, 560f to 1f)
+            )
+        }
         Column(modifier = Modifier.fillMaxSize()) {
 
             MarkBar {
