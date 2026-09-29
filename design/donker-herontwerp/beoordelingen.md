@@ -55,6 +55,24 @@ set.
     - chips van 40px;
     - de outline als token.
 
+## F — Beeldgloed (E + B, op verzoek)
+De eisen van de gebruiker:
+- de hoes blijft over de volle breedte staan (uit E);
+- de accentkleuren komen uit de hoes (uit B);
+- de kleur van de hoes lekt naar beneden weg en vervaagt;
+- na ronde 2 kwam erbij: de gloed mag doorlopen tot in de afleveringslijst.
+
+- **Ronde 1: afgekeurd.**
+  - De vervaagde kopie overstemde de geklemde gloed, waardoor amber bruin werd (`#584011`).
+  - De omlijning en de secundaire tekst op de tint haalden het contrast niet (2,13 en 3,86).
+- **Ronde 2: afgekeurd.**
+  - Het bruin en het contrast waren opgelost, maar er ontstond een harde naad op 700px.
+- **Ronde 3: goedgekeurd.**
+  - De gloed loopt naadloos en monotoon af tot in de lijst.
+  - Alles haalt AA: omlijning `rgba(237,238,240,.5)`, secundaire tekst op de tint `.78`.
+  - Amber leest als een geklemde warme gloed (C ≈ 0,02 aan het begin van de lijst), niet als het oude bruin.
+- **Daarna verwerkt:** haarlijnen als `rgba(237,238,240,.08)`, zodat ze meegaan met de tint.
+
 ## Wat voor alle concepten gold
 - Een neutrale basis tussen `#0E0F11` en `#131314`, in plaats van het warme `#15120E`.
 - Dalen als roze-rood, ver van het merk-ember. Stijgen en dalen dragen altijd ook ▲/▼.

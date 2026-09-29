@@ -99,6 +99,24 @@
    "title": "E · Vol beeld — hitlijsten",
    "is_interactive": true,
    "radius": 28
+  },
+  "FusiePodcast.dc.html": {
+   "x": 1560,
+   "y": 0,
+   "w": 390,
+   "h": 1180,
+   "title": "F · Beeldgloed (E + B) — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusieHitlijsten.dc.html": {
+   "x": 2030,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed (E + B) — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
   }
  },
  "order": [
@@ -111,7 +129,9 @@
   "GlasPodcast.dc.html",
   "GlasHitlijsten.dc.html",
   "BeeldPodcast.dc.html",
-  "BeeldHitlijsten.dc.html"
+  "BeeldHitlijsten.dc.html",
+  "FusiePodcast.dc.html",
+  "FusieHitlijsten.dc.html"
  ],
  "notes": {
   "tA": {
@@ -148,6 +168,20 @@
    "text": "E — Vol beeld: redactioneel, monochroom",
    "kind": "title1",
    "maxW": 1300
+  },
+  "tF": {
+   "x": 1560,
+   "y": -280,
+   "text": "F — Beeldgloed: volle hoes die naar beneden uitlekt (E + B)",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "nF": {
+   "x": 2500,
+   "y": 0,
+   "w": 380,
+   "text": "Idee: de hoes staat over de volle breedte (E) en lost onderaan op. Zijn kleur lekt naar beneden weg: een geklemde gloedkleur (B) plus een vervaagde kopie van de hoes, die geleidelijk doorloopt tot in de afleveringslijst. Accenten uit de hoes: de grote afspeelknop, de ringen van de afleveringen, de voortgang en 'Meer'. Volgen, tabs en chips blijven neutraal.\n\nCriticus, ronde 1: afgekeurd. Amber werd bruin, en de omlijning en secundaire tekst haalden het contrast niet.\nRonde 2: afgekeurd. Er zat een harde naad op 700px.\nRonde 3: GOEDGEKEURD. Naadloos verloop tot in de lijst (jouw wens), alles haalt AA, amber leest als een geklemde warme gloed, niet als het oude bruin.",
+   "fill": "gray"
   },
   "nA": {
    "x": 940,

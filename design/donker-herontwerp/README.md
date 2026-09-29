@@ -16,6 +16,7 @@ UI meekleurt. Alle podcasts en hoezen zijn verzonnen.
 | C — Tonaal | Material 3 content-based color: het schema komt uit de hoes, maar met oppervlakken van zeer lage chroma | accentrollen van de hele pagina |
 | D — Matglas | vervaagde hoes als kop, balken van matglas, primaire actie neutraal wit | kop (via de hoes zelf), mini-speler |
 | E — Vol beeld | hoes over de volle breedte, redactioneel en monochroom | één afspeelknop en de voortgang |
+| F — Beeldgloed | E + B: hoes over de volle breedte, waarvan de kleur naar beneden weglekt tot in de lijst | gloed, afspeelknop, ringen, voortgang, mini-speler |
 
 ## Werkwijze
 
