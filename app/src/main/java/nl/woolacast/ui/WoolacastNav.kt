@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -181,10 +182,17 @@ fun WoolacastNav(container: AppContainer) {
             }
         }
     ) { padding ->
+        // De podcastpagina en de speler lopen door tot onder de statusbalk: daar
+        // staat de hoes over de volle breedte.
+        val route = currentRoute?.route.orEmpty()
+        // Hitlijsten ook: daar gloeit de hoes van de nummer 1 tot in de statusbalk.
+        val fullBleed = route == PLAYER_ROUTE || route.contains("/podcast/") || route == Tab.CHARTS.home
         NavHost(
             navController = navController,
             startDestination = Tab.CHARTS.route,
-            modifier = Modifier.fillMaxSize().padding(padding)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(if (fullBleed) PaddingValues(bottom = padding.calculateBottomPadding()) else padding)
         ) {
             navigation(startDestination = Tab.CHARTS.home, route = Tab.CHARTS.route) {
                 composable(Tab.CHARTS.home) {

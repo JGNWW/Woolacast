@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Beeldgloed — speler</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Instrument+Sans:wght@400..700&amp;display=swap">
+<style>
+body{margin:0;background:#0E0F11}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+.ph{--bg:#0E0F11;--s1:#16171A;--s2:#1E1F23;--s3:#28292E;--line:rgba(237,238,240,.08);--ink:#EDEEF0;--ink2:#A0A3AA;--soft:rgba(237,238,240,.78);--outline:rgba(237,238,240,.5);width:390px;height:844px;position:relative;overflow:hidden;isolation:isolate;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.pal-red{--acc:#FF8F80;--onAcc:#2B0A06;--glow:#5A2A24;--bs:.9;--bb:.4;--bo:.65}
+.pal-teal{--acc:#5CD6D1;--onAcc:#032322;--glow:#0F4B4C;--bs:.9;--bb:.4;--bo:.65}
+.pal-amber{--acc:#F5C451;--onAcc:#2B1E02;--glow:#3C311E;--bs:.7;--bb:.32;--bo:.5}
+.dsp{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.ib{width:44px;height:44px;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
+.dk{background:rgba(14,15,17,.72);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.cov{position:relative;overflow:hidden;box-sizing:border-box;flex:none}
+.cov .ct{position:absolute;left:9%;top:8%;right:9%;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;line-height:.95;text-transform:uppercase;letter-spacing:.01em;z-index:2}
+.cv-red{background:radial-gradient(circle at 74% 60%,#F6B39E 0 10%,transparent 10.5%),linear-gradient(170deg,#D8452F 0%,#A42A1F 55%,#5E130E 100%)}
+.cv-red::after{content:'';position:absolute;inset:auto 0 0 0;height:36%;background:#2A0907;clip-path:polygon(0 42%,16% 30%,29% 46%,47% 18%,63% 38%,81% 24%,100% 44%,100% 100%,0 100%)}
+.cv-red .ct{color:#FFF1EC}
+.cv-teal{background:radial-gradient(circle at 50% -10%,#8FE6DB 0,#2A9C98 34%,#0E4F5A 68%,#06222B 100%)}
+.cv-teal::after{content:'';position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 125%,rgba(255,255,255,.13) 0 1.5%,transparent 1.5% 8%)}
+.cv-teal .ct{color:#EFFFFD}
+.cv-amber{background:linear-gradient(160deg,#F9D05C,#E39E1E 60%,#AC650F)}
+.cv-amber::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 74% 78%,#3B2208 0 27%,#6B3F0E 27.5% 29%,#3B2208 29.5% 33%,transparent 33.5%)}
+.cv-amber .ct{color:#2B1804}
+.glow{z-index:-1;position:absolute;left:0;right:0;top:0;height:844px;background:linear-gradient(180deg,var(--glow) 0%,var(--glow) 35%,rgba(14,15,17,0) 100%)}
+.bleed{z-index:-1;position:absolute;left:-90px;right:-90px;top:170px;height:680px;filter:blur(64px) saturate(var(--bs)) brightness(var(--bb));opacity:var(--bo)}
+.fade{z-index:-1;position:absolute;left:0;right:0;top:440px;bottom:0;background:linear-gradient(180deg,rgba(14,15,17,0) 0,rgba(14,15,17,.35) 180px,rgba(14,15,17,.7) 404px)}
+.sharp{-webkit-mask-image:linear-gradient(180deg,#000 55%,rgba(0,0,0,.4) 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,rgba(0,0,0,.4) 80%,transparent 100%)}
+.scrim{position:absolute;left:0;right:0;top:190px;height:300px;background:linear-gradient(180deg,rgba(14,15,17,0) 0%,rgba(14,15,17,.45) 55%,rgba(14,15,17,0) 100%)}
+.chip{height:40px;border-radius:20px;padding:0 16px 0 12px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:650;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--outline)}
+.track{position:relative;height:4px;border-radius:2px;background:rgba(237,238,240,.2)}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--acc)}
+.track b{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:8px;background:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.bigplay{width:76px;height:76px;border-radius:38px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.tp{width:52px;height:52px;border-radius:26px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.tool{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--soft);min-width:64px;padding:6px 0}
+.tool .ic{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--outline)}
+.tool.on{color:var(--ink)}
+.tool.on .ic{background:var(--ink);color:var(--bg);box-shadow:none}
+</style>
+</helmet>
+<div class="ph {{c.pal}}">
+  <div class="glow"></div>
+  <div class="cov bleed {{c.cls}}"></div>
+  <div class="fade"></div>
+  <button aria-label="Andere hoes proberen" onClick="{{next}}" style="position: absolute; left: 0; top: 0">
+    <div class="cov sharp {{c.cls}}" style="width: 390px; height: 390px"><div class="ct" style="font-size: 44px; top: 22%">{{c.show}}</div></div>
+  </button>
+  <div class="scrim"></div>
+
+  <div style="position: relative; display: flex; align-items: center; padding: 28px 10px 0 10px; height: 56px; gap: 8px">
+    <a class="ib dk" href="FusiePodcast.dc.html" aria-label="Speler inklappen"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></a>
+    <div style="flex-grow: 1; text-align: center; padding: 6px 12px; border-radius: 14px" class="dk">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--soft)">SPEELT NU UIT</div>
+      <div style="font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.show}}</div>
+    </div>
+    <button class="ib dk" aria-label="Meer"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button>
+  </div>
+
+  <div style="position: relative; margin-top: 250px; padding: 0 20px; display: flex; align-items: flex-end; gap: 12px">
+    <div style="flex-grow: 1; min-width: 0">
+      <h1 class="dsp" style="margin: 0; font-size: 28px; line-height: 1.1; font-weight: 700">{{c.ep}}</h1>
+      <a href="FusiePodcast.dc.html" style="margin-top: 6px; display: flex; align-items: center; gap: 2px; font-size: 14px; color: var(--soft)">{{c.show}} · {{c.date}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+    </div>
+    <button class="ib" aria-label="Bewaren" style="box-shadow: inset 0 0 0 1.5px var(--outline); flex: none"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v16l-6-4-6 4z"></path></svg></button>
+  </div>
+
+  <div style="position: relative; padding: 14px 20px 0 20px">
+    <a class="chip" href="FusiePodcast.dc.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>{{c.chart}}</a>
+  </div>
+
+  <div style="position: relative; padding: 22px 20px 0 20px">
+    <div class="track"><i style="width: {{c.pct}}"></i><b style="left: {{c.pct}}"></b></div>
+    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--soft)"><span>{{c.pos}}</span><span>{{c.left}}</span></div>
+  </div>
+
+  <div style="position: relative; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 0 16px">
+    <button class="tp" aria-label="15 seconden terug"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 102.3-5.7"></path><path d="M4 4v4.5h4.5"></path><text x="12" y="15.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" font-family="Instrument Sans, sans-serif">15</text></svg></button>
+    <button class="tp" aria-label="Opnieuw beginnen"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"></rect><path d="M19 5v14L9 12z"></path></svg></button>
+    <button class="bigplay" aria-label="Pauzeren"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4.4" height="15" rx="1.4"></rect><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.4"></rect></svg></button>
+    <button class="tp" aria-label="Volgende uit wachtrij"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5v14l10-7z"></path><rect x="16.4" y="5" width="2.6" height="14" rx="1"></rect></svg></button>
+    <button class="tp" aria-label="30 seconden vooruit"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"></path><path d="M20 4v4.5h-4.5"></path><text x="12" y="15.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" font-family="Instrument Sans, sans-serif">30</text></svg></button>
+  </div>
+
+  <div style="position: relative; display: flex; justify-content: space-between; padding: 26px 14px 0 14px">
+    <button class="tool on"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 1116 0"></path><path d="M12 16l4-5"></path></svg></span>1,2×</button>
+    <button class="tool"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"></path></svg></span>Timer</button>
+    <a class="tool" href="FusieWachtrij.dc.html"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h10"></path><path d="M17 14.5v5l3.5-2.5z" fill="currentColor"></path></svg></span>Wachtrij · 3</a>
+    <button class="tool"><span class="ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.3 10.8l7.4-4.3"></path><path d="M8.3 13.2l7.4 4.3"></path></svg></span>Delen</button>
+  </div>
+  <a href="FusieWachtrij.dc.html" style="position: absolute; left: 10px; right: 10px; bottom: 22px; display: flex; align-items: center; gap: 12px; padding: 10px 8px 10px 10px; border-radius: 14px; background: var(--s1); box-shadow: inset 0 0 0 1px var(--line)">
+    <div class="cov {{c.nextCls}}" style="width: 40px; height: 40px; border-radius: 8px"></div>
+    <div style="flex-grow: 1; min-width: 0">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--ink2)">HIERNA</div>
+      <div style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.nextEp}} · {{c.nextShow}}</div>
+    </div>
+    <span class="ib" style="color: var(--ink2)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"></path></svg></span>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"hoes":{"editor":"enum","options":["rood","blauwgroen","amber"],"default":"rood"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0 }; }
+  renderVals() {
+    const covers = [
+      { pal: 'pal-red', cls: 'cv-red', show: 'Het Verdwenen Dorp', ep: 'Kaarten die niet kloppen', date: '15 sep', chart: '#3 in True crime · Apple NL', pct: '58%', pos: '24:37', left: '-18:02', nextCls: 'cv-teal', nextEp: 'Licht op 4000 meter', nextShow: 'Diepzee' },
+      { pal: 'pal-teal', cls: 'cv-teal', show: 'Diepzee', ep: 'Het geluid van walvissen', date: '17 sep', chart: '#3 in Wetenschap · Apple NL', pct: '47%', pos: '17:51', left: '-18:04', nextCls: 'cv-amber', nextEp: 'De eerste radio van Hilversum', nextShow: 'Goud van Oud' },
+      { pal: 'pal-amber', cls: 'cv-amber', show: 'Goud van Oud', ep: 'Tulpen en schulden', date: '19 sep', chart: '#3 in Geschiedenis · Apple NL', pct: '64%', pos: '32:11', left: '-18:05', nextCls: 'cv-red', nextEp: 'De laatste bewoner', nextShow: 'Het Verdwenen Dorp' }
+    ];
+    const start = { rood: 0, blauwgroen: 1, amber: 2 }[this.props.hoes ?? 'rood'] ?? 0;
+    return { c: covers[(start + this.state.step) % 3], next: () => this.setState({ step: this.state.step + 1 }) };
+  }
+}
+</script>
+</body>
+</html>

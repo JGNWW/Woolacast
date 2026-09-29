@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Grafiet — podcastpagina</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Instrument+Sans:wght@400..700&amp;display=swap">
+<style>
+body{margin:0;background:#121316}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+.ph{--bg:#121316;--s1:#1A1B1F;--s2:#222429;--s3:#2C2E34;--line:#2A2C31;--ink:#ECEDEF;--ink2:#A6A9B0;--acc:#F0895B;--onAcc:#2A1006;--accC:#34363C;--onAccC:#F0895B;--rise:#5BCB8F;--fall:#FF7A85;width:390px;height:1000px;position:relative;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;font-size:14.5px;-webkit-font-smoothing:antialiased}
+.dsp{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.ib{width:44px;height:44px;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
+.cov{position:relative;overflow:hidden;box-sizing:border-box;flex:none}
+.cov .ct{position:absolute;left:9%;top:8%;right:9%;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;line-height:.95;text-transform:uppercase;letter-spacing:.01em;z-index:2}
+.cv-red{background:radial-gradient(circle at 74% 60%,#F6B39E 0 10%,transparent 10.5%),linear-gradient(170deg,#D8452F 0%,#A42A1F 55%,#5E130E 100%)}
+.cv-red::after{content:'';position:absolute;inset:auto 0 0 0;height:36%;background:#2A0907;clip-path:polygon(0 42%,16% 30%,29% 46%,47% 18%,63% 38%,81% 24%,100% 44%,100% 100%,0 100%)}
+.cv-red .ct{color:#FFF1EC}
+.cv-teal{background:radial-gradient(circle at 50% -10%,#8FE6DB 0,#2A9C98 34%,#0E4F5A 68%,#06222B 100%)}
+.cv-teal::after{content:'';position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 125%,rgba(255,255,255,.13) 0 1.5%,transparent 1.5% 8%)}
+.cv-teal .ct{color:#EFFFFD}
+.cv-amber{background:linear-gradient(160deg,#F9D05C,#E39E1E 60%,#AC650F)}
+.cv-amber::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 74% 78%,#3B2208 0 27%,#6B3F0E 27.5% 29%,#3B2208 29.5% 33%,transparent 33.5%)}
+.cv-amber .ct{color:#2B1804}
+.btn{white-space:nowrap;height:44px;border-radius:12px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:650;font-size:14.5px}
+.btn-p{background:var(--acc);color:var(--onAcc)}
+.btn-o{box-shadow:inset 0 0 0 1.5px #63666F;color:var(--ink)}
+.tab{height:46px;display:flex;align-items:center;font-weight:600;font-size:14.5px;color:var(--ink2);position:relative}
+.tab.on{color:var(--ink)}
+.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--acc)}
+.ep{display:flex;gap:12px;align-items:center;padding:13px 20px 13px 20px;border-bottom:1px solid var(--line)}
+.play{width:44px;height:44px;border-radius:22px;background:var(--s2);color:var(--ink);display:flex;align-items:center;justify-content:center;flex:none}
+.bar{height:4px;border-radius:2px;background:var(--s3);width:56px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}
+.mini{position:absolute;left:10px;right:10px;bottom:74px;height:62px;border-radius:16px;background:var(--s3);display:flex;align-items:center;gap:12px;padding:0 6px 0 9px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.mini .pg{position:absolute;left:0;bottom:0;height:2px;background:var(--acc)}
+.nav{position:absolute;left:0;right:0;bottom:0;height:68px;background:var(--s1);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.nv{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:600;color:var(--ink2)}
+.nv.on{color:var(--ink)}
+.nv .pill{width:56px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+.nv.on .pill{background:var(--accC);color:var(--onAccC)}
+</style>
+</helmet>
+<div class="ph">
+  <div style="display: flex; align-items: center; padding: 28px 6px 0 6px; height: 56px">
+    <button class="ib" aria-label="Terug"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg></button>
+    <div style="flex-grow: 1"></div>
+    <button class="ib" aria-label="Meer"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg></button>
+  </div>
+
+  <div style="display: flex; gap: 16px; align-items: flex-end; padding: 8px 20px 0 20px">
+    <button aria-label="Andere hoes proberen" onClick="{{next}}" style="border-radius: 16px">
+      <div class="cov {{c.cls}}" style="width: 120px; height: 120px; border-radius: 16px"><div class="ct" style="font-size: 14.5px">{{c.title}}</div></div>
+    </button>
+    <div style="flex-grow: 1; min-width: 0; padding-bottom: 2px">
+      <h1 class="dsp" style="margin: 0; font-size: 26px; line-height: 1.15; font-weight: 700">{{c.title}}</h1>
+      <div style="display: flex; align-items: center; gap: 2px; margin-top: 6px; font-size: 14.5px; color: var(--ink2)">{{c.pub}}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div style="margin-top: 8px; font-size: 13px; font-weight: 600; color: var(--ink2)">{{c.genre}} · Wekelijks · 11 afl.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; padding: 18px 20px 0 20px">
+    <button class="btn btn-p" style="flex-grow: 1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>Volgen</button>
+    <button class="btn btn-o"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12.5-7.5z"></path></svg>Nieuwste afl.</button>
+    <button class="ib" aria-label="Delen" style="border-radius: 12px; box-shadow: inset 0 0 0 1.5px #63666F"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.3 10.8l7.4-4.3"></path><path d="M8.3 13.2l7.4 4.3"></path></svg></button>
+  </div>
+
+  <div style="margin: 18px 20px 0 20px; background: var(--s1); border-radius: 16px; display: flex; align-items: center; padding: 12px 8px 12px 16px; gap: 14.5px">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+      <div style="display: flex; align-items: baseline; gap: 8px"><span class="dsp" style="font-size: 20px; font-weight: 700">#3</span><span style="font-size: 13px; color: var(--ink2)">{{c.genre}} · Apple NL</span><span style="font-size: 13px; font-weight: 700; color: var(--rise)">▲ 2</span></div>
+      <div style="display: flex; align-items: baseline; gap: 8px"><span class="dsp" style="font-size: 20px; font-weight: 700">#7</span><span style="font-size: 13px; color: var(--ink2)">Alle podcasts · Spotify NL</span><span style="font-size: 13px; font-weight: 700; color: var(--ink2)">= 0</span></div>
+    </div>
+    <button class="ib" aria-label="Noteringen bekijken"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+  </div>
+
+  <p style="margin: 16px 20px 0 20px; font-size: 14.5px; line-height: 1.5; color: var(--ink2)">{{c.desc}} <b style="color: var(--acc); font-weight: 650">Meer</b></p>
+
+  <div style="margin-top: 10px; padding: 0 20px; display: flex; gap: 26px; border-bottom: 1px solid var(--line)">
+    <div class="tab on">Afleveringen</div><div class="tab">Noteringen</div><div class="tab">Over</div>
+  </div>
+
+  <sc-for list="{{c.eps}}" as="e" hint-placeholder-count="4">
+    <div class="ep">
+      <div class="cov {{c.cls}}" style="width: 56px; height: 56px; border-radius: 12px"></div>
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px">
+        <div style="font-size: 16px; font-weight: 600; line-height: 1.3">{{e.title}}</div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink2)">
+          <span>{{e.date}}</span><span>·</span>
+          <sc-if value="{{e.prog}}" hint-placeholder-val="{{false}}"><div class="bar"><i style="width: {{e.prog}}"></i></div></sc-if>
+          <span>{{e.dur}}</span>
+        </div>
+      </div>
+      <button class="play" aria-label="Afspelen"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></button>
+    </div>
+  </sc-for>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 170px; background: linear-gradient(180deg, rgba(0,0,0,0), var(--bg) 42%)"></div>
+  <div class="mini">
+    <div class="cov {{c.cls}}" style="width: 44px; height: 44px; border-radius: 9px"></div>
+    <div style="flex-grow: 1; min-width: 0">
+      <div style="font-size: 14.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.eps.1.title}}</div>
+      <div style="font-size: 13px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.title}} · nog 18 min</div>
+    </div>
+    <button class="ib" aria-label="Pauzeren"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.3"></rect><rect x="13.5" y="5" width="4" height="14" rx="1.3"></rect></svg></button>
+    <button class="ib" aria-label="30 seconden vooruit"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"></path><path d="M20 4v4.5h-4.5"></path></svg></button>
+    <div class="pg" style="width: 58%"></div>
+  </div>
+
+  <nav class="nav">
+    <div class="nv on"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg></div>Hitlijsten</div>
+    <div class="nv"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg></div>Ontdek</div>
+    <div class="nv"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg></div>Bibliotheek</div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"hoes":{"editor":"enum","options":["rood","blauwgroen","amber"],"default":"rood"},"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0 }; }
+  renderVals() {
+    const covers = [
+      { cls: 'cv-red', title: 'Het Verdwenen Dorp', pub: 'Studio Veenkoloniaal', genre: 'True crime',
+        desc: 'In 1974 verdween een Gronings gehucht van de kaart. Journalist Mirte Hoving zoekt uit waarom niemand het zich wil herinneren.',
+        eps: [
+          { date: '22 sep', title: 'De laatste bewoner', dur: '41 min', prog: '' },
+          { date: '15 sep', title: 'Kaarten die niet kloppen', dur: 'nog 18 min', prog: '58%' },
+          { date: '8 sep', title: 'Het archief in Assen', dur: '44 min', prog: '' },
+          { date: '1 sep', title: 'Een brief uit 1975', dur: '39 min', prog: '' }
+        ] },
+      { cls: 'cv-teal', title: 'Diepzee', pub: 'Getij Media', genre: 'Wetenschap',
+        desc: 'Wat leeft er op vierduizend meter diepte? Bioloog Sanne de Waal daalt af met de onderzoekers die het als eersten zagen.',
+        eps: [
+          { date: '24 sep', title: 'Licht op 4000 meter', dur: '36 min', prog: '' },
+          { date: '17 sep', title: 'Het geluid van walvissen', dur: 'nog 18 min', prog: '47%' },
+          { date: '10 sep', title: 'Leven zonder zon', dur: '38 min', prog: '' },
+          { date: '3 sep', title: 'De kaart van de bodem', dur: '35 min', prog: '' }
+        ] },
+      { cls: 'cv-amber', title: 'Goud van Oud', pub: 'Radio Zolder', genre: 'Geschiedenis',
+        desc: 'Elke week één vergeten verhaal uit de vaderlandse geschiedenis, verteld aan de keukentafel met een historicus en een pot thee.',
+        eps: [
+          { date: '26 sep', title: 'De eerste radio van Hilversum', dur: '52 min', prog: '' },
+          { date: '19 sep', title: 'Tulpen en schulden', dur: 'nog 18 min', prog: '64%' },
+          { date: '12 sep', title: 'Een koning op de fiets', dur: '48 min', prog: '' },
+          { date: '5 sep', title: 'Het water komt', dur: '55 min', prog: '' }
+        ] }
+    ];
+    const start = { rood: 0, blauwgroen: 1, amber: 2 }[this.props.hoes ?? 'rood'] ?? 0;
+    return { c: covers[(start + this.state.step) % 3], next: () => this.setState({ step: this.state.step + 1 }) };
+  }
+}
+</script>
+</body>
+</html>

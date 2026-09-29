@@ -19,17 +19,27 @@ val OnEmberContainer = Color(0xFF5A2110)
 val RiseLight = Color(0xFF0E8A4E)
 val FallLight = Color(0xFFC03A24)
 
-val NightBg = Color(0xFF15120E)
-val NightSurface = Color(0xFF1E1A15)
-val NightSurface2 = Color(0xFF262119)
-val NightSurface3 = Color(0xFF332C22)
-val NightLine = Color(0xFF3B3227)
-val NightLine2 = Color(0xFF2C261E)
-val NightInk = Color(0xFFF3ECE1)
-val NightInk2 = Color(0xFFA99C8B)
-val NightInk3 = Color(0xFF7C7264)
+/*
+ * Donker: neutraal en licht koel in plaats van bruin (herontwerp "Beeldgloed",
+ * design/donker-herontwerp). De kleur komt uit de hoes, niet uit het kader.
+ */
+val NightBg = Color(0xFF0E0F11)
+val NightSurface = Color(0xFF16171A)
+val NightSurface2 = Color(0xFF1E1F23)
+val NightSurface3 = Color(0xFF28292E)
+val NightLine = Color(0xFF3A3C42)
+val NightLine2 = Color(0x14EDEEF0)
+val NightInk = Color(0xFFEDEEF0)
+val NightInk2 = Color(0xFFA0A3AA)
+val NightInk3 = Color(0xFF8A8D95)
 val EmberLight = Color(0xFFF0895B)
-val EmberContainerDark = Color(0xFF4A2113)
-val OnEmberContainerDark = Color(0xFFFBD9C6)
-val RiseDark = Color(0xFF4CBE7E)
-val FallDark = Color(0xFFE9755C)
+val EmberContainerDark = Color(0xFF34363C)
+val OnEmberContainerDark = Color(0xFFF0895B)
+val RiseDark = Color(0xFF5BCB8F)
+/** Roze-rood: ver genoeg van ember en van een rode hoes om dalen niet met het merk te verwarren. */
+val FallDark = Color(0xFFFF7A93)
+
+/** Omlijning van knoppen en chips op het getinte deel: 1,5 dp, haalt 3:1 op elke gloed. */
+val NightOutline = Color(0x80EDEEF0)
+/** Secundaire tekst bovenop de hoesgloed. */
+val NightInkSoft = Color(0xC7EDEEF0)

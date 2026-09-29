@@ -2,6 +2,24 @@ package nl.woolacast.ui.detail
 
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
+import nl.woolacast.ui.common.AccentPlayButton
+import nl.woolacast.ui.common.CoverBackdrop
+import nl.woolacast.ui.common.Equalizer
+import nl.woolacast.ui.common.GlassIconButton
+import nl.woolacast.ui.common.OutlineCircleButton
+import nl.woolacast.ui.common.OutlinePillButton
+import nl.woolacast.ui.common.rememberCoverColors
+import nl.woolacast.ui.common.rememberListScrollPx
+import nl.woolacast.ui.common.softInk
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +49,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +60,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -125,19 +149,25 @@ fun DetailScreen(
         return "Podcast op #${here.rank} · ${here.source.label} $waar"
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    val listState = rememberLazyListState()
+    val scrollPx = rememberListScrollPx(listState)
+    val cover = rememberCoverColors(podcast?.artworkUrl)
+    val soft = softInk()
+    val density = LocalDensity.current
+    // Waar de tabs staan, gemeten vanaf de bovenkant van de pagina. De kop is
+    // per podcast anders lang (media, noteringen, omschrijving); zo loopt de
+    // gloed altijd nog een paar afleveringen door, hoe lang de kop ook is.
+    var tabsPageY by remember(podcast?.id) { mutableStateOf<Float?>(null) }
 
-        TitleBar(title = null, onBack = onBack) {
-            Box {
-                IconAction(WoolIcons.More, "Meer", { menuOpen = true })
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(text = { Text("Podcast delen") }, onClick = { menuOpen = false; share() })
-                    DropdownMenuItem(text = { Text("Vernieuwen") }, onClick = { menuOpen = false; viewModel.refresh() })
-                    if (state.positions.isNotEmpty()) {
-                        DropdownMenuItem(text = { Text("Chart-tracker") }, onClick = { menuOpen = false; onOpenTracker() })
-                    }
-                }
-            }
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+    Box(modifier = modifier.fillMaxSize()) {
+
+        if (podcast != null && !state.loading && state.error == null) {
+            CoverBackdrop(
+                podcast.artworkUrl, cover,
+                scrollPx = scrollPx,
+                extendTo = tabsPageY?.let { with(density) { it.toDp() } + GLOW_INTO_LIST }
+            )
         }
 
         when {
@@ -145,75 +175,67 @@ fun DetailScreen(
                 CircularProgressIndicator()
             }
 
-            state.error != null -> NoticePanel(
-                title = "Podcast niet geladen",
-                message = state.error.orEmpty(),
-                actionLabel = "Opnieuw proberen",
-                onAction = viewModel::refresh
-            )
+            state.error != null -> Column(Modifier.fillMaxSize().statusBarsPadding().padding(top = 52.dp)) {
+                NoticePanel(
+                    title = "Podcast niet geladen",
+                    message = state.error.orEmpty(),
+                    actionLabel = "Opnieuw proberen",
+                    onAction = viewModel::refresh
+                )
+            }
 
-            podcast != null -> LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+            podcast != null -> LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 24.dp)) {
+                // De hoes staat erachter; de titel valt over zijn oplossende onderrand.
                 item {
-                    Row(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Artwork(podcast.artworkUrl, 112.dp, corner = 18.dp, elevation = 6.dp)
-                        Column(Modifier.weight(1f).padding(bottom = 2.dp)) {
-                            Text(
-                                podcast.title,
-                                style = MaterialTheme.typography.headlineSmall,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(Modifier.height(5.dp))
-                            // De maker is een ingang: erop tikken laat alles
-                            // zien wat hij uitgeeft.
-                            Row(
-                                modifier = Modifier
-                                    .clickable(enabled = podcast.publisher.isNotBlank()) {
-                                        onOpenMaker(podcast.publisher)
-                                    },
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp)
-                            ) {
-                                Text(
-                                    podcast.publisher,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f, fill = false)
-                                )
-                                if (podcast.publisher.isNotBlank()) {
-                                    Icon(
-                                        WoolIcons.ChevronRight, null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val k = maxWidth / 390.dp
+                        Column(Modifier.padding(start = 20.dp, end = 20.dp, top = (294 * k).dp)) {
                             val facts = listOfNotNull(
                                 podcast.genre?.takeIf { it.isNotBlank() },
                                 state.cadence,
                                 podcast.episodeCount?.let { "$it afl." }
                             )
                             if (facts.isNotEmpty()) {
-                                Spacer(Modifier.height(9.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Icon(
-                                        WoolIcons.Clock, null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        facts.joinToString(" · "),
-                                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, fontWeight = FontWeight.Medium),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                Text(
+                                    facts.joinToString(" · ").uppercase(),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, letterSpacing = 0.96.sp),
+                                    color = soft,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(Modifier.height(6.dp))
+                            }
+                            Text(
+                                podcast.title,
+                                fontFamily = DisplayFamily,
+                                fontSize = 32.sp,
+                                lineHeight = 35.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            // De maker is een ingang: erop tikken laat alles
+                            // zien wat hij uitgeeft.
+                            Row(
+                                modifier = Modifier
+                                    .heightIn(min = 32.dp)
+                                    .clickable(enabled = podcast.publisher.isNotBlank()) {
+                                        onOpenMaker(podcast.publisher)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    podcast.publisher,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                    color = soft,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                if (podcast.publisher.isNotBlank()) {
+                                    Icon(WoolIcons.ChevronRight, null, tint = soft, modifier = Modifier.size(14.dp))
                                 }
                             }
                         }
@@ -222,26 +244,27 @@ fun DetailScreen(
 
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(9.dp)
+                        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 18.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        WoolButton(
+                        OutlinePillButton(
                             text = if (isFollowed) "Gevolgd" else "Volgen",
-                            onClick = viewModel::toggleFollow,
-                            kind = if (isFollowed) ButtonKind.TONAL else ButtonKind.PRIMARY,
                             icon = if (isFollowed) WoolIcons.Check else WoolIcons.Plus,
-                            modifier = Modifier.weight(1f)
+                            onClick = viewModel::toggleFollow,
+                            selected = isFollowed
                         )
+                        OutlineCircleButton(WoolIcons.Share, "Podcast delen", share)
+                        Spacer(Modifier.weight(1f))
                         val newest = state.episodes.firstOrNull()
                         if (newest != null) {
-                            WoolButton(
-                                text = "Nieuwste afl.",
+                            AccentPlayButton(
+                                playing = false,
+                                colors = cover,
                                 onClick = { onPlay(newest, labelFor(newest)) },
-                                kind = ButtonKind.OUTLINE,
-                                icon = WoolIcons.Play
+                                playLabel = "Nieuwste aflevering afspelen"
                             )
                         }
-                        SquareIconButton(WoolIcons.Share, "Podcast delen", share)
                     }
                 }
 
@@ -273,15 +296,15 @@ fun DetailScreen(
                         ) {
                             Text(
                                 description,
-                                style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = if (descriptionOpen) Int.MAX_VALUE else 2,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 21.sp),
+                                color = soft,
+                                maxLines = if (descriptionOpen) Int.MAX_VALUE else 3,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 if (descriptionOpen) "Minder" else "Meer",
-                                style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                                color = cover.accent,
                                 modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -292,7 +315,15 @@ fun DetailScreen(
                     UnderlineTabs(
                         labels = DetailTab.entries.map { it.label },
                         selected = DetailTab.entries.indexOf(tab),
-                        onSelect = { tab = DetailTab.entries[it] }
+                        onSelect = { tab = DetailTab.entries[it] },
+                        indicator = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            val scrolled = scrollPx()
+                            if (scrolled != Float.MAX_VALUE) {
+                                val y = coordinates.positionInRoot().y + scrolled
+                                if (tabsPageY.let { it == null || kotlin.math.abs(it - y) > 2f }) tabsPageY = y
+                            }
+                        }
                     )
                 }
 
@@ -319,6 +350,7 @@ fun DetailScreen(
                                 chartRank = state.episodeRanks[episode.id],
                                 countryLabel = countryLabel,
                                 playing = playingId == episode.id,
+                                accent = cover.accent,
                                 inQueue = queued.any { it.id == episode.id },
                                 onOpen = { sheetEpisode = episode },
                                 onPlay = { onPlay(episode, labelFor(episode)) }
@@ -408,6 +440,65 @@ fun DetailScreen(
                 }
             }
         }
+
+        // Voorbij de hoes wordt de balk dicht, met de titel erin: anders schuift
+        // de pagina onder de klok en de knoppen door.
+        if (podcast != null) {
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val coverPx = with(density) { maxWidth.toPx() }
+                val barPx = with(density) { 120.dp.toPx() }
+                val shown = {
+                    val y = scrollPx()
+                    if (y == Float.MAX_VALUE) 1f else ((y - (coverPx - 2 * barPx)) / barPx).coerceIn(0f, 1f)
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer { alpha = shown() }
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .height(52.dp)
+                        .padding(start = 66.dp, end = 66.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        podcast.title,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                // Een dunne lijn als de balk dicht is.
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    modifier = Modifier
+                        .graphicsLayer { alpha = shown() }
+                        .statusBarsPadding()
+                        .padding(top = 52.dp)
+                )
+            }
+        }
+
+        // Zwevende balk: glazen knoppen boven op de hoes.
+        Row(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 10.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            GlassIconButton(WoolIcons.Back, "Terug", onBack)
+            Spacer(Modifier.weight(1f))
+            Box {
+                GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(text = { Text("Podcast delen") }, onClick = { menuOpen = false; share() })
+                    DropdownMenuItem(text = { Text("Vernieuwen") }, onClick = { menuOpen = false; viewModel.refresh() })
+                    if (state.positions.isNotEmpty()) {
+                        DropdownMenuItem(text = { Text("Chart-tracker") }, onClick = { menuOpen = false; onOpenTracker() })
+                    }
+                }
+            }
+        }
+    }
     }
 
     sheetEpisode?.let { episode ->
@@ -450,39 +541,68 @@ private fun EpisodeRow(
     chartRank: Int?,
     countryLabel: String,
     playing: Boolean,
+    accent: Color,
     inQueue: Boolean,
     onOpen: () -> Unit,
     onPlay: () -> Unit
 ) {
     val colors = LocalChartColors.current
+    val soft = softInk()
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onOpen)
-            .padding(horizontal = 20.dp, vertical = 13.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.Top
+            .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Artwork(episode.artworkUrl, 56.dp, corner = 12.dp)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 episode.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (playing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp),
+                // Wat nu speelt krijgt de hoeskleur, net als in de wachtrij.
+                color = if (playing) accent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            Spacer(Modifier.height(5.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (playing) Equalizer(accent)
+                val duration = episode.durationMillis
+                val started = positionMs != null && duration != null && duration > 0L
                 Text(
                     listOfNotNull(
                         shortDate(episode.releaseDate),
-                        minutes(episode.durationMillis),
+                        if (started) null else minutes(duration),
                         if (episode.audioUrl == null) "geen audio" else null
                     ).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, fontWeight = FontWeight.Medium),
-                    color = colors.muted
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                    color = soft,
+                    maxLines = 1
                 )
+                // Waar je gebleven bent, maar alleen als je echt begonnen bent.
+                if (started) {
+                    Box(
+                        Modifier
+                            .width(56.dp)
+                            .height(3.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth((positionMs!!.toFloat() / duration!!).coerceIn(0f, 1f))
+                                .height(3.dp)
+                                .background(accent)
+                        )
+                    }
+                    Text(
+                        remaining(duration - positionMs),
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 14.sp),
+                        color = soft,
+                        maxLines = 1
+                    )
+                }
                 if (chartRank != null) {
                     TextPill(
                         "#$chartRank $countryLabel",
@@ -494,34 +614,23 @@ private fun EpisodeRow(
                     Icon(WoolIcons.QueueAdded, "In wachtrij", tint = colors.muted, modifier = Modifier.size(14.dp))
                 }
             }
-
-            // Waar je gebleven bent, maar alleen als je echt begonnen bent.
-            val duration = episode.durationMillis
-            if (positionMs != null && duration != null && duration > 0L) {
-                Spacer(Modifier.height(9.dp))
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                ) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth((positionMs.toFloat() / duration).coerceIn(0f, 1f))
-                            .height(3.dp)
-                            .background(MaterialTheme.colorScheme.primary)
-                    )
-                }
-                Spacer(Modifier.height(5.dp))
-                Text(
-                    remaining(duration - positionMs),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
         }
-        PlayCircle(onClick = onPlay, playing = playing, modifier = Modifier.padding(top = 6.dp))
+        // Een ring in de hoeskleur; wat al speelt toont pauze.
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .border(2.dp, accent, CircleShape)
+                .clickable(enabled = episode.audioUrl != null, onClick = onPlay),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                if (playing) WoolIcons.Pause else WoolIcons.Play,
+                if (playing) "Pauzeren" else "Afspelen",
+                tint = accent,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 
@@ -717,6 +826,9 @@ private const val MEDIA_IN_CARROUSEL = 10
 /** Zoveel afleveringen staan er meteen; daaronder een knop voor de rest. */
 private const val EPISODES_AT_FIRST = 20
 
+/** Hoe ver de hoesgloed onder de tabs doorloopt: ongeveer drie afleveringen. */
+private val GLOW_INTO_LIST = 260.dp
+
 @Composable
 private fun PositionRow(countryCode: String, ranks: Map<SourceId, ShowPositionLike>) {
     val country = Catalog.country(countryCode)
@@ -776,61 +888,69 @@ private fun ChartStrip(
     onClick: () -> Unit
 ) {
     val colors = LocalChartColors.current
+    val soft = softInk()
+    val line = MaterialTheme.colorScheme.outlineVariant
     val here = positions.groupBy { it.source }
-    Row(
+    // Een plek in de lijst over alles gaat voor een plek in een categorie;
+    // alleen als er niets anders is telt de categorie.
+    val best = listOf(SourceId.APPLE, SourceId.SPOTIFY).mapNotNull { source ->
+        here[source]?.minWithOrNull(compareBy({ it.genreId != null }, { it.rank }))?.let { source to it }
+    }
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(15.dp))
-            .background(colors.panel)
             .clickable(onClick = onClick)
-            .padding(start = 14.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Icon(WoolIcons.Bars, null, tint = colors.onPanel, modifier = Modifier.size(20.dp))
-        var first = true
-        listOf(SourceId.APPLE, SourceId.SPOTIFY).forEach { source ->
-            // Een plek in de lijst over alles gaat voor een plek in een
-            // categorie; alleen als er niets anders is telt de categorie.
-            val best = here[source]
-                ?.minWithOrNull(compareBy({ it.genreId != null }, { it.rank }))
-                ?: return@forEach
-            if (!first) {
-                Box(Modifier.width(1.dp).height(26.dp).background(colors.onPanel.copy(alpha = 0.18f)))
+        HorizontalDivider(color = line)
+        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            best.forEachIndexed { index, (source, position) ->
+                if (index > 0) Box(Modifier.width(1.dp).fillMaxHeight().background(line))
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(start = if (index > 0) 16.dp else 0.dp, top = 12.dp, bottom = 12.dp)
+                ) {
+                    Text(
+                        "${position.rank}",
+                        fontFamily = DisplayFamily,
+                        fontSize = 32.sp,
+                        lineHeight = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = (-0.5).sp
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        buildString {
+                            append(source.label.substringBefore(' '))
+                            append(' ').append(position.country.uppercase())
+                            append(" \u00b7 ")
+                            append(Catalog.categoryOrNull(position.genreId)?.label ?: "Alle podcasts")
+                        },
+                        color = soft,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
-            first = false
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(
-                    "${best.rank}",
-                    color = colors.onPanel,
-                    fontFamily = DisplayFamily,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = (-0.5).sp
-                )
-                Text(
-                    buildString {
-                        append(source.label.substringBefore(' '))
-                        Catalog.categoryOrNull(best.genreId)?.let { append(" \u00b7 ").append(it.label) }
-                    },
-                    color = colors.onPanelMuted,
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-            }
+            if (best.size < 2) Spacer(Modifier.weight(1f))
         }
-        Spacer(Modifier.weight(1f))
-        Text(
-            if (countryCount == 1) "1 land" else "$countryCount landen",
-            color = colors.onPanelMuted,
-            fontSize = 11.5.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Icon(WoolIcons.ChevronRight, "Verloop bekijken", tint = colors.onPanelMuted, modifier = Modifier.size(17.dp))
+        HorizontalDivider(color = line)
+        Row(
+            Modifier.fillMaxWidth().height(36.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(WoolIcons.Bars, null, tint = soft, modifier = Modifier.size(14.dp))
+            Text(
+                if (countryCount == 1) "Noteert in 1 land" else "Noteert in $countryCount landen",
+                color = soft,
+                fontSize = 12.sp,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(WoolIcons.ChevronRight, "Verloop bekijken", tint = soft, modifier = Modifier.size(16.dp))
+        }
     }
 }
 

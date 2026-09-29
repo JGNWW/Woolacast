@@ -1,0 +1,243 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-09-29T16:30:58Z"
+ },
+ "title": "Woolacast donker herontwerp",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 1000,
+   "title": "A · Grafiet — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "GrafietHitlijsten.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "A · Grafiet — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "GloedPodcast.dc.html": {
+   "x": 0,
+   "y": 1400,
+   "w": 390,
+   "h": 1180,
+   "title": "B · Hoesgloed — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "GloedHitlijsten.dc.html": {
+   "x": 470,
+   "y": 1400,
+   "w": 390,
+   "h": 844,
+   "title": "B · Hoesgloed — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "TonaalPodcast.dc.html": {
+   "x": 0,
+   "y": 2980,
+   "w": 390,
+   "h": 1180,
+   "title": "C · Tonaal — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "TonaalHitlijsten.dc.html": {
+   "x": 470,
+   "y": 2980,
+   "w": 390,
+   "h": 844,
+   "title": "C · Tonaal — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "GlasPodcast.dc.html": {
+   "x": 0,
+   "y": 4560,
+   "w": 390,
+   "h": 1180,
+   "title": "D · Matglas — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "GlasHitlijsten.dc.html": {
+   "x": 470,
+   "y": 4560,
+   "w": 390,
+   "h": 844,
+   "title": "D · Matglas — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "BeeldPodcast.dc.html": {
+   "x": 0,
+   "y": 6140,
+   "w": 390,
+   "h": 1180,
+   "title": "E · Vol beeld — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "BeeldHitlijsten.dc.html": {
+   "x": 470,
+   "y": 6140,
+   "w": 390,
+   "h": 844,
+   "title": "E · Vol beeld — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusiePodcast.dc.html": {
+   "x": 1560,
+   "y": 0,
+   "w": 390,
+   "h": 1180,
+   "title": "F · Beeldgloed (E + B) — podcastpagina",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusieHitlijsten.dc.html": {
+   "x": 2030,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed (E + B) — hitlijsten",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusieSpeler.dc.html": {
+   "x": 2500,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed — speler",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusieWachtrij.dc.html": {
+   "x": 2970,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed — speler, wachtrij open",
+   "is_interactive": true,
+   "radius": 28
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "GrafietHitlijsten.dc.html",
+  "GloedPodcast.dc.html",
+  "GloedHitlijsten.dc.html",
+  "TonaalPodcast.dc.html",
+  "TonaalHitlijsten.dc.html",
+  "GlasPodcast.dc.html",
+  "GlasHitlijsten.dc.html",
+  "BeeldPodcast.dc.html",
+  "BeeldHitlijsten.dc.html",
+  "FusiePodcast.dc.html",
+  "FusieHitlijsten.dc.html",
+  "FusieSpeler.dc.html",
+  "FusieWachtrij.dc.html"
+ ],
+ "notes": {
+  "tA": {
+   "x": 0,
+   "y": -280,
+   "text": "A — Grafiet: neutraal, merkaccent",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "tB": {
+   "x": 0,
+   "y": 1120,
+   "text": "B — Hoesgloed: gloed en accent uit de hoes",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "tC": {
+   "x": 0,
+   "y": 2700,
+   "text": "C — Tonaal: Material 3-schema uit de hoes",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "tD": {
+   "x": 0,
+   "y": 4280,
+   "text": "D — Matglas: vervaagde hoes, glazen balken",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "tE": {
+   "x": 0,
+   "y": 5860,
+   "text": "E — Vol beeld: redactioneel, monochroom",
+   "kind": "title1",
+   "maxW": 1300
+  },
+  "tF": {
+   "x": 1560,
+   "y": -280,
+   "text": "F — Beeldgloed: volle hoes die naar beneden uitlekt (E + B)",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "nF": {
+   "x": 3440,
+   "y": 0,
+   "w": 380,
+   "text": "Compleet ontwerp in vier schermen: podcastpagina, hitlijsten, speler en speler met de wachtrij open. Tik op de mini-speler om naar de speler te gaan.\n\nIdee: de hoes staat over de volle breedte en lost onderaan op. Zijn kleur lekt naar beneden weg (een geklemde gloed en een vervaagde kopie) en loopt door tot in de lijst. Accenten uit de hoes: afspeelknop, ringen, voortgang, 'Meer', spelende titel en equalizer. De rest is neutraal.\n\nCriticus, podcastpagina en hitlijsten: goedgekeurd in ronde 3.\nSpeler en wachtrij, ronde 1: afgekeurd. Tekst op het glas haalde bij een lichte hoes geen AA.\nRonde 2: afgekeurd. Een linkkleur-regressie in de mini-speler.\nRonde 3: GOEDGEKEURD als één systeem over alle vier de schermen.",
+   "fill": "gray"
+  },
+  "nA": {
+   "x": 940,
+   "y": 0,
+   "w": 380,
+   "text": "Idee: de huidige indeling blijft, het bruine palet wordt neutraal grafiet (#121316 / #1A1B1F / #222429 / #2C2E34). Ember blijft het enige accent; niets kleurt mee.\n\nCriticus, ronde 1: afgekeurd. Daling (#F08A74) was bijna gelijk aan ember en rangnummers verschilden per scherm.\nRonde 2: GOEDGEKEURD. Daling #FF7A85, NIEUW als neutrale badge, rangcijfers overal neutraal, navigatiepil neutraal.\n\nTik op een hoes om te wisselen van testhoes.",
+   "fill": "gray"
+  },
+  "nB": {
+   "x": 940,
+   "y": 1400,
+   "w": 380,
+   "text": "Idee: neutrale bijna-zwarte basis (#101012). Op de podcastpagina loopt een gloed uit de hoes (DarkMuted) naar de basis; Volgen, afspeelknoppen en voortgang nemen de Vibrant-kleur over, verlicht tot AA. De mini-speler krijgt de donkere tint van wat er speelt.\n\nCriticus, ronde 1: afgekeurd. Daling botste met ember en de amberhoes bracht het bruin terug.\nRonde 2: GOEDGEKEURD. Chroma van donkere vlakken begrensd, tab-indicator neutraal, typografie 28/20/16/14/12.",
+   "fill": "gray"
+  },
+  "nC": {
+   "x": 940,
+   "y": 2980,
+   "w": 380,
+   "text": "Idee: Material You, maar dan met de hoes als seed. Accentrollen komen uit de hoes (primary toon 80). Oppervlakken houden een zeer lage chroma (warme tinten C≤2). Vormtaal M3 Expressive: gegroepeerde lijsten en segmenten met 3px-voegen.\n\nCriticus, ronde 1: afgekeurd. Containers op toon 30 werden bij amber en rood mosterd- en roestbruin, en de rollen verschilden per scherm.\nRonde 2: GOEDGEKEURD. Containers vervangen door neutraal met accentvoorgrond, één behandeling per rol.",
+   "fill": "gray"
+  },
+  "nD": {
+   "x": 940,
+   "y": 4560,
+   "w": 380,
+   "text": "Idee: de hoes zelf schijnt door. Een vervaagde, gedimde hoes vult de kop en de knoppen zijn van glas. De primaire actie is neutraal wit, zodat hij op elke hoes werkt. De mini-speler en de navigatie zijn matglas.\n\nCriticus, ronde 1: GOEDGEKEURD. Leesbaarheid gemeten tot en met een witte hoes (iconen ≥3,47:1).\nDaarna verwerkt: warme glastint terug naar neutraal, minder verzadiging, grotere raakvlakken.",
+   "fill": "gray"
+  },
+  "nE": {
+   "x": 940,
+   "y": 6140,
+   "w": 380,
+   "text": "Idee: de hoes is de kleur. De hoes staat over de volle breedte met de titel over een scrim. De rest is monochroom met haarlijnen en grote cijfers. Alleen de grote afspeelknop (en de voortgang) neemt de hoeskleur over.\n\nCriticus, ronde 1: GOEDGEKEURD. Scrim leesbaar tot en met een witte hoes (metaregel ~5,5:1).\nDaarna verwerkt: steilere scrim tegen olijftint bij amber, navigatie-indicator als streepje, grotere chips, outline als token.",
+   "fill": "gray"
+  }
+ },
+ "designSystems": []
+}

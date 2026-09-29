@@ -58,6 +58,7 @@ object WoolIcons {
     val Filter = stroke("filter", 1.9f, StrokeCap.Round, "M4 7h16", "M7 12h10", "M10 17h4")
     val Back = stroke("back", 2f, StrokeCap.Round, "M15 5l-7 7 7 7")
     val ChevronDown = stroke("chevron-down", 2f, StrokeCap.Round, "M6 9l6 6 6-6")
+    val ChevronUp = stroke("chevron-up", 2f, StrokeCap.Round, "M6 15l6-6 6 6")
     val ChevronRight = stroke("chevron-right", 2.2f, StrokeCap.Round, "M9 6l6 6-6 6")
     val Close = stroke("close", 2f, StrokeCap.Round, "M6 6l12 12", "M18 6L6 18")
     val Plus = stroke("plus", 2.2f, StrokeCap.Round, "M12 5v14", "M5 12h14")
@@ -79,8 +80,8 @@ object WoolIcons {
     val Queue = stroke("queue", 1.8f, StrokeCap.Round, "M4 7h11", "M4 12h11", "M4 17h7", "M17 12v8", "M20 15l-3-3-3 3")
     val QueueAdded = stroke("queue-added", 1.8f, StrokeCap.Round, "M4 7h11", "M4 12h11", "M4 17h7", "M14.5 17l2.5 2.5 4.5-4.5")
     val Share = stroke("share", 1.8f, StrokeCap.Round, "M12 15V4", "M8 8l4-4 4 4", "M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14")
-    val Save = stroke("save", 1.8f, StrokeCap.Round, "M12 4v11", "M8 11l4 4 4-4", "M5 19h14")
-    val Saved = stroke("saved", 1.8f, StrokeCap.Round, "M12 4v9", "M8 9l4 4 4-4", "M5 19h14", "M5 15h14")
+    val Save = stroke("save", 1.8f, StrokeCap.Round, "M6 4h12v16l-6-4-6 4z")
+    val Saved = stroke("saved", 1.8f, StrokeCap.Round, "M6 4h12v16l-6-4-6 4z", "M9 9.5l2 2 4-4")
 
     /* ---- lijsten ---- */
     val Clock = stroke("clock", 2f, StrokeCap.Round, circle(12f, 12f, 9f), "M12 7.5V12l3 2")

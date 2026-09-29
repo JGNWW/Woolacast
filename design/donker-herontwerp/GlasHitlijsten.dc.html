@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Matglas — hitlijsten</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Instrument+Sans:wght@400..700&amp;display=swap">
+<style>
+body{margin:0;background:#0F1012}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+.ph{--bg:#0F1012;--s1:#17181B;--s2:#1F2024;--s3:#292A2F;--line:#24252A;--ink:#F0F0F2;--ink2:#A9ABB2;--rise:#5BCB8F;--fall:#FF7A93;--brand:#F0895B;--onBrand:#2A1006;width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+.pal-red{--acc:#FF8F80;--glass:rgba(58,30,28,.9)}
+.pal-teal{--acc:#5CD6D1;--glass:rgba(20,44,44,.9)}
+.pal-amber{--acc:#F5C451;--glass:rgba(31,32,36,.9)}
+.dsp{font-family:'Bricolage Grotesque',system-ui,sans-serif}
+.ib{width:44px;height:44px;border-radius:22px;display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
+.cov{position:relative;overflow:hidden;box-sizing:border-box;flex:none}
+.cv-red{background:radial-gradient(circle at 74% 60%,#F6B39E 0 10%,transparent 10.5%),linear-gradient(170deg,#D8452F 0%,#A42A1F 55%,#5E130E 100%)}
+.cv-red::after{content:'';position:absolute;inset:auto 0 0 0;height:36%;background:#2A0907;clip-path:polygon(0 42%,16% 30%,29% 46%,47% 18%,63% 38%,81% 24%,100% 44%,100% 100%,0 100%)}
+.cv-teal{background:radial-gradient(circle at 50% -10%,#8FE6DB 0,#2A9C98 34%,#0E4F5A 68%,#06222B 100%)}
+.cv-teal::after{content:'';position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 125%,rgba(255,255,255,.13) 0 1.5%,transparent 1.5% 8%)}
+.cv-amber{background:linear-gradient(160deg,#F9D05C,#E39E1E 60%,#AC650F)}
+.cv-amber::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 74% 78%,#3B2208 0 27%,#6B3F0E 27.5% 29%,#3B2208 29.5% 33%,transparent 33.5%)}
+.a1{background:linear-gradient(150deg,#3B4AA8,#151B45)}
+.a2{background:linear-gradient(150deg,#A13A7C,#3F1030)}
+.a3{background:linear-gradient(150deg,#4E8A5E,#1B3322)}
+.a4{background:linear-gradient(150deg,#D9D1BD,#8A826E)}
+.ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:20px;color:rgba(255,255,255,.9)}
+.a4 .ini{color:#2E2A20}
+.chip{height:40px;border-radius:20px;padding:0 16px;display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:14px;color:var(--ink);background:rgba(255,255,255,.12)}
+.chip.on{background:#F0F0F2;color:#111214}
+.blur{position:absolute;left:-80px;right:-80px;top:-80px;height:420px;filter:blur(56px) saturate(1.1) brightness(.5)}
+.fade{position:absolute;left:0;right:0;top:0;height:380px;background:linear-gradient(180deg,rgba(15,16,18,.1) 0%,rgba(15,16,18,.6) 55%,#0F1012 100%)}
+.tab{height:48px;display:flex;align-items:center;font-weight:600;font-size:14px;color:var(--ink2);position:relative}
+.tab.on{color:var(--ink)}
+.tab.on::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--ink)}
+.row{display:flex;align-items:center;gap:12px;height:68px}
+.rk{width:28px;text-align:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:20px}
+.mv{width:44px;text-align:right;font-size:12px;font-weight:700}
+.badge{height:20px;padding:0 6px;border-radius:4px;background:var(--s3);color:var(--ink);font-size:12px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center}
+.mini{position:absolute;left:10px;right:10px;bottom:76px;height:62px;border-radius:18px;background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);display:flex;align-items:center;gap:12px;padding:0 6px 0 9px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
+.mini .pg{position:absolute;left:0;bottom:0;height:2px;background:var(--acc)}
+.nav{position:absolute;left:0;right:0;bottom:0;height:68px;background:rgba(15,16,18,.92);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.nv{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink2)}
+.nv.on{color:var(--ink)}
+.nv .pill{width:56px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+.nv.on .pill{background:rgba(255,255,255,.14)}
+</style>
+</helmet>
+<div class="ph {{c.pal}}">
+  <div class="cov blur a1"></div>
+  <div class="fade"></div>
+  <div style="position: relative; display: flex; align-items: center; padding: 30px 8px 0 20px; height: 56px">
+    <h1 class="dsp" style="margin: 0; flex-grow: 1; font-size: 28px; font-weight: 700">Hitlijsten</h1>
+    <button class="ib" aria-label="Zoeken"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></button>
+    <button class="ib" aria-label="Chart-alerts"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M13.7 20a2 2 0 01-3.4 0"></path></svg></button>
+  </div>
+
+  <div style="position: relative; display: flex; gap: 8px; padding: 14px 20px 0 20px">
+    <button class="chip on">Apple</button>
+    <button class="chip">Spotify</button>
+  </div>
+
+  <button style="position: relative; display: flex; align-items: center; gap: 8px; padding: 14px 20px 0 20px; width: 100%; box-sizing: border-box; font-size: 14px; font-weight: 600">
+    <span style="display: inline-flex; flex-direction: column; width: 20px; height: 14px; border-radius: 3px; overflow: hidden"><i style="flex-grow: 1; background: #AE1C28"></i><i style="flex-grow: 1; background: #F4F4F4"></i><i style="flex-grow: 1; background: #21468B"></i></span>
+    Nederland · Alle categorieën
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+    <span style="flex-grow: 1"></span>
+    <span style="font-size: 12px; font-weight: 500; color: var(--ink2)">vandaag 06:00</span>
+  </button>
+
+  <div style="position: relative; display: flex; gap: 26px; padding: 6px 20px 0 20px; border-bottom: 1px solid var(--line)">
+    <div class="tab on">Podcasts</div><div class="tab">Afleveringen</div>
+  </div>
+
+  <div style="position: relative; padding: 4px 20px 0 12px">
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+      <div class="row">
+        <div class="rk">{{r.rank}}</div>
+        <div class="cov {{r.art}}" style="width: 50px; height: 50px; border-radius: 10px"><sc-if value="{{r.ini}}" hint-placeholder-val="{{false}}"><span class="ini">{{r.ini}}</span></sc-if></div>
+        <div style="flex-grow: 1; min-width: 0">
+          <div style="font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</div>
+          <div style="font-size: 14px; color: var(--ink2); margin-top: 2px">{{r.pub}}</div>
+        </div>
+        <sc-if value="{{r.badge}}" hint-placeholder-val="{{false}}"><div class="badge">NIEUW</div></sc-if><sc-if value="{{r.plain}}" hint-placeholder-val="{{true}}"><div class="mv" style="color: {{r.col}}">{{r.mv}}</div></sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="mini">
+    <button aria-label="Andere hoes proberen" onClick="{{next}}" style="border-radius: 10px"><div class="cov {{c.cls}}" style="width: 44px; height: 44px; border-radius: 10px"></div></button>
+    <div style="flex-grow: 1; min-width: 0">
+      <div style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.ep}}</div>
+      <div style="font-size: 12px; color: rgba(240,240,242,.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.title}} · nog 18 min</div>
+    </div>
+    <button class="ib" aria-label="Pauzeren"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.3"></rect><rect x="13.5" y="5" width="4" height="14" rx="1.3"></rect></svg></button>
+    <button class="ib" aria-label="30 seconden vooruit"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"></path><path d="M20 4v4.5h-4.5"></path></svg></button>
+    <div class="pg" style="width: 58%"></div>
+  </div>
+
+  <nav class="nav">
+    <div class="nv on"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg></div>Hitlijsten</div>
+    <div class="nv"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg></div>Ontdek</div>
+    <div class="nv"><div class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg></div>Bibliotheek</div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"hoes":{"editor":"enum","options":["rood","blauwgroen","amber"],"default":"rood"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0 }; }
+  renderVals() {
+    const covers = [
+      { pal: 'pal-red', cls: 'cv-red', title: 'Het Verdwenen Dorp', ep: 'Kaarten die niet kloppen' },
+      { pal: 'pal-teal', cls: 'cv-teal', title: 'Diepzee', ep: 'Het geluid van walvissen' },
+      { pal: 'pal-amber', cls: 'cv-amber', title: 'Goud van Oud', ep: 'Tulpen en schulden' }
+    ];
+    const up = 'var(--rise)', down = 'var(--fall)', same = 'var(--ink2)';
+    const rows = [
+      { rank: 1, art: 'a1', ini: 'N', title: 'Nachtdienst', pub: 'Kees & Co', mv: '= 0', col: same },
+      { rank: 2, art: 'cv-red', ini: '', title: 'Het Verdwenen Dorp', pub: 'Studio Veenkoloniaal', mv: '▲ 2', col: up },
+      { rank: 3, art: 'cv-teal', ini: '', title: 'Diepzee', pub: 'Getij Media', mv: '▲ 5', col: up },
+      { rank: 4, art: 'a2', ini: 'O', title: 'Onder Vier Ogen', pub: 'Praatpaal', mv: '▼ 1', col: down },
+      { rank: 5, art: 'cv-amber', ini: '', title: 'Goud van Oud', pub: 'Radio Zolder', mv: 'NIEUW', col: 'var(--ink)', badge: true },
+      { rank: 6, art: 'a3', ini: 'S', title: 'Stille Waters', pub: 'Veldwerk', mv: '▼ 3', col: down },
+      { rank: 7, art: 'a4', ini: 'K', title: 'De Keukentafel', pub: 'Huiskamer Audio', mv: '▲ 1', col: up }
+    ];
+    const start = { rood: 0, blauwgroen: 1, amber: 2 }[this.props.hoes ?? 'rood'] ?? 0;
+    rows.forEach(r => { r.plain = !r.badge; });
+    return { c: covers[(start + this.state.step) % 3], rows, next: () => this.setState({ step: this.state.step + 1 }) };
+  }
+}
+</script>
+</body>
+</html>

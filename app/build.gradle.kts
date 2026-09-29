@@ -37,6 +37,21 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                // Schermafbeeldingen van de Beeldgloed-schermen (Robolectric) alleen op
+                // verzoek: ./gradlew testDebugUnitTest -Pscreenshots
+                it.systemProperty("woolacast.screenshots", project.hasProperty("screenshots").toString())
+                it.systemProperty("woolacast.screenshotDir", layout.buildDirectory.dir("screenshots").get().asFile.path)
+                // Zo tekent Robolectric via de echte renderer, met vervagen.
+                it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                it.systemProperty("roborazzi.test.record", project.hasProperty("screenshots").toString())
+            }
+        }
+    }
 }
 
 dependencies {
@@ -67,4 +82,11 @@ dependencies {
     implementation(libs.media3.session)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

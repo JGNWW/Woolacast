@@ -39,10 +39,10 @@ val LightChartColors = ChartColors(
 )
 
 val DarkChartColors = ChartColors(
-    rise = RiseDark, fall = FallDark, muted = NightInk3, rankAccent = EmberLight,
+    rise = RiseDark, fall = FallDark, muted = NightInk2, rankAccent = NightInk,
     panel = NightSurface3, onPanel = NightInk, onPanelMuted = NightInk2,
-    riseContainer = Color(0xFF1E3A2B), onRiseContainer = Color(0xFF7FD9A4),
-    fallContainer = Color(0xFF3F241C), onFallContainer = Color(0xFFF0A87F),
+    riseContainer = Color(0xFF1B3528), onRiseContainer = Color(0xFF7FD9A4),
+    fallContainer = Color(0xFF3A1D25), onFallContainer = Color(0xFFFFA3B4),
     seriesApple = Color(0xFFDE7047), seriesSpotify = Color(0xFF35A05F)
 )
 
@@ -87,6 +87,7 @@ private val DarkScheme = darkColorScheme(
     surfaceContainerLow = NightBg,
     surfaceContainer = NightSurface2,
     surfaceContainerHigh = NightSurface3,
+    surfaceContainerHighest = Color(0xFF32343A),
     outline = NightLine,
     outlineVariant = NightLine2,
     error = FallDark
