@@ -73,6 +73,19 @@ De eisen van de gebruiker:
   - Amber leest als een geklemde warme gloed (C ≈ 0,02 aan het begin van de lijst), niet als het oude bruin.
 - **Daarna verwerkt:** haarlijnen als `rgba(237,238,240,.08)`, zodat ze meegaan met de tint.
 
+### F — speler en wachtrij (op verzoek toegevoegd)
+- **Ronde 1: afgekeurd.**
+  - "SPEELT NU UIT" (11px, .78) op glas `.6` haalde bij amber 4,39 en bij een witte hoes 3,35.
+- **Ronde 2: afgekeurd.**
+  - Het glas was opgelost (`.72`, 12px). Maar de nieuwe link in de mini-speler op Podcast en Hitlijsten kreeg de standaard linkkleur (contrast 1,6), omdat de `a`-reset ontbrak.
+- **Ronde 3: goedgekeurd, als één systeem over alle vier de schermen.**
+  - Reset, glas, omlijning (1,5px, .5), chips (40/20, 650), labels (12px/.08em), radius 14 en "speelt nu" (accenttitel met equalizer) zijn overal gelijk.
+  - De spelende rij toont pauze.
+- **Aanbevolen voor productie:**
+  - de klemming per tint afleiden uit de hoes (HCT-tone), niet per hoes met de hand zetten;
+  - een fallback voor grijze en witte hoezen;
+  - optioneel een extra klem op amber: gloed `#342D22`, vervaagde kopie op opacity .4.
+
 ## Wat voor alle concepten gold
 - Een neutrale basis tussen `#0E0F11` en `#131314`, in plaats van het warme `#15120E`.
 - Dalen als roze-rood, ver van het merk-ember. Stijgen en dalen dragen altijd ook ▲/▼.

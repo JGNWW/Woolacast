@@ -117,6 +117,24 @@
    "title": "F · Beeldgloed (E + B) — hitlijsten",
    "is_interactive": true,
    "radius": 28
+  },
+  "FusieSpeler.dc.html": {
+   "x": 2500,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed — speler",
+   "is_interactive": true,
+   "radius": 28
+  },
+  "FusieWachtrij.dc.html": {
+   "x": 2970,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "F · Beeldgloed — speler, wachtrij open",
+   "is_interactive": true,
+   "radius": 28
   }
  },
  "order": [
@@ -131,7 +149,9 @@
   "BeeldPodcast.dc.html",
   "BeeldHitlijsten.dc.html",
   "FusiePodcast.dc.html",
-  "FusieHitlijsten.dc.html"
+  "FusieHitlijsten.dc.html",
+  "FusieSpeler.dc.html",
+  "FusieWachtrij.dc.html"
  ],
  "notes": {
   "tA": {
@@ -174,13 +194,13 @@
    "y": -280,
    "text": "F — Beeldgloed: volle hoes die naar beneden uitlekt (E + B)",
    "kind": "title1",
-   "maxW": 1300
+   "maxW": 1800
   },
   "nF": {
-   "x": 2500,
+   "x": 3440,
    "y": 0,
    "w": 380,
-   "text": "Idee: de hoes staat over de volle breedte (E) en lost onderaan op. Zijn kleur lekt naar beneden weg: een geklemde gloedkleur (B) plus een vervaagde kopie van de hoes, die geleidelijk doorloopt tot in de afleveringslijst. Accenten uit de hoes: de grote afspeelknop, de ringen van de afleveringen, de voortgang en 'Meer'. Volgen, tabs en chips blijven neutraal.\n\nCriticus, ronde 1: afgekeurd. Amber werd bruin, en de omlijning en secundaire tekst haalden het contrast niet.\nRonde 2: afgekeurd. Er zat een harde naad op 700px.\nRonde 3: GOEDGEKEURD. Naadloos verloop tot in de lijst (jouw wens), alles haalt AA, amber leest als een geklemde warme gloed, niet als het oude bruin.",
+   "text": "Compleet ontwerp in vier schermen: podcastpagina, hitlijsten, speler en speler met de wachtrij open. Tik op de mini-speler om naar de speler te gaan.\n\nIdee: de hoes staat over de volle breedte en lost onderaan op. Zijn kleur lekt naar beneden weg (een geklemde gloed en een vervaagde kopie) en loopt door tot in de lijst. Accenten uit de hoes: afspeelknop, ringen, voortgang, 'Meer', spelende titel en equalizer. De rest is neutraal.\n\nCriticus, podcastpagina en hitlijsten: goedgekeurd in ronde 3.\nSpeler en wachtrij, ronde 1: afgekeurd. Tekst op het glas haalde bij een lichte hoes geen AA.\nRonde 2: afgekeurd. Een linkkleur-regressie in de mini-speler.\nRonde 3: GOEDGEKEURD als één systeem over alle vier de schermen.",
    "fill": "gray"
   },
   "nA": {

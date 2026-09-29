@@ -12,7 +12,8 @@
 <style>
 body{margin:0;background:#0E0F11}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
-.ph{--bg:#0E0F11;--s1:#16171A;--s2:#1E1F23;--s3:#28292E;--line:#24262B;--ink:#EDEEF0;--ink2:#A0A3AA;--rise:#5BCB8F;--fall:#FF7A93;--outline:rgba(237,238,240,.5);--brand:#F0895B;--onBrand:#2A1006;width:390px;height:844px;position:relative;overflow:hidden;isolation:isolate;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.ph{--bg:#0E0F11;--s1:#16171A;--s2:#1E1F23;--s3:#28292E;--line:rgba(237,238,240,.08);--ink:#EDEEF0;--ink2:#A0A3AA;--rise:#5BCB8F;--fall:#FF7A93;--outline:rgba(237,238,240,.5);--brand:#F0895B;--onBrand:#2A1006;width:390px;height:844px;position:relative;overflow:hidden;isolation:isolate;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
 .pal-red{--acc:#FF8F80;--mini:#332220;}
 .pal-teal{--acc:#5CD6D1;--mini:#1A2B2B;}
 .pal-amber{--acc:#F5C451;--mini:#26241F;}
@@ -102,10 +103,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cu
   <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 170px; background: linear-gradient(180deg, rgba(0,0,0,0), var(--bg) 42%)"></div>
   <div class="mini">
     <button aria-label="Andere hoes proberen" onClick="{{next}}" style="border-radius: 10px"><div class="cov {{c.cls}}" style="width: 44px; height: 44px; border-radius: 8px"></div></button>
-    <div style="flex-grow: 1; min-width: 0">
+    <a href="FusieSpeler.dc.html" aria-label="Speler openen" style="flex-grow: 1; min-width: 0; display: block">
       <div style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.ep}}</div>
       <div style="font-size: 12px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{c.title}} · nog 18 min</div>
-    </div>
+    </a>
     <button class="ib" aria-label="Pauzeren"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.3"></rect><rect x="13.5" y="5" width="4" height="14" rx="1.3"></rect></svg></button>
     <button class="ib" aria-label="30 seconden vooruit"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"></path><path d="M20 4v4.5h-4.5"></path></svg></button>
     <div class="pg" style="width: 58%"></div>
