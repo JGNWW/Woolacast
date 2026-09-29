@@ -157,30 +157,9 @@ fun PlayerScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 GlassIconButton(WoolIcons.ChevronDown, "Speler inklappen", onCollapse)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(GlassColor)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        "SPEELT NU UIT",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.96.sp,
-                        color = NightInkSoft
-                    )
-                    Text(
-                        state.showTitle,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NightInk,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                // Geen "speelt nu uit"-label: de show staat al onder de titel, en zo
+                // blijft de hoes bovenin vrij.
+                Spacer(Modifier.weight(1f))
                 Box {
                     GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
