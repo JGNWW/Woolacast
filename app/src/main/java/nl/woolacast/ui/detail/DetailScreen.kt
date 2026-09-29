@@ -198,7 +198,6 @@ fun DetailScreen(
                                 fontSize = 32.sp,
                                 lineHeight = 35.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = (-0.6).sp,
                                 maxLines = 3,
                                 overflow = TextOverflow.Ellipsis
                             )

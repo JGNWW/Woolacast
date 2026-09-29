@@ -209,7 +209,6 @@ fun PlayerScreen(
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             lineHeight = 31.sp,
-                            letterSpacing = (-0.6).sp,
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -378,7 +377,24 @@ fun PlayerScreen(
         }
 
         Sheet.QUEUE -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
-            SheetTitle(if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(end = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(Modifier.weight(1f)) { SheetTitle(if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}") }
+                if (queue.isNotEmpty()) {
+                    Text(
+                        "Wissen",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = softInk(),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { queue.forEach { onRemoveQueued(it.id) } }
+                            .padding(horizontal = 12.dp, vertical = 12.dp)
+                    )
+                }
+            }
             QueueList(
                 state = state,
                 accent = cover.accent,

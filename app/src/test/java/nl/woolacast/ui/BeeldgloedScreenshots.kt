@@ -47,6 +47,8 @@ import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Episode
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.ui.common.MiniPlayer
+import nl.woolacast.ui.common.rememberCoverSeed
+import nl.woolacast.ui.theme.CoverSeed
 import nl.woolacast.ui.detail.DetailScreen
 import nl.woolacast.ui.detail.DetailViewModel
 import nl.woolacast.ui.player.PlayerScreen
@@ -56,6 +58,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
@@ -193,6 +198,30 @@ class BeeldgloedScreenshots {
         settle()
         // Het blad staat in een eigen venster; dit legt alle vensters vast.
         captureScreenRoboImage(File(outDir, "wachtrij-${shows[1].key}.png").path)
+    }
+
+    /**
+     * De podcastpagina opende met het oude merkaccent als de mini-speler dezelfde
+     * hoes al had ingeladen: een hoes uit de cache zette de kleur niet.
+     */
+    @Test
+    fun cachedCoverStillColoursASecondScreen() {
+        val url = "https://test.local/rood.png"
+        var second by mutableStateOf<String?>(null)
+        var first: CoverSeed? = null
+        var seen: CoverSeed? = null
+        compose.setContent {
+            first = rememberCoverSeed(url)
+            seen = rememberCoverSeed(second)
+        }
+        settle { first != null }
+        assertNotNull("eerste hoes geladen", first)
+        second = url
+        settle()
+        assertEquals(first, seen)
+        second = null
+        settle()
+        assertNull(seen)
     }
 
     private fun episode(show: Show, number: Int) = Episode(

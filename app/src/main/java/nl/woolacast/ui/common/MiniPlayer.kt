@@ -1,6 +1,9 @@
 package nl.woolacast.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
@@ -92,10 +95,20 @@ fun MiniPlayer(
                 tint = onMini,
                 iconSize = 24.dp
             )
-            IconAction(
-                WoolIcons.SkipForward, "${SKIP_FORWARD_MS / 1000} seconden vooruit", onSkipForward,
-                tint = onMini, iconSize = 24.dp
-            )
+            // Hetzelfde teken als in de speler: een rondje met het aantal seconden.
+            Box(
+                modifier = Modifier.size(44.dp).clip(CircleShape).clickable(onClick = onSkipForward),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(WoolIcons.Forward30, "${SKIP_FORWARD_MS / 1000} seconden vooruit", tint = onMini, modifier = Modifier.size(26.dp))
+                Text(
+                    "${SKIP_FORWARD_MS / 1000}",
+                    color = onMini,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
         }
         // Voortgang in de hoeskleur, als dunne lijn langs de onderrand.
         Box(

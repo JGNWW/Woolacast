@@ -92,7 +92,11 @@ fun rememberCoverSeed(url: String?): CoverSeed? {
     val context = LocalContext.current
     val cached = url?.let { seedCache.get(it) }
     val seed by produceState((cached as? SeedResult.Found)?.seed, url) {
-        if (url == null || cached != null) return@produceState
+        // Bij een andere hoes (ook een die al in de cache staat) altijd opnieuw
+        // zetten: produceState houdt anders de waarde van de vorige vast.
+        if (url == null) { value = null; return@produceState }
+        if (cached != null) { value = (cached as? SeedResult.Found)?.seed; return@produceState }
+        value = null
         val request = ImageRequest.Builder(context)
             .data(url)
             .size(48)

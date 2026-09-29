@@ -55,7 +55,8 @@ fun coverColors(seed: CoverSeed?, dark: Boolean): CoverColors {
     val warm = seed != null && isWarmHue(hue)
     return if (dark) {
         CoverColors(
-            accent = if (seed == null) EmberLight else oklch(0.80f, minOf(maxOf(chroma, 0.09f), 0.14f), hue),
+            // Rood verbleekt op L .80 tot zalm (de gamut knijpt de verzadiging af); iets donkerder houdt het rood.
+            accent = if (seed == null) EmberLight else oklch(if (hue < 40f || hue >= 340f) 0.77f else 0.80f, minOf(maxOf(chroma, 0.09f), 0.14f), hue),
             onAccent = if (seed == null) Color(0xFF2A1006) else oklch(0.22f, minOf(chroma, 0.05f), hue),
             glow = when {
                 seed == null -> Color(0xFF1E1F23)
