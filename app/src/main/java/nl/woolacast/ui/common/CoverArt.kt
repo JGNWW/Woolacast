@@ -96,7 +96,8 @@ fun rememberCoverSeed(url: String?): CoverSeed? {
         // zetten: produceState houdt anders de waarde van de vorige vast.
         if (url == null) { value = null; return@produceState }
         if (cached != null) { value = (cached as? SeedResult.Found)?.seed; return@produceState }
-        value = null
+        // Nog niet geladen: de vorige kleur blijft staan tot de nieuwe er is, zodat
+        // er bij het wisselen niet eerst het merkaccent tussendoor flitst.
         val request = ImageRequest.Builder(context)
             .data(url)
             .size(48)
