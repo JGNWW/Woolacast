@@ -83,6 +83,7 @@ fun LibraryScreen(
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val makers by viewModel.makers.collectAsStateWithLifecycle()
     val makerStatus by viewModel.makerStatus.collectAsStateWithLifecycle()
+    val makerFaces by viewModel.makerFaces.collectAsStateWithLifecycle()
     val newShows by viewModel.newShows.collectAsStateWithLifecycle()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val makersRefreshing by viewModel.makersRefreshing.collectAsStateWithLifecycle()
@@ -162,6 +163,7 @@ fun LibraryScreen(
                 MakersTab(
                     makers = makers,
                     status = makerStatus,
+                    faces = makerFaces,
                     newShows = newShows,
                     suggestions = suggestions,
                     onOpenMaker = onOpenMaker,

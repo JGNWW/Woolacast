@@ -49,6 +49,38 @@ Alles consistent. Het laatste advies, "beste plek" overal, is verwerkt.
 - **"beste #n" in plaats van "hoogste #n".** Zo past de regel naast de
   hoesjesstapel.
 
+## Muur (variant C) in plaats van rond logo
+
+Het ronde logo is weg. Een maker krijgt het gezicht van zijn podcasts: op zijn
+pagina een muur van hoezen, in lijsten een tegel. Beide schalen mee:
+
+| Podcasts | Makerpagina | Tegel |
+|---|---|---|
+| 1 | die hoes, zoals op de podcastpagina | die hoes |
+| 2 | duo, twee grote hoezen gekanteld | twee helften |
+| 3–5 | muur, elke rij één hoes verder | 3: groot + twee klein; 4+: 2×2 |
+| 6+ | muur, elke rij drie hoezen verder | 2×2 |
+
+**Ronde 1: afgekeurd.** De pagina zelf was consistent: `CoverBackdrop`, de glazen
+terugknop en de titel zijn dezelfde als op de podcastpagina. Afgekeurd om de
+tegels:
+- Dezelfde maker zag er per scherm anders uit, omdat elk scherm zijn eigen
+  hoezen gebruikte.
+- Een maker met twee podcasts, waarvan je er één volgt, stond als één losse
+  hoes in de suggesties.
+- De gloed kwam uit een hoes die grotendeels buiten beeld stond.
+
+**Ronde 2: goedgekeurd.**
+- Het gezicht van een maker is de eerste vier hoezen in Apple's volgorde. De
+  app onthoudt het zodra ze zijn shows laadt, en elk scherm toont het.
+  Suggesties halen het één keer op.
+- De muur zet de eerste hoes midden achter de titel.
+
+**Advies, verwerkt.** De verzamelaar zet de hoezen per kanaal in `makers.json`.
+Zo klopt de tegel op Hitlijsten al bij de eerste weergave. Een maker zonder
+kanaal toont daar zijn hoezen uit de lijst, tot de app zijn shows een keer
+heeft geladen.
+
 ## Buiten dit werk: app-brede punten
 
 - Randcontrast van `WoolButton`/`FilterChipBox` in licht.

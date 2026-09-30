@@ -41,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.domain.Episode
 import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.IconAction
-import nl.woolacast.ui.common.MakerLogo
+import nl.woolacast.ui.common.MakerTile
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.PlayCircle
 import nl.woolacast.ui.common.WoolIcons
@@ -144,7 +144,7 @@ fun SearchScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            MakerLogo(hit.maker.name, channel?.logoUrl, channel?.color, 52.dp)
+                            MakerTile(hit.artworks, 52.dp)
                             Column(Modifier.weight(1f)) {
                                 Text(hit.maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(

@@ -480,7 +480,7 @@ maker op Hitlijsten, en het tabblad Makers in de Bibliotheek. De ontwerpen en
 het onderzoek staan in `design/kanalen/`.
 
 **Wie is de maker.** Apple kent voor ongeveer een derde van de lijst een
-*kanaal*, met logo en kleur: van de Nederlandse Top 200 hangen 67 shows aan
+*kanaal*: van de Nederlandse Top 200 hangen 67 shows aan
 25 kanalen. De rest heeft alleen een makersnaam, en die is rommelig ("NPO
 Luister / BNNVARA", "Dag en Nacht | Podimo"). Eén regel maakt er één maker van:
 het kanaal als Apple er een kent, anders het eerste deel van de naam, gesplitst
@@ -489,17 +489,29 @@ op ` / `, ` | ` en ` & `. Zo telt elke show bij precies één maker.
 **Kanalen komen uit de verzamelaar.** Kanaalgegevens staan alleen achter de
 amp-api met het webtoken, en dat token haalt alleen `collect.py` op. De ronde
 `snapshot` schrijft daarom per land `apple/{land}/makers.json`: de kanalen met
-twee of meer shows in de lijsten, met logo, kleur, alle show-ids en Apple's
-lijst nieuwe shows, plus per show zijn kanaal. Een kanaal dat uit de lijsten
+twee of meer shows in de lijsten, met alle show-ids, de hoezen van de eerste
+vier (zijn gezicht in de app) en Apple's lijst nieuwe shows, plus per show zijn
+kanaal. Een kanaal dat uit de lijsten
 valt, blijft 90 dagen staan, zodat wie hem volgt niets mist. Los te draaien met
 `python3 collect.py makers --countries nl`. Voor NL is dat een minuut en 70
 kanalen.
+
+**Het gezicht van een maker.** Kanaallogo's zijn er maar voor een derde van de
+makers, dus de app gebruikt ze niet. Een maker krijgt het gezicht van zijn
+podcasts. Bovenaan de makerpagina staat een muur van hoezen onder een hoek,
+met de kleur van de eerste hoes erachter, zoals op de podcastpagina. De muur
+schaalt mee met wat er is: bij één podcast staat die ene hoes er groot, bij
+twee kantelen twee grote hoezen elk een kant op, vanaf drie is het een muur.
+Vanaf zes schuift elke rij drie hoezen op, zodat een hoes nooit naast of
+schuin onder zichzelf staat. In lijsten (Hitlijsten, Bibliotheek, Zoeken) is
+een maker een vierkantje met zijn hoezen: vier in een raster, drie als één
+groot en twee klein, twee als twee helften, één als die hoes.
 
 **Makerpagina.** Sorteren op *Populair* (de plek in de lijst die je op
 Hitlijsten kiest, altijd over alle categorieën), *Recent* (nieuwste aflevering)
 en *A–Z*. Met een kanaal zijn het alle shows van Apple, in één of twee
 opzoekingen. Zonder kanaal is het wat een zoekopdracht op naam vindt, en dan
-zegt de pagina "gevonden in de Apple-catalogus". Bij Spotify als bron koppelt de
+zegt de pagina "N podcasts gevonden". Bij Spotify als bron koppelt de
 app op titel; wat niet te koppelen is, staat eronder.
 
 **Per maker op Hitlijsten.** Dezelfde ranglijst, geteld per maker, met makers

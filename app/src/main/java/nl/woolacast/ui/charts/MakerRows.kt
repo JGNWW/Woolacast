@@ -2,14 +2,6 @@ package nl.woolacast.ui.charts
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import nl.woolacast.domain.Movement
@@ -22,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
@@ -50,9 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.woolacast.data.maker.MakerRank
 import nl.woolacast.data.maker.MakerRanking
-import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.IconAction
-import nl.woolacast.ui.common.MakerLogo
+import nl.woolacast.ui.common.MakerTile
 import nl.woolacast.ui.common.MovementBadge
 import nl.woolacast.ui.common.RankNumber
 import nl.woolacast.ui.common.SmallChip
@@ -136,7 +126,6 @@ internal fun LazyListScope.makerRows(
 
 @Composable
 private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
-    val channel = row.maker.channel
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -147,7 +136,8 @@ private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         RankNumber(row.rank, size = 22.dp, fontSize = 16.sp)
-        MakerLogo(row.maker.name, channel?.logoUrl, channel?.color, 44.dp)
+        // Het gezicht van een maker: zijn podcasts. Daarom geen losse hoesjes meer rechts.
+        MakerTile(row.artworks, 44.dp)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 row.maker.name,
@@ -164,7 +154,6 @@ private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
         }
-        CoverStack(row.artworks)
         MovementBadge(row.movement)
     }
 }
@@ -180,43 +169,6 @@ private fun spoken(row: MakerRank): String {
     }
     return listOfNotNull("Plek ${row.rank}", row.maker.name, "${row.count} podcasts", "beste plek ${row.best}", move)
         .joinToString(", ")
-}
-
-/**
- * Drie hoesjes die over elkaar schuiven. Tussen twee hoesjes zit een
- * uitsparing in plaats van een rand, zodat de gloed eronder gewoon doorloopt.
- * Het vak is altijd drie hoesjes breed: dan beginnen ze in elke rij op dezelfde plek.
- */
-@Composable
-private fun CoverStack(urls: List<String?>) {
-    val gap = 2.dp
-    Box(
-        Modifier
-            .width(52.dp)
-            .height(22.dp)
-            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-    ) {
-        urls.forEachIndexed { index, url ->
-            Artwork(
-                url, 22.dp, corner = 5.dp, elevation = 0.dp,
-                modifier = Modifier
-                    .offset(x = (15 * index).dp)
-                    .drawWithContent {
-                        if (index > 0) {
-                            val g = gap.toPx()
-                            drawRoundRect(
-                                color = Color.Black,
-                                topLeft = Offset(-g, -g),
-                                size = Size(size.width + 2 * g, size.height + 2 * g),
-                                cornerRadius = CornerRadius((5.dp + gap).toPx()),
-                                blendMode = BlendMode.Clear
-                            )
-                        }
-                        drawContent()
-                    }
-            )
-        }
-    }
 }
 
 /** Uitleg bij de telling: wie telt, hoe, en wat de pijl betekent. */

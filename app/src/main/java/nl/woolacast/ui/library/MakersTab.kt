@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.woolacast.data.local.FollowedMaker
 import nl.woolacast.ui.common.Artwork
-import nl.woolacast.ui.common.MakerLogo
+import nl.woolacast.ui.common.MakerTile
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.OutlinePillButton
 import nl.woolacast.ui.common.PanelCard
@@ -57,6 +57,7 @@ import nl.woolacast.ui.theme.LocalChartColors
 internal fun MakersTab(
     makers: List<FollowedMaker>,
     status: Map<String, MakerStatus>,
+    faces: Map<String, List<String>>,
     newShows: List<MakerNewShow>,
     suggestions: List<MakerSuggestion>,
     onOpenMaker: (String) -> Unit,
@@ -84,14 +85,14 @@ internal fun MakersTab(
             }
             item { SectionLabel("Je makers · ${makers.size}") }
             items(makers, key = { "maker-${it.key}" }) { maker ->
-                FollowedMakerRow(maker, status[maker.key], onOpenMaker, onUnfollow)
+                FollowedMakerRow(maker, status[maker.key], faces[maker.key], onOpenMaker, onUnfollow)
             }
         }
 
         if (suggestions.isNotEmpty()) {
             item { SectionLabel("Van podcasts die je volgt") }
             items(suggestions, key = { "suggestion-${it.key}" }) { suggestion ->
-                SuggestionRow(suggestion, onOpenMaker, onFollow)
+                SuggestionRow(suggestion, faces[suggestion.key], onOpenMaker, onFollow)
             }
         }
     }
@@ -127,6 +128,7 @@ private fun NewShowsCard(shows: List<MakerNewShow>, onOpen: (MakerNewShow) -> Un
 private fun FollowedMakerRow(
     maker: FollowedMaker,
     status: MakerStatus?,
+    face: List<String>?,
     onOpen: (String) -> Unit,
     onUnfollow: (String) -> Unit
 ) {
@@ -145,7 +147,7 @@ private fun FollowedMakerRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            MakerLogo(maker.name, status?.logoUrl ?: maker.logoUrl, status?.color ?: maker.color, 52.dp)
+            MakerTile(face ?: status?.artworks.orEmpty(), 52.dp)
             Column(Modifier.weight(1f)) {
                 Text(maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
@@ -177,7 +179,7 @@ private fun statusLine(status: MakerStatus?): String = when {
 }
 
 @Composable
-private fun SuggestionRow(suggestion: MakerSuggestion, onOpen: (String) -> Unit, onFollow: (MakerSuggestion) -> Unit) {
+private fun SuggestionRow(suggestion: MakerSuggestion, face: List<String>?, onOpen: (String) -> Unit, onFollow: (MakerSuggestion) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -187,7 +189,7 @@ private fun SuggestionRow(suggestion: MakerSuggestion, onOpen: (String) -> Unit,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        MakerLogo(suggestion.name, suggestion.logoUrl, suggestion.color, 52.dp)
+        MakerTile(face ?: suggestion.artworks, 52.dp)
         Column(Modifier.weight(1f)) {
             Text(suggestion.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(

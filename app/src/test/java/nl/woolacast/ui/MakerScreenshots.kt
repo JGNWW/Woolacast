@@ -118,7 +118,8 @@ class MakerScreenshots {
         Show(1101, "Oost aan Tafel", "Radio Oost", "amber", "Eten", 8),
         Show(1102, "Zaterdagavond Thuis", "Kade Media", "amber", "Comedy", 9),
         Show(1103, "Kort Lontje", "Dagblad Noord", "blauwgroen", "Comedy", 2, episodes = 3),
-        Show(1104, "Oost Kort", "Radio Oost", "rood", "Nieuws", 3, episodes = 2)
+        Show(1104, "Oost Kort", "Radio Oost", "rood", "Nieuws", 3, episodes = 2),
+        Show(1301, "Alleen Op De Wereld", "Studio Solo", "amber", "Verhalen", 4)
     )
 
     private val makers = DatasetMakers(
@@ -128,13 +129,15 @@ class MakerScreenshots {
                 id = "c-kade", name = "Kade Media", color = "14504e", logo = "https://test.local/logo-kade.png",
                 url = "https://podcasts.apple.com/nl/channel/id1", showCount = 7,
                 shows = listOf("1001", "1003", "1005", "1009", "1013", "1102", "1201"),
-                newShows = listOf(DatasetChannelShow("1201", "Nachtwerk Extra", "https://test.local/amber.png", null, daysAgo(3), 2))
+                covers = listOf("https://test.local/c1001.png", "https://test.local/c1003.png", "https://test.local/c1005.png", "https://test.local/c1009.png"),
+                newShows = listOf(DatasetChannelShow("1201", "Nachtwerk Extra", "https://test.local/c1201.png", null, daysAgo(3), 2))
             ),
             DatasetChannel(
                 id = "c-noord", name = "Dagblad Noord", color = "2b4c7e", logo = "https://test.local/logo-noord.png",
                 url = "https://podcasts.apple.com/nl/channel/id2", showCount = 4,
                 shows = listOf("1002", "1006", "1015", "1103"),
-                newShows = listOf(DatasetChannelShow("1103", "Kort Lontje", "https://test.local/blauwgroen.png", null, daysAgo(2), 3))
+                covers = listOf("https://test.local/c1002.png", "https://test.local/c1006.png", "https://test.local/c1015.png", "https://test.local/c1103.png"),
+                newShows = listOf(DatasetChannelShow("1103", "Kort Lontje", "https://test.local/c1103.png", null, daysAgo(2), 3))
             ),
             DatasetChannel(
                 id = "c-podium", name = "Podium Audio", color = "1e1b16", logo = "https://test.local/logo-podium.png",
@@ -154,7 +157,7 @@ class MakerScreenshots {
     private val chart = Chart(query, shows.mapIndexed { index, show ->
         ChartEntry(
             rank = index + 1, id = show.id.toString(), title = show.title, publisher = show.publisher,
-            artworkUrl = "https://test.local/${show.cover}.png", genre = show.genre, storeUrl = null,
+            artworkUrl = "https://test.local/c${show.id}.png", genre = show.genre, storeUrl = null,
             showId = show.id.toString()
         )
     }, updatedLabel = null)
@@ -192,11 +195,12 @@ class MakerScreenshots {
         }
     }
 
-    @Test fun makerKanaal() = makerpagina("maker-kanaal", "Kade Media", "1001", dark = false, follow = false)
-    @Test fun makerKanaalDonker() = makerpagina("maker-kanaal-donker", "Podium Audio", "1008", dark = true, follow = true)
-    @Test fun makerKanaalKleurDonker() = makerpagina("maker-kanaal-kleur-donker", "Kade Media", "1001", dark = true, follow = false)
-    @Test fun makerZonderKanaal() = makerpagina("maker-zonder-kanaal", "Radio Oost", "1004", dark = false, follow = false, highlight = true)
-    @Test fun makerZonderKanaalDonker() = makerpagina("maker-zonder-kanaal-donker", "Radio Oost", "1004", dark = true, follow = true)
+    @Test fun makerMuur() = makerpagina("maker-muur", "Kade Media", "1001", dark = false, follow = false)
+    @Test fun makerMuurDonker() = makerpagina("maker-muur-donker", "Kade Media", "1001", dark = true, follow = true)
+    @Test fun makerVijf() = makerpagina("maker-vijf", "Radio Oost", "1004", dark = false, follow = false, highlight = true)
+    @Test fun makerDuoDonker() = makerpagina("maker-duo-donker", "Podium Audio", "1008", dark = true, follow = true)
+    @Test fun makerDuo() = makerpagina("maker-duo", "Podium Audio", "1008", dark = false, follow = false)
+    @Test fun makerEen() = makerpagina("maker-een", "Studio Solo", null, dark = false, follow = false)
 
     private fun makerpagina(name: String, publisher: String, from: String?, dark: Boolean, follow: Boolean, highlight: Boolean = false) {
         val store = seededStore()
@@ -274,10 +278,10 @@ class MakerScreenshots {
         val makerRanks = mapOf("kademedia" to 2, "dagbladnoord" to 1, "radiooost" to 3, "podiumaudio" to 4)
         fun ranks(map: Map<String, Int>) = map.entries.joinToString(",") { "\"${it.key}\":${it.value}" }
         val follows = """[
-            {"id":"1002","title":"Het Vijfde Kwartier","publisher":"Dagblad Noord","artworkUrl":"https://test.local/blauwgroen.png"},
-            {"id":"1006","title":"Vandaag in Zeven","publisher":"Dagblad Noord","artworkUrl":"https://test.local/rood.png"},
-            {"id":"1010","title":"Zwart op Wit","publisher":"Studio Hemel","artworkUrl":"https://test.local/amber.png"},
-            {"id":"1008","title":"Koud Spoor","publisher":"Podium Audio","artworkUrl":"https://test.local/blauwgroen.png"}
+            {"id":"1002","title":"Het Vijfde Kwartier","publisher":"Dagblad Noord","artworkUrl":"https://test.local/c1002.png"},
+            {"id":"1006","title":"Vandaag in Zeven","publisher":"Dagblad Noord","artworkUrl":"https://test.local/c1006.png"},
+            {"id":"1010","title":"Zwart op Wit","publisher":"Studio Hemel","artworkUrl":"https://test.local/c1010.png"},
+            {"id":"1008","title":"Koud Spoor","publisher":"Podium Audio","artworkUrl":"https://test.local/c1008.png"}
         ]"""
         val makers = if (followMakers) """[
             {"key":"kademedia","name":"Kade Media","channelId":"c-kade","logoUrl":"https://test.local/logo-kade.png","color":"14504e","followedOn":"${daysAgo(20)}","knownShowIds":["1001","1003","1005","1009","1013","1102"]},
@@ -299,7 +303,7 @@ class MakerScreenshots {
 
     private fun lookup(show: Show) = LookupResult(
         wrapperType = "track", kind = "podcast", collectionId = show.id, collectionName = show.title,
-        artistName = show.publisher, artworkUrl600 = "https://test.local/${show.cover}.png",
+        artistName = show.publisher, artworkUrl600 = "https://test.local/c${show.id}.png",
         releaseDate = "${daysAgo(show.age)}T06:00:00Z", trackCount = show.episodes, primaryGenreName = show.genre,
         feedUrl = "https://test.local/${show.id}.xml"
     )
@@ -365,13 +369,18 @@ class MakerScreenshots {
     private class ArtInterceptor(private val context: Context) : Interceptor {
         override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
             val url = chain.request.data.toString()
+            val id = Regex("""c(\d+)""").find(url)?.groupValues?.get(1)?.toIntOrNull()
             val bitmap = when {
-                "logo-kade" in url -> logo(0xFF14504E.toInt(), "KADE")
-                "logo-noord" in url -> logo(0xFF2B4C7E.toInt(), "DN")
-                "logo-podium" in url -> logo(0xFF1E1B16.toInt(), "PA")
-                "rood" in url -> cover(0xFFB5482A.toInt(), 0xFFF4E3CE.toInt())
-                "blauwgroen" in url -> cover(0xFF14504E.toInt(), 0xFFE9D9B8.toInt())
-                else -> cover(0xFFDFA83A.toInt(), 0xFF25201A.toInt())
+                "logo-" in url -> logo(0xFF1E1B16.toInt(), "LOGO")
+                id != null -> {
+                    // Een volgnummer per testshow (1001 → 0, 1101 → 15, 1201 → 30); kleur en vorm
+                    // lopen daar verschillend doorheen, zodat twee shows van één maker nooit gelijk zijn.
+                    val n = id % 100 - 1 + (id / 100 - 10) * 15
+                    PALETTE[n % PALETTE.size].let { (bg, fg, _) -> cover(bg, fg, (n + n / 10) % 4) }
+                }
+                "rood" in url -> cover(0xFFB5482A.toInt(), 0xFFF4E3CE.toInt(), 0)
+                "blauwgroen" in url -> cover(0xFF14504E.toInt(), 0xFFE9D9B8.toInt(), 1)
+                else -> cover(0xFFDFA83A.toInt(), 0xFF25201A.toInt(), 2)
             }
             return SuccessResult(BitmapDrawable(context.resources, bitmap), chain.request, DataSource.MEMORY)
         }
@@ -387,10 +396,25 @@ class MakerScreenshots {
             }
         }
 
-        private fun cover(background: Int, accent: Int) = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888).also {
+        private val PALETTE = listOf(
+            Triple(0xFFB5482A.toInt(), 0xFFF4E3CE.toInt(), 0), Triple(0xFF14504E.toInt(), 0xFFE9D9B8.toInt(), 1),
+            Triple(0xFFDFA83A.toInt(), 0xFF25201A.toInt(), 2), Triple(0xFF332F63.toInt(), 0xFFEDE2CE.toInt(), 3),
+            Triple(0xFF7E3149.toInt(), 0xFFF0DCC6.toInt(), 0), Triple(0xFF3C5A2B.toInt(), 0xFFDCE8C4.toInt(), 2),
+            Triple(0xFF1E1B16.toInt(), 0xFFD9683C.toInt(), 1), Triple(0xFFD2825A.toInt(), 0xFF2A241D.toInt(), 3),
+            Triple(0xFF2B4C7E.toInt(), 0xFFE7D8BE.toInt(), 0), Triple(0xFF7E5AA0.toInt(), 0xFFF2E6D4.toInt(), 1)
+        )
+
+        /** Een testhoes: vlak met een vorm, zoals de hoezen in de ontwerpmockups. */
+        private fun cover(background: Int, accent: Int, shape: Int) = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888).also {
             Canvas(it).apply {
                 drawColor(background)
-                drawCircle(210f, 100f, 70f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = accent })
+                val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = accent }
+                when (shape) {
+                    0 -> drawCircle(210f, 100f, 70f, paint)
+                    1 -> drawPath(android.graphics.Path().apply { moveTo(140f, 0f); lineTo(200f, 0f); lineTo(90f, 300f); lineTo(30f, 300f); close() }, paint)
+                    2 -> drawCircle(150f, 320f, 140f, paint)
+                    else -> for (x in 0 until 5) drawRect(20f + x * 58f, 0f, 44f + x * 58f, 300f, paint)
+                }
             }
         }
     }

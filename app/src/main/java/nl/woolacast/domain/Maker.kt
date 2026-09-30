@@ -32,7 +32,9 @@ data class Channel(
     val url: String?,
     val showCount: Int,
     val showIds: List<String>,
-    val newShows: List<ChannelShow>
+    val newShows: List<ChannelShow>,
+    /** De hoezen van zijn eerste vier shows, zoals de verzamelaar ze vastlegde. */
+    val covers: List<String> = emptyList()
 )
 
 /** Een nieuwe show van een kanaal, uit Apple's lijst "nieuwe programma's" van dat kanaal. */

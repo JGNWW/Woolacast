@@ -1,9 +1,9 @@
 package nl.woolacast.ui.maker
 
 import android.content.Intent
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,10 +26,11 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -57,20 +59,24 @@ import nl.woolacast.ui.common.Flag
 import nl.woolacast.ui.common.OutlineCircleButton
 import nl.woolacast.ui.common.OutlinePillButton
 import nl.woolacast.ui.common.softInk
-import nl.woolacast.ui.common.MakerGlow
-import nl.woolacast.ui.common.MakerLogo
+import nl.woolacast.ui.common.CoverBackdrop
+import nl.woolacast.ui.common.GlassIconButton
+import nl.woolacast.ui.common.MakerWall
+import nl.woolacast.ui.common.rememberCoverColors
+import nl.woolacast.ui.common.rememberListScrollPx
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.SectionLabel
 import nl.woolacast.ui.common.TextPill
-import nl.woolacast.ui.common.TitleBar
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.relativeDay
+import nl.woolacast.ui.theme.DisplayFamily
 import nl.woolacast.ui.theme.LocalChartColors
 
 /**
- * De pagina van een maker: logo en kleur als Apple een kanaal kent, en al zijn
- * shows, te ordenen op waar ze in de hitlijst staan, op nieuwste aflevering of
- * op naam.
+ * De pagina van een maker. Een maker heeft geen eigen beeld: bovenaan staat een
+ * muur van zijn podcasts, met dezelfde gloed en oplossende rand als de hoes op
+ * de podcastpagina. Daaronder al zijn shows, te ordenen op waar ze in de
+ * hitlijst staan, op nieuwste aflevering of op naam.
  */
 @Composable
 fun MakerScreen(
@@ -83,11 +89,15 @@ fun MakerScreen(
     val following by viewModel.following.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val channel = state.maker.channel
+    val density = LocalDensity.current
 
     val listState = rememberLazyListState()
-    // Voorbij de kop staat de naam in de balk, zoals de titel op de podcastpagina.
-    val titleShown by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
-    val titleAlpha by animateFloatAsState(if (titleShown) 1f else 0f, tween(150), label = "titel")
+    val scrollPx = rememberListScrollPx(listState)
+    // De hoezen in de volgorde waarin ze binnenkomen: bij een kanaal is dat
+    // Apple's eigen volgorde van populair naar minder, dus de muur verspringt
+    // niet als de plekken in de hitlijst later binnenkomen.
+    val covers = remember(state.shows) { state.shows.mapNotNull { it.podcast.artworkUrl }.distinct() }
+    val cover = rememberCoverColors(covers.firstOrNull())
     val share: (() -> Unit)? = channel?.url?.let { url ->
         {
             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -99,119 +109,151 @@ fun MakerScreen(
         }
     }
 
+    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
     Box(modifier = modifier.fillMaxSize()) {
-        MakerGlow(channel?.color)
-        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            Box {
-                TitleBar(null, onBack)
-                Text(
-                    state.maker.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.5.sp, fontWeight = FontWeight.Bold),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 60.dp, end = 20.dp)
-                        .graphicsLayer { alpha = titleAlpha }
-                        .then(if (titleShown) Modifier else Modifier.clearAndSetSemantics {})
+        val ready = !state.loading && state.error == null && state.shows.isNotEmpty()
+        if (ready) {
+            CoverBackdrop(
+                url = covers.firstOrNull(),
+                colors = cover,
+                scrollPx = scrollPx,
+                // Eén hoes: die hoes zelf, zoals bij een podcast. Meer: de muur.
+                art = if (covers.size >= 2) { heroModifier -> MakerWall(covers, heroModifier) } else null
+            )
+        }
+
+        when {
+            state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+
+            state.error != null -> Column(Modifier.fillMaxSize().statusBarsPadding().padding(top = 52.dp)) {
+                NoticePanel(
+                    title = "Niet geladen",
+                    message = state.error.orEmpty(),
+                    actionLabel = "Opnieuw proberen",
+                    onAction = viewModel::load
                 )
             }
 
-            LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 24.dp)) {
+            state.shows.isEmpty() -> Column(Modifier.fillMaxSize().statusBarsPadding().padding(top = 52.dp)) {
+                NoticePanel(
+                    title = "Niets gevonden",
+                    message = "Apple kent geen podcasts van ${state.maker.name}."
+                )
+            }
+
+            else -> LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 24.dp)) {
+                // De muur staat erachter; de naam valt over zijn oplossende onderrand.
                 item { MakerHeader(state, following, viewModel::toggleFollow, share) }
-
-                when {
-                    state.loading -> item {
-                        Box(Modifier.fillMaxWidth().padding(top = 48.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
+                item {
+                    Row(
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        MakerSort.entries.forEach { sort ->
+                            FilterChipBox(sort.label, selected = state.sort == sort, onClick = { viewModel.setSort(sort) })
                         }
-                    }
-
-                    state.error != null -> item {
-                        NoticePanel(
-                            title = "Niet geladen",
-                            message = state.error.orEmpty(),
-                            actionLabel = "Opnieuw proberen",
-                            onAction = viewModel::load
-                        )
-                    }
-
-                    state.shows.isEmpty() -> item {
-                        NoticePanel(
-                            title = "Niets gevonden",
-                            message = "Apple kent geen podcasts van ${state.maker.name}."
-                        )
-                    }
-
-                    else -> {
-                        item {
-                            Row(
-                                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                MakerSort.entries.forEach { sort ->
-                                    FilterChipBox(sort.label, selected = state.sort == sort, onClick = { viewModel.setSort(sort) })
-                                }
-                            }
-                        }
-                        item { PlacementLine(state, viewModel::setSource) }
-                        showRows(state, onOpenPodcast)
                     }
                 }
+                item { PlacementLine(state, viewModel::setSource) }
+                showRows(state, onOpenPodcast)
             }
         }
+
+        // Voorbij de muur wordt de balk dicht, met de naam erin, zoals op de podcastpagina.
+        if (ready) {
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val coverPx = with(density) { maxWidth.toPx() }
+                val barPx = with(density) { 120.dp.toPx() }
+                val shown = {
+                    val y = scrollPx()
+                    if (y == Float.MAX_VALUE) 1f else ((y - (coverPx - 2 * barPx)) / barPx).coerceIn(0f, 1f)
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer { alpha = shown() }
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .height(52.dp)
+                        .padding(start = 66.dp, end = 66.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        state.maker.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        // Onzichtbaar is ook stil: de naam staat dan al in de kop.
+                        modifier = Modifier.clearAndSetSemantics {}
+                    )
+                }
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    modifier = Modifier
+                        .graphicsLayer { alpha = shown() }
+                        .statusBarsPadding()
+                        .padding(top = 52.dp)
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 10.dp, vertical = 4.dp)
+        ) {
+            GlassIconButton(WoolIcons.Back, "Terug", onBack)
+        }
+    }
     }
 }
 
 @Composable
 private fun MakerHeader(state: MakerUiState, following: Boolean, onToggleFollow: () -> Unit, onShare: (() -> Unit)?) {
-    val channel = state.maker.channel
     val soft = softInk()
-    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            MakerLogo(state.maker.name, channel?.logoUrl, channel?.color, 64.dp)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    "MAKER",
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, letterSpacing = 0.96.sp),
-                    color = soft
-                )
-                Text(
-                    state.maker.name,
-                    style = MaterialTheme.typography.displaySmall.copy(fontSize = 26.sp, lineHeight = 30.sp),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                countLine(state)?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = soft)
-                }
-            }
-        }
-        Spacer(Modifier.height(14.dp))
-        // Dezelfde knoppen als op de podcastpagina: volgen als pil, delen als rondje ernaast.
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinePillButton(
-                text = if (following) "Gevolgd" else "Volg maker",
-                icon = if (following) WoolIcons.Check else WoolIcons.Plus,
-                onClick = onToggleFollow,
-                selected = following,
-                // Pas volgen als bekend is wie de maker is (kanaal of naam).
-                enabled = !state.loading
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val k = maxWidth / 390.dp
+        Column(Modifier.padding(start = 20.dp, end = 20.dp, top = (294 * k).dp)) {
+            Text(
+                eyebrow(state).uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, letterSpacing = 0.96.sp),
+                color = soft,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            if (onShare != null) OutlineCircleButton(WoolIcons.Share, "Maker delen", onShare)
+            Spacer(Modifier.height(6.dp))
+            Text(
+                state.maker.name,
+                fontFamily = DisplayFamily,
+                fontSize = 32.sp,
+                lineHeight = 35.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(18.dp))
+            // Dezelfde knoppen als op de podcastpagina: volgen als pil, delen als rondje ernaast.
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                OutlinePillButton(
+                    text = if (following) "Gevolgd" else "Volg maker",
+                    icon = if (following) WoolIcons.Check else WoolIcons.Plus,
+                    onClick = onToggleFollow,
+                    selected = following
+                )
+                if (onShare != null) OutlineCircleButton(WoolIcons.Share, "Maker delen", onShare)
+            }
         }
     }
 }
 
-/** "31 podcasts" als het kanaal compleet is; anders zeggen we waar het getal vandaan komt. */
-private fun countLine(state: MakerUiState): String? {
+/** "Maker · 31 podcasts" als het kanaal compleet is; anders zeggen we dat het gevonden podcasts zijn. */
+private fun eyebrow(state: MakerUiState): String {
     val channel = state.maker.channel
-    return when {
+    val count = when {
         channel != null && state.complete -> if (channel.showCount == 1) "1 podcast" else "${channel.showCount} podcasts"
-        state.loading -> null
-        state.shows.size == 1 -> "1 gevonden in de Apple-catalogus"
-        else -> "${state.shows.size} gevonden in de Apple-catalogus"
+        state.shows.size == 1 -> "1 podcast gevonden"
+        else -> "${state.shows.size} podcasts gevonden"
     }
+    return "Maker · $count"
 }
 
 /** De regel die zegt welke lijst "Populair" is. Tik erop om van bron te wisselen. */
