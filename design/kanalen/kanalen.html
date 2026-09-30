@@ -1,0 +1,866 @@
+<title>Kanalen voor Toadcast</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Werkblad van de ontwerpstudio: het papier en ember van de app, telefoons naast de tekst. */
+:root{
+  --p-bg:#F3EEE6; --p-card:#FFFDFA; --p-ink:#211D17; --p-ink2:#5F564B; --p-line:#E0D6C6;
+  --p-accent:#B24A22; --p-ok:#0B6E3E; --p-okbg:#DCF0E4; --p-no:#8E2C1B;
+  --f-display:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif;
+  --f-body:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --p-bg:#0E0F11; --p-card:#16171A; --p-ink:#EDEEF0; --p-ink2:#A0A3AA; --p-line:#2C2E33;
+  --p-accent:#F0895B; --p-ok:#7FD9A4; --p-okbg:#1B3528; --p-no:#FFA3B4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --p-bg:#0E0F11; --p-card:#16171A; --p-ink:#EDEEF0; --p-ink2:#A0A3AA; --p-line:#2C2E33;
+  --p-accent:#F0895B; --p-ok:#7FD9A4; --p-okbg:#1B3528; --p-no:#FFA3B4; color-scheme:dark}
+body{background:var(--p-bg);color:var(--p-ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.page{max-width:1120px;margin:0 auto;padding-inline:20px;padding-block:48px 80px}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,6vw,56px);line-height:1.02;font-weight:800}
+h2{font-size:clamp(24px,3.2vw,32px);line-height:1.1;font-weight:700}
+h3{font-size:19px;font-weight:700;margin-bottom:10px}
+p{margin:0}
+.eyebrow-p{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--p-accent);margin-bottom:14px}
+.intro{display:grid;gap:18px;max-width:68ch;margin-bottom:40px}
+.intro p{color:var(--p-ink2);font-size:17px}
+.intro strong{color:var(--p-ink)}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.jump a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:12px;background:var(--p-card);border:1px solid var(--p-line);color:var(--p-ink);font-weight:600;font-size:14px;text-decoration:none}
+.jump a b{font-family:var(--f-display);color:var(--p-accent)}
+.jump a:focus-visible,summary:focus-visible{outline:2px solid var(--p-accent);outline-offset:2px}
+.block{margin-top:56px}
+.block>h2{margin-bottom:8px}
+.block>.sub{color:var(--p-ink2);max-width:68ch;margin-bottom:20px}
+.tablewrap{overflow-x:auto;border:1px solid var(--p-line);border-radius:16px;background:var(--p-card)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--p-line)}
+th{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--p-ink2);font-weight:700}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:700;white-space:nowrap}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.fact{background:var(--p-card);border:1px solid var(--p-line);border-radius:16px;padding:16px 18px}
+.fact .big{font-family:var(--f-display);font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.fact p{color:var(--p-ink2);font-size:14.5px;margin-top:4px}
+.lessons{display:grid;gap:10px;margin-top:18px;max-width:72ch;padding-left:20px;color:var(--p-ink2)}
+.lessons b{color:var(--p-ink)}
+.concept{display:grid;grid-template-columns:auto minmax(0,1fr);gap:40px;align-items:start;padding:40px 0;border-top:1px solid var(--p-line)}
+.concept:first-of-type{border-top:0}
+.shots{display:flex;gap:20px}
+.shot{margin:0;width:300px;max-width:100%}
+.shot figcaption{font-size:13px;color:var(--p-ink2);margin-top:10px}
+.fit{width:100%;aspect-ratio:390/844;overflow:hidden;border-radius:26px;box-shadow:0 1px 0 var(--p-line),0 14px 34px rgba(33,29,23,.18);background:#FAF6F0}
+.scale{width:390px;height:844px;transform-origin:0 0}
+.copy{min-width:0;max-width:62ch}
+.num{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--p-accent);margin-bottom:6px}
+.lede{font-size:17px;color:var(--p-ink2);margin:12px 0 18px}
+dl{display:grid;grid-template-columns:128px minmax(0,1fr);gap:10px 16px;margin:0 0 20px;font-size:15px}
+dt{font-weight:700}
+dd{margin:0;color:var(--p-ink2)}
+.rounds{border:1px solid var(--p-line);border-radius:14px;background:var(--p-card);padding:0 16px}
+.rounds summary{min-height:48px;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:14.5px}
+.ok{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:7px;background:var(--p-okbg);color:var(--p-ok);font-size:12.5px;font-weight:700}
+.muted{color:var(--p-ink2);font-weight:500}
+.rounds ol{margin:0 0 14px;padding-left:20px;display:grid;gap:8px;font-size:14.5px;color:var(--p-ink2)}
+.ok-t{color:var(--p-ok)}.no-t{color:var(--p-no)}
+.plan{counter-reset:s;display:grid;gap:12px;max-width:72ch;padding:0;list-style:none}
+.plan li{counter-increment:s;display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:start}
+.plan li::before{content:counter(s);font-family:var(--f-display);font-weight:800;font-size:22px;color:var(--p-accent);line-height:1.3}
+.plan li p{color:var(--p-ink2)}
+.srcs{font-size:14px;color:var(--p-ink2);display:grid;gap:6px;padding-left:20px;margin:0}
+.srcs a{color:var(--p-accent)}
+.note-p{font-size:13.5px;color:var(--p-ink2);margin-top:14px}
+@media (max-width:880px){
+  .concept{grid-template-columns:minmax(0,1fr);gap:24px}
+  .shots{flex-wrap:wrap;min-width:0}
+  .shot{width:min(300px,100%)}
+  dl{grid-template-columns:1fr;gap:2px}
+  dd{margin-bottom:10px}
+}
+@media (prefers-reduced-motion:no-preference){.rounds summary{transition:color .15s}}
+.ph{
+  --bg:#FAF6F0; --surf:#FFFDFA; --surf2:#F2EBE0; --surf3:#E8DFD1;
+  --line:#E4DACA; --line2:#F0E8DC;
+  --ink:#211D17; --ink2:#6E6458; --ink3:#988C7A;
+  --pri:#C4542B; --priInk:#FFFDFA; --priC:#FBE3D4; --priOn:#5A2110;
+  --up:#0E8A4E; --down:#C03A24;
+  --appl:#C4542B; --spot:#0E8A4E; --yout:#1B6FE0;
+}
+*{box-sizing:border-box}
+
+
+.ph{width:390px;height:844px;overflow:hidden;position:relative;background:var(--bg);
+  font-family:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;color:var(--ink);
+  font-size:14px;line-height:1.35;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.dsp{font-family:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif}
+.sa{height:48px;flex:none}
+.col{display:flex;flex-direction:column}
+.body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.body>*{flex:none}
+.pad{padding-left:20px;padding-right:20px}
+.row{display:flex;align-items:center}
+
+/* ---- top app bar ---- */
+.appbar{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 12px 0 20px;flex:none}
+.mark{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pri)}
+.ibtn{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);flex:none}
+.ibtn:hover{background:var(--surf2)}
+.h1{font-size:32px;font-weight:700;letter-spacing:-.022em;line-height:1.05;margin:0}
+.h2{font-size:19px;font-weight:700;letter-spacing:-.014em;margin:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+
+/* ---- source chips ---- */
+.srcrow{display:flex;gap:8px;overflow:hidden}
+.src{display:flex;align-items:center;gap:8px;height:44px;padding:0 15px 0 11px;border-radius:12px;
+  background:var(--surf);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink2);
+  white-space:nowrap;flex:none;cursor:pointer}
+.src .dot{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#FFFDFA;background:var(--ink3);flex:none}
+.src.on{background:var(--ink);border-color:var(--ink);color:#FBF6EE}
+.src.on .dot{background:var(--pri)}
+.src.off{opacity:.42}
+
+/* ---- context / filter bar ---- */
+.ctx{display:flex;align-items:center;gap:8px;height:46px;padding:0 8px 0 12px;border-radius:14px;
+  background:var(--surf2);border:1px solid var(--line2);cursor:pointer}
+.ctx .lbl{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.ctx .sep{color:var(--ink3)}
+.flag{width:20px;height:14px;border-radius:3px;overflow:hidden;flex:none;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(33,29,23,.12) inset}
+.flag i{flex:1;display:block}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:24px;height:46px;align-items:center}
+.tab{font-size:15px;font-weight:600;color:var(--ink3);height:46px;display:flex;align-items:center;
+  position:relative;cursor:pointer}
+.tab.on{color:var(--ink)}
+.tab.on:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--pri)}
+
+/* ---- chart rows ---- */
+.list{display:flex;flex-direction:column}
+.lrow{display:flex;align-items:center;gap:12px;height:72px;border-bottom:1px solid var(--line2)}
+.rank{width:26px;text-align:right;font-size:19px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);flex:none}
+.rank.top{color:var(--pri)}
+.art{width:52px;height:52px;border-radius:11px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.t1{font-size:14.5px;font-weight:600;letter-spacing:-.008em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:700;
+  font-variant-numeric:tabular-nums;flex:none;width:38px;justify-content:flex-end}
+.mv.new{font-size:10px;letter-spacing:.08em;color:var(--pri)}
+.mv.flat{color:var(--ink3)}
+
+/* ---- artwork ---- */
+.a1{background-color:#B5482A;background-image:radial-gradient(circle at 70% 32%,#F4E3CE 0 24%,rgba(0,0,0,0) 24%)}
+.a2{background-color:#14504E;background-image:linear-gradient(115deg,rgba(0,0,0,0) 40%,#E9D9B8 40% 57%,rgba(0,0,0,0) 57%)}
+.a3{background-color:#DFA83A;background-image:radial-gradient(circle at 50% 106%,#25201A 0 46%,rgba(0,0,0,0) 46%)}
+.a4{background-color:#332F63;background-image:repeating-linear-gradient(90deg,#EDE2CE 0 5px,rgba(0,0,0,0) 5px 15px)}
+.a5{background-color:#7E3149;background-image:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 0 21%,#F0DCC6 21% 33%,rgba(0,0,0,0) 33%)}
+.a6{background-color:#3C5A2B;background-image:conic-gradient(from 200deg at 28% 72%,#DCE8C4 0 25%,rgba(0,0,0,0) 25%)}
+.a7{background-color:#1E1B16;background-image:radial-gradient(circle at 50% 50%,#D9683C 0 17%,rgba(0,0,0,0) 17%);background-size:24px 24px}
+.a8{background-color:#D2825A;background-image:conic-gradient(from 0deg at 100% 0%,#2A241D 0 25%,rgba(0,0,0,0) 25%)}
+.a9{background-color:#2B4C7E;background-image:linear-gradient(0deg,#E7D8BE 0 33%,rgba(0,0,0,0) 33%)}
+.a10{background-color:#7E5AA0;background-image:radial-gradient(circle at 24% 24%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%),radial-gradient(circle at 76% 76%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%)}
+
+/* ---- buttons & chips ---- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:13px;
+  font-size:14.5px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.btn-p{background:var(--pri);color:var(--priInk)}
+.btn-o{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-t{background:var(--surf2);color:var(--ink)}
+.chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;
+  background:var(--surf);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.chip.on{background:var(--priC);border-color:#EFC7AF;color:var(--priOn)}
+.chip.dis{opacity:.38}
+
+/* ---- mini player + bottom nav ---- */
+.mini{display:flex;align-items:center;gap:12px;height:60px;margin:0 12px 6px;padding:0 8px 0 8px;border-radius:15px;
+  background:var(--ink);color:#F6EFE5;box-shadow:0 6px 20px rgba(33,29,23,.22);flex:none}
+.mini .art{width:44px;height:44px;border-radius:9px;box-shadow:none}
+.nav{display:flex;align-items:center;justify-content:space-around;height:64px;flex:none;
+  border-top:1px solid var(--line2);background:var(--bg)}
+.navi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:96px;height:64px;
+  color:var(--ink3);font-size:11px;font-weight:600}
+.navi.on{color:var(--pri)}
+.gest{height:22px;flex:none;display:flex;align-items:center;justify-content:center}
+.gest i{width:120px;height:4px;border-radius:2px;background:var(--line);display:block}
+
+/* ---- misc ---- */
+.card{background:var(--surf);border:1px solid var(--line2);border-radius:16px}
+.sect{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.hr{height:1px;background:var(--line2)}
+.note{font-size:11.5px;color:var(--ink3);line-height:1.4}
+.scroll-fade{position:absolute;left:0;right:0;height:44px;pointer-events:none}
+.lbl2{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:14px 0 9px}
+.ebody{flex:1 1 auto;min-width:0}
+
+/* ---- episode rows ---- */
+.erow{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+.erank{width:24px;text-align:right;font-size:18px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);padding-top:3px;flex:none}
+.erank.top{color:var(--pri)}
+.eart{width:56px;height:56px;border-radius:12px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.etitle{font-size:14.5px;font-weight:600;letter-spacing:-.008em;line-height:1.28;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.eshow{font-size:12.5px;color:var(--ink2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emeta{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11.5px;color:var(--ink3);font-weight:500}
+.pill{display:flex;align-items:center;gap:3px;height:19px;padding:0 7px;border-radius:6px;
+  font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.pbtn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);display:flex;
+  align-items:center;justify-content:center;color:var(--ink);flex:none;margin-top:6px}
+.sdot{width:18px;height:18px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:800;color:#FBF6EE;flex:none}
+
+.logo{display:flex;align-items:center;justify-content:center;flex:none;border-radius:50%;color:#FFFDFA;font-weight:800;letter-spacing:.04em;
+  font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;box-shadow:inset 0 0 0 1px var(--ring)}
+.logo{background:var(--c)}
+.ph.dark .logo{background:var(--cd)}
+.logo.mono{background:var(--surf3);color:var(--ink)}
+.ph{--ring:rgba(33,29,23,.10);--tnote:var(--ink2);--panel:#211D17;--onPanel:#F6EFE5;--onPanelMuted:#B3A695;--rank:var(--pri)}
+.on-mini{color:var(--onPanel)}.on-mini2{color:var(--onPanelMuted)}
+/* De gloed loopt tot boven in de statusbalk (fullBleed), op 8% van de kanaalkleur. */
+.glow{position:absolute;left:0;right:0;top:0;height:330px;pointer-events:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--ch) 8%,var(--bg)) 0%,color-mix(in srgb,var(--ch) 8%,var(--bg)) 45%,var(--bg) 100%)}
+.ph>*{position:relative}
+.ph>.glow{position:absolute}
+.fchip{height:36px;padding:0 14px;border-radius:10px;display:flex;align-items:center;font-size:13px;font-weight:600;
+  color:var(--ink2);background:var(--surf);border:1px solid var(--line);white-space:nowrap;flex:none}
+.fchip.on{background:var(--priC);border-color:var(--priC);color:var(--priOn)}
+.schip{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:10px;background:var(--surf);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;flex:none}
+.schip.dark{background:var(--panel);border-color:var(--panel);color:var(--onPanel)}
+.schip svg{color:var(--ink2)}.schip.dark svg{color:var(--onPanelMuted)}
+.tnote{display:flex;align-items:center;gap:6px;min-height:36px;font-size:12.5px;color:var(--tnote)}
+.tnote b{font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.tnote .chev{display:flex;color:var(--ink2)}
+.place{display:flex;align-items:center;height:26px;padding:0 8px;border-radius:7px;background:var(--surf2);
+  font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);flex:none}
+.place.none{background:transparent;color:var(--ink2);font-weight:600}
+.chev{color:var(--ink2);display:flex;flex:none}
+.covers{display:flex;flex:none;padding-left:6px}
+.covers .art{width:26px;height:26px;border-radius:6px;margin-left:-6px;box-shadow:0 0 0 2px var(--bg)}
+.btn-o{border-color:var(--line)}
+.panel{background:var(--panel);border-radius:16px;padding:15px 15px 8px}
+.panel .ph-t{font-size:14px;font-weight:700;color:var(--onPanel)}
+.panel .ph-s{font-size:11.5px;font-weight:600;color:var(--onPanelMuted)}
+.prow{display:flex;align-items:center;gap:11px;height:52px;border-top:1px solid rgba(246,239,229,.13)}
+.prow .t1{font-size:13.5px;color:var(--onPanel)}.prow .t2{font-size:11.5px;color:var(--onPanelMuted)}
+.pill.new{background:rgba(240,137,91,.2);color:#F0895B;letter-spacing:.04em}
+.tip{padding:13px 0;border-bottom:1px solid var(--line2);display:flex;gap:12px;align-items:flex-start}
+.tip .src{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink2);font-weight:700;height:auto;padding:0;border:0;background:none}
+.tip .src span{font-weight:500}
+.omark{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:#FFFDFA;flex:none}
+.tip .hl{font-size:12.5px;color:var(--ink2);line-height:17px;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tip .rd{font-size:12px;font-weight:700;color:var(--pri);margin-top:6px;display:flex;align-items:center;gap:4px}
+.linkcard{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:16px;background:var(--surf);border:1px solid var(--line2)}
+.slope text{font-family:'Instrument Sans',sans-serif}
+
+/* Donker: de tokens van Beeldgloed (Color.kt), niet het oude bruin. */
+.ph.dark{--bg:#0E0F11;--surf:#16171A;--surf2:#1E1F23;--surf3:#28292E;--line:#3A3C42;--line2:rgba(237,238,240,.08);
+  --ink:#EDEEF0;--ink2:#A0A3AA;--ink3:#A0A3AA;--pri:#F0895B;--priInk:#2A1006;--priC:#34363C;--priOn:#F0895B;
+  --up:#5BCB8F;--down:#FF7A93;--ring:rgba(237,238,240,.16);--panel:#28292E;--onPanel:#EDEEF0;--onPanelMuted:#A0A3AA;--rank:#EDEEF0;
+  background:var(--bg);color:var(--ink)}
+.ph.dark .mini{background:var(--surf3);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.ph.dark .btn-p{color:#2A1006}
+.ph.dark .art{box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.ph.dark .glow{background:linear-gradient(180deg,color-mix(in srgb,var(--ch) 16%,var(--bg)) 0%,color-mix(in srgb,var(--ch) 16%,var(--bg)) 40%,var(--bg) 100%)}
+
+.ph{border-radius:0}
+</style>
+
+<div class="page">
+  <header class="intro">
+    <p class="eyebrow-p">Toadcast · ontwerpvoorstel</p>
+    <h1>Kanalen: alle podcasts van één maker</h1>
+    <p>De vraag was een kanaalachtige functie: podcasts per bron zien, en ze ordenen op populair of recent. In de app heet zo'n bron een <strong>maker</strong>, net als het bestaande makerscherm. "Bron" blijft het woord voor Apple en Spotify. Waar Apple een kanaal kent, levert dat het logo en de kleur. Anders is het de makersnaam.</p>
+    <p>Hieronder staan vijf concepten. Een strenge ontwerpcriticus met kennis van design language en podcastapps heeft ze beoordeeld. Een concept kwam pas op deze lijst na goedkeuring; afgekeurde versies zijn bijgeschaafd en opnieuw voorgelegd. <strong>Advies:</strong> bouw 1 en 2 eerst. Samen zijn ze de kern, en ze maken iets wat geen andere podcastapp heeft: makers als hitlijst.</p>
+    <nav class="jump" aria-label="Concepten">
+      <a href="#c1"><b>1</b> Makerpagina</a><a href="#c2"><b>2</b> Makers in de hitlijst</a><a href="#c3"><b>3</b> Apple tegenover Spotify</a><a href="#c4"><b>4</b> Makers volgen</a><a href="#c5"><b>5</b> Tips per medium</a>
+    </nav>
+  </header>
+
+  <section class="block">
+    <h2>Hoe anderen het doen</h2>
+    <p class="sub">Kanalen of netwerken bestaan in de grote apps, maar niemand zet ze in een hitlijst.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>App</th><th>Wat er is</th><th>Ordening</th></tr></thead>
+      <tbody>
+        <tr><td>Apple Podcasts</td><td>Kanalen: logo, achtergrondkleur, beschrijving en eventueel een abonnement. Volg je een show uit een kanaal, dan verschijnt het kanaal in je Bibliotheek.</td><td>Vaste secties: Nieuwe programma's, Topprogramma's, Topafleveringen</td></tr>
+        <tr><td>YouTube</td><td>Het kanaal is de kern, met tabbladen en abonneren.</td><td>Chips boven de lijst: Nieuwste · Populair · Oudste</td></tr>
+        <tr><td>YouTube Music</td><td>Podcastpagina's met sorteren.</td><td>Nieuwste · Oudste · Populairst</td></tr>
+        <tr><td>Pocket Casts</td><td>Netwerken op Ontdek, door de redactie gekozen. Nu in aanbouw: netwerken in de zoekresultaten, met rond beeld, en de makersregel op de podcastpagina als link naar het netwerk.</td><td>Redactioneel</td></tr>
+        <tr><td>Podchaser</td><td>Netwerkpagina's (bèta) met alle podcasts van een netwerk.</td><td>Keuzelijst</td></tr>
+        <tr><td>Podtrac, Podscribe</td><td>Ranglijsten van uitgevers, maandelijks en alleen voor de VS.</td><td>Bereik</td></tr>
+        <tr><td>Spotify</td><td>Geen makerspagina gevonden; de maker staat als tekst onder de titel. De hitlijsten geven wel <code>showPublisher</code> mee.</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="lessons">
+      <li><b>Apple:</b> een kanaal is een merk, met logo en kleur. Drie ingangen volstaan: nieuw, populair, afleveringen.</li>
+      <li><b>YouTube:</b> sorteerchips boven één lijst zijn duidelijker dan losse secties, zodra een kanaal groot is.</li>
+      <li><b>Pocket Casts:</b> kiest dezelfde ingangen die Toadcast al heeft (de makersregel en zoeken), en geeft netwerken rond beeld om ze van een podcast te onderscheiden.</li>
+      <li><b>Het gat:</b> een ranglijst van makers per land, per categorie en per dag heeft niemand.</li>
+    </ul>
+  </section>
+
+  <section class="block">
+    <h2>Wat de data toelaat</h2>
+    <p class="sub">Gemeten op 30 september 2026, op de Nederlandse Top 200 van Apple (alle categorieën).</p>
+    <div class="facts">
+      <div class="fact"><div class="big">67 / 200</div><p>shows hangen aan een Apple-kanaal, verdeeld over 25 kanalen. NPO Luister alleen al heeft 24 shows in de lijst.</p></div>
+      <div class="fact"><div class="big">3 lijsten</div><p>per kanaal zijn te lezen: topshows, nieuwe shows en topafleveringen. Dat gaat via het webtoken dat de verzamelaar al ophaalt.</p></div>
+      <div class="fact"><div class="big">133</div><p>shows hebben alleen een makersnaam, en die is rommelig ("NPO Luister / BNNVARA", "Dag en Nacht | Podimo"). BNR en De Telegraaf hebben geen kanaal.</p></div>
+      <div class="fact"><div class="big">0 extra</div><p>aanroepen voor "recent": Apple geeft de datum van de nieuwste aflevering al mee in elk zoekresultaat.</p></div>
+    </div>
+  </section>
+
+  <div class="block">
+    
+  <section class="concept" id="c1">
+    <div class="shots">
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col" style="--ch:#14504E">
+  <div class="glow"></div>
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M8 8l4-4 4 4"></path><path d="M6 13v6h12v-6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    
+    <div class="pad row" style="gap:14px;align-items:center;padding-top:4px">
+      <div class="logo" style="--c:#14504E;--cd:#3b6c6b;width:64px;height:64px;font-size:14px">KADE</div>
+      <div class="meta" style="gap:2px">
+        <div class="eyebrow" style="color:var(--ink2)">Maker</div>
+        <h1 class="h1 dsp" style="font-size:26px">Kade Media</h1>
+        <div class="t2" style="color:var(--ink);font-size:12.5px">31 podcasts</div>
+      </div>
+    </div>
+    <div class="pad row" style="gap:8px;margin-top:14px">
+      <div class="btn btn-p"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Volg maker</div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="pad row" style="gap:8px"><div class="fchip on">Populair</div><div class="fchip ">Recent</div><div class="fchip ">A–Z</div></div>
+    <div class="pad tnote">Plek in <b>Apple · <span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span> NL</b> · Top 200 <span class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span></div>
+    <div class="pad list">
+      
+      <div class="lrow">
+        <div class="art a10"></div>
+        <div class="meta"><div class="t1">Kade 12</div><div class="t2">Nieuwe afl. vandaag · True crime</div></div>
+        <span class="place" aria-label="plek 4 in Apple NL">#4</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+      <div class="lrow">
+        <div class="art a2"></div>
+        <div class="meta"><div class="t1">Nachtdienst</div><div class="t2">Nieuwe afl. gisteren · Samenleving</div></div>
+        <span class="place" aria-label="plek 19 in Apple NL">#19</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+      <div class="lrow">
+        <div class="art a5"></div>
+        <div class="meta"><div class="t1">Lange Adem</div><div class="t2">Nieuwe afl. 3 dagen geleden · Sport</div></div>
+        <span class="place" aria-label="plek 37 in Apple NL">#37</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+      <div class="lrow">
+        <div class="art a3"></div>
+        <div class="meta"><div class="t1">Tafel voor Twee</div><div class="t2">Nieuwe afl. gisteren · Eten</div></div>
+        <span class="place" aria-label="plek 88 in Apple NL">#88</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+    </div>
+    <div class="pad lbl2" style="color:var(--ink2)">Niet in de Top 200 · op nieuwste aflevering</div>
+    <div class="pad list">
+      <div class="lrow">
+        <div class="art a9"></div>
+        <div class="meta"><div class="t1">Halve Zolen</div><div class="t2">Nieuwe afl. 2 dagen geleden · Comedy</div></div>
+        <span class="place none">—</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div></div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Met Apple-kanaal: logo en kleurgloed</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col dark" style="--ch:#696764">
+  <div class="glow"></div>
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M8 8l4-4 4 4"></path><path d="M6 13v6h12v-6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    
+    <div class="pad row" style="gap:14px;align-items:center;padding-top:4px">
+      <div class="logo" style="--c:#1E1B16;--cd:#696764;width:64px;height:64px;font-size:22px">PA</div>
+      <div class="meta" style="gap:2px">
+        <div class="eyebrow" style="color:var(--ink2)">Maker</div>
+        <h1 class="h1 dsp" style="font-size:26px">Podium Audio</h1>
+        <div class="t2" style="color:var(--ink);font-size:12.5px">14 podcasts</div>
+      </div>
+    </div>
+    <div class="pad row" style="gap:8px;margin-top:14px">
+      <div class="btn btn-o"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Volgt</div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="pad row" style="gap:8px"><div class="fchip on">Populair</div><div class="fchip ">Recent</div><div class="fchip ">A–Z</div></div>
+    <div class="pad tnote">Plek in <b>Spotify · <span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span> NL</b> · Top 200 <span class="chev"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span></div>
+    <div class="pad list">
+      
+      <div class="lrow">
+        <div class="art a6"></div>
+        <div class="meta"><div class="t1">Ochtendspits</div><div class="t2">Nieuwe afl. vandaag · Nieuws</div></div>
+        <span class="place" aria-label="plek 9 in Spotify NL">#9</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+      <div class="lrow">
+        <div class="art a4"></div>
+        <div class="meta"><div class="t1">Het Oosten Vertelt</div><div class="t2">Nieuwe afl. gisteren · Geschiedenis</div></div>
+        <span class="place" aria-label="plek 64 in Spotify NL">#64</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+      <div class="lrow">
+        <div class="art a8"></div>
+        <div class="meta"><div class="t1">Derby</div><div class="t2">Nieuwe afl. gisteren · Sport</div></div>
+        <span class="place" aria-label="plek 131 in Spotify NL">#131</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+    </div>
+    <div class="pad lbl2" style="color:var(--ink2)">Niet in de Top 200 · op nieuwste aflevering</div>
+    <div class="pad list">
+      <div class="lrow">
+        <div class="art a3"></div>
+        <div class="meta"><div class="t1">Oost aan Tafel</div><div class="t2">Nieuwe afl. vorige week · Eten</div></div>
+        <span class="place none">—</span>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div></div>
+    <div class="pad tnote">1 Spotify-show is niet aan Apple te koppelen.</div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Donker, met een donker logo dat omhoog geklemd is</figcaption>
+      </figure></div>
+    <div class="copy">
+      <p class="num">Concept 1</p>
+      <h2>De makerpagina</h2>
+      <p class="lede">Het bestaande makerscherm wordt een echte pagina, met logo, kleur, volgen en sorteren op Populair, Recent en A–Z.</p>
+      <dl><dt>Populair</dt><dd>De plek in de hitlijst die je op Hitlijsten gekozen hebt (bron en land), altijd over alle categorieën. De regel onder de chips zegt welke lijst het is; tik erop om van bron te wisselen. Shows buiten de lijst staan eronder, op nieuwste aflevering.</dd><dt>Recent</dt><dd>Nieuwste aflevering eerst.</dd><dt>Ingangen</dt><dd>De makersregel op de podcastpagina (bestaat al), een sectie Makers in de zoekresultaten, en de andere concepten.</dd><dt>Data</dt><dd>Kanalen uit de verzamelaar (logo, kleur, telling). Makers zonder kanaal via de bestaande zoekopdracht op naam: "12 gevonden in de Apple-catalogus".</dd><dt>Zonder kanaal</dt><dd>Een neutraal monogram, geen gloed en geen deelknop.</dd></dl>
+      
+        <details class="rounds">
+          <summary><span class="ok">Goedgekeurd</span> in ronde 2<span class="muted"> · 1× bijgeschaafd</span></summary>
+          <ol><li><b class="no-t">Ronde 1: afgekeurd.</b> De chip "Nieuw" had geen data (geen startdatum bij makers zonder kanaal) en botste met het tabblad Nieuw. Populair was niet gedefinieerd voor shows buiten de lijst. Er waren eigen chips, knoppen van 40px en compacte rijen in plaats van de componenten van de app, en de eyebrow op de gekleurde kop haalde 2,47:1.</li><li><b class="ok-t">Ronde 2: goedgekeurd.</b> Drie chips (Populair, Recent, A–Z), Populair vast op alle categorieën met een tikbare toelichting, een tussenkop voor shows buiten de lijst, rijen van 72px, één primaire knop en AA op de gloed (≥4,58:1). Daarna verwerkt: de koppeling van Spotify naar Apple benoemd, "Volgt" met rand en vinkje, donkere kanaallogo's geklemd tot 3,2:1.</li></ol>
+        </details>
+    </div>
+  </section>
+    
+  <section class="concept" id="c2">
+    <div class="shots">
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar">
+    <div class="mark">Toadcast</div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></div><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M13.7 20a2 2 0 01-3.4 0"></path></svg></div></div>
+  </div>
+  <div class="body">
+    <div class="pad row" style="justify-content:space-between;padding-bottom:12px">
+      <h1 class="h1 dsp" style="font-size:26px">Hitlijsten</h1>
+      <span class="note" style="color:var(--ink2)">Bijgewerkt 06:00</span>
+    </div>
+    <div class="pad row" style="gap:8px;padding-bottom:8px">
+      <div class="schip dark">Apple Podcasts <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      <div class="schip"><span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span>NL <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      <div class="schip">Categorie <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+    </div>
+    
+    <div class="pad tabs"><div class="tab on">Podcasts</div><div class="tab ">Afleveringen</div><div class="tab ">Trending</div><div class="tab ">Nieuw</div></div>
+    <div class="hr"></div>
+    <div class="pad row" style="justify-content:space-between;padding-top:8px">
+      <span class="tnote">2+ shows · t.o.v. gisteren <span class="chev" style="padding:0 4px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 7.6v.2"></path></svg></span></span>
+      <div class="schip">Per maker <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+    </div>
+    <div class="pad list">
+      
+      <div class="lrow">
+        <div class="rank top">1</div>
+        <div class="logo" style="--c:#14504E;--cd:#3b6c6b;width:44px;height:44px;font-size:10px">KADE</div>
+        <div class="meta">
+          <div class="t1">Kade Media</div>
+          <div class="t2">24 shows · hoogste #2</div>
+        </div>
+        <div class="covers"><div class="art a10"></div><div class="art a2"></div><div class="art a5"></div></div>
+        <div class="mv" style="color:var(--up)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg>2</div>
+      </div>
+      <div class="lrow">
+        <div class="rank top">2</div>
+        <div class="logo" style="--c:#2B4C7E;--cd:#4a6690;width:44px;height:44px;font-size:15px">DN</div>
+        <div class="meta">
+          <div class="t1">Dagblad Noord</div>
+          <div class="t2">11 shows · hoogste #6</div>
+        </div>
+        <div class="covers"><div class="art a9"></div><div class="art a4"></div><div class="art a6"></div></div>
+        <div class="mv flat" style="color:var(--ink2)">=</div>
+      </div>
+      <div class="lrow">
+        <div class="rank top">3</div>
+        <div class="logo" style="--c:#7E3149;--cd:#925367;width:44px;height:44px;font-size:15px">SH</div>
+        <div class="meta">
+          <div class="t1">Studio Hemel</div>
+          <div class="t2">9 shows · hoogste #1</div>
+        </div>
+        <div class="covers"><div class="art a5"></div><div class="art a3"></div><div class="art a8"></div></div>
+        <div class="mv" style="color:var(--down)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L1.5 3h9z"></path></svg>1</div>
+      </div>
+      <div class="lrow">
+        <div class="rank ">4</div>
+        <div class="logo mono" style="width:44px;height:44px;font-size:15px">RO</div>
+        <div class="meta">
+          <div class="t1">Radio Oost</div>
+          <div class="t2">9 shows · hoogste #9</div>
+        </div>
+        <div class="covers"><div class="art a6"></div><div class="art a4"></div><div class="art a8"></div></div>
+        <div class="mv" style="color:var(--up)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg>1</div>
+      </div>
+      <div class="lrow">
+        <div class="rank ">5</div>
+        <div class="logo" style="--c:#A2532F;--cd:#a2532f;width:44px;height:44px;font-size:15px">CM</div>
+        <div class="meta">
+          <div class="t1">Concept Media</div>
+          <div class="t2">7 shows · hoogste #12</div>
+        </div>
+        <div class="covers"><div class="art a8"></div><div class="art a1"></div><div class="art a7"></div></div>
+        <div class="mv new">NIEUW</div>
+      </div>
+    </div>
+    <div class="pad row" style="height:48px;gap:6px;font-size:13px;font-weight:600">Vergelijk met Spotify <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Hitlijsten → Podcasts → Per maker</figcaption>
+      </figure></div>
+    <div class="copy">
+      <p class="num">Concept 2</p>
+      <h2>Makers in de hitlijst</h2>
+      <p class="lede">Dezelfde ranglijst, geteld per maker: wie heeft vandaag de meeste shows in de Top 200, per bron, land en categorie. Dat laat geen andere app zien.</p>
+      <dl><dt>Plaats</dt><dd>Een weergave binnen het tabblad Podcasts, via een keuzechip in de toelichtingsregel. Er komt geen vijfde tabblad.</dd><dt>Telregel</dt><dd>Het Apple-kanaal, anders het eerste deel van de makersnaam. Elke show telt één keer; makers met 2+ shows; bij een gelijk aantal gaat de hoogste plek voor. Een i-icoon legt het uit.</dd><dt>Beweging</dt><dd>De rang van de maker ten opzichte van gisteren, zoals op de andere tabbladen. Op dag één komt die uit de geschiedenis van de verzamelaar.</dd><dt>Verder</dt><dd>Tik op een rij opent de makerpagina. Onder de lijst staat "Vergelijk met Spotify" (concept 3).</dd></dl>
+      
+        <details class="rounds">
+          <summary><span class="ok">Goedgekeurd</span> in ronde 2<span class="muted"> · 1× bijgeschaafd</span></summary>
+          <ol><li><b class="no-t">Ronde 1: afgekeurd.</b> Vijf tabbladen passen niet op 390px. Er was geen telregel voor rommelige makersnamen, dus dubbeltelling lag op de loer. De aandeelbalk was geschaald op de leider en misleidde.</li><li><b class="ok-t">Ronde 2: goedgekeurd.</b> Een weergave binnen Podcasts, een sluitende telregel (één maker per show, 2+ shows, gelijke stand op de hoogste plek) en geen balk. Daarna verwerkt: gelijke stand in de mockup rechtgezet, beweging ten opzichte van gisteren zoals op de andere tabbladen, en de schakelaar in de toelichtingsregel.</li></ol>
+        </details>
+    </div>
+  </section>
+    
+  <section class="concept" id="c3">
+    <div class="shots">
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"></div>
+  </div>
+  <div class="body">
+    <div class="pad" style="padding-bottom:2px"><h1 class="h1 dsp" style="font-size:26px">Apple tegenover Spotify</h1></div>
+    <div class="pad tnote"><span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span> NL · Top 200 · top 10 makers per bron · vandaag</div>
+    <div class="pad" style="padding-top:8px;padding-bottom:6px">
+      <div class="linkcard">
+        <div class="logo" style="--c:#7E3149;--cd:#925367;width:44px;height:44px;font-size:15px">SH</div>
+        <div class="meta"><div class="t1">Studio Hemel</div><div class="t2">Apple #3 · 9 shows</div><div class="t2">Spotify #7 · 3 shows</div></div>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+    </div>
+    <div class="pad tnote" style="min-height:28px">Tik op een naam om te vergelijken.</div>
+    <div class="pad" style="padding-top:4px"><svg class="slope" width="350" height="586" viewBox="0 0 350 586" aria-hidden="true">
+    <text x="150" y="14" text-anchor="end" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">APPLE</text>
+    <text x="200" y="14" text-anchor="start" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">SPOTIFY</text>
+    <line x1="0" y1="454" x2="350" y2="454" stroke="var(--line)" stroke-width="1"></line>
+    <text x="0" y="470" font-size="11" font-weight="700" letter-spacing="1.2" fill="var(--ink2)">PLEK 11+</text>
+    <line x1="0" y1="522" x2="350" y2="522" stroke="var(--line)" stroke-width="1"></line>
+    <text x="0" y="538" font-size="11" font-weight="700" letter-spacing="1.2" fill="var(--ink2)">MINDER DAN 2 SHOWS</text>
+    <text x="138" y="572.5" text-anchor="end" font-size="12.5" fill="var(--ink2)">Zuidkust Audio</text>
+    <text x="212" y="572.5" text-anchor="start" font-size="12.5" fill="var(--ink2)">Omroep Noordoost…</text>
+    <line x1="150" y1="36" x2="200" y2="80" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="80" x2="200" y2="36" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="124" x2="200" y2="300" stroke="var(--pri)" stroke-width="3"  stroke-linecap="round"></line><line x1="150" y1="168" x2="200" y2="212" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="212" x2="200" y2="124" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="256" x2="200" y2="500" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"></line><line x1="150" y1="300" x2="200" y2="168" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="344" x2="200" y2="568" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"></line><line x1="150" y1="388" x2="200" y2="344" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="432" x2="200" y2="388" stroke="var(--ink3)" stroke-width="1.5"  stroke-linecap="round"></line><line x1="150" y1="568" x2="200" y2="256" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"></line><line x1="150" y1="500" x2="200" y2="432" stroke="var(--ink3)" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round"></line><circle cx="150" cy="36" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="80" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="80" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="36" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="124" r="5" fill="var(--pri)"></circle><circle cx="200" cy="300" r="5" fill="var(--pri)"></circle><circle cx="150" cy="168" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="212" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="212" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="124" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="256" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="500" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="300" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="168" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="344" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="388" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="344" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="432" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="388" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="256" r="4" fill="var(--ink2)"></circle><circle cx="150" cy="500" r="4" fill="var(--ink2)"></circle><circle cx="200" cy="432" r="4" fill="var(--ink2)"></circle><text x="138" y="40.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">1</tspan>  Kade Media</text><text x="212" y="84.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">2</tspan>  Kade Media</text><text x="138" y="84.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">2</tspan>  Dagblad Noord</text><text x="212" y="40.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">1</tspan>  Dagblad Noord</text><text x="138" y="128.5" text-anchor="end" font-size="12.5" font-weight="700" fill="var(--ink)"><tspan font-weight="700" fill="var(--ink)">3</tspan>  Studio Hemel</text><text x="212" y="304.5" text-anchor="start" font-size="12.5" font-weight="700" fill="var(--ink)"><tspan font-weight="700" fill="var(--ink)">7</tspan>  Studio Hemel</text><text x="138" y="172.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">4</tspan>  Radio Oost</text><text x="212" y="216.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">5</tspan>  Radio Oost</text><text x="138" y="216.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">5</tspan>  Concept Media</text><text x="212" y="128.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">3</tspan>  Concept Media</text><text x="138" y="260.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">6</tspan>  Podium Audio</text><text x="212" y="504.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">15</tspan>  Podium Audio</text><text x="138" y="304.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">7</tspan>  Kelderwerk</text><text x="212" y="172.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">4</tspan>  Kelderwerk</text><text x="138" y="348.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">8</tspan>  Omroep Noordoost…</text><text x="138" y="392.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">9</tspan>  Stadsgeluid</text><text x="212" y="348.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">8</tspan>  Stadsgeluid</text><text x="138" y="436.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">10</tspan>  Vrij Spel</text><text x="212" y="392.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">9</tspan>  Vrij Spel</text><text x="212" y="260.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">6</tspan>  Zuidkust Audio</text><text x="138" y="504.5" text-anchor="end" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">14</tspan>  Lichtkogel</text><text x="212" y="436.5" text-anchor="start" font-size="12.5" font-weight="500" fill="var(--ink2)"><tspan font-weight="700" fill="var(--ink)">10</tspan>  Lichtkogel</text>
+  </svg></div>
+    <div class="pad row" style="height:48px;gap:6px;font-size:13px;font-weight:600">Toon alle 31 makers <span class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+    <div class="pad tnote">4 Spotify-shows zijn niet aan Apple te koppelen en tellen niet mee.</div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Hellingsgrafiek van de makersranglijsten</figcaption>
+      </figure></div>
+    <div class="copy">
+      <p class="num">Concept 3</p>
+      <h2>Apple tegenover Spotify</h2>
+      <p class="lede">De kernbelofte van de app, dezelfde lijst per bron, op het niveau van makers: wie is groot op Apple en klein op Spotify?</p>
+      <dl><dt>Koppeling</dt><dd>Per show: Spotify-show → Apple-show → maker van Apple. Zo krijgt een maker nooit twee namen. Wat niet te koppelen is, telt niet mee en wordt genoemd.</dd><dt>Onderste rij</dt><dd>"Minder dan 2 shows": waar een maker in de andere lijst te klein is. Dat is eerlijker dan "niet in de lijst".</dd><dt>Schaal</dt><dd>De top 10 per bron op rijen van 44px, met "Toon alle 31 makers". Lange namen krijgen een ellips; de volledige naam staat in de kaart.</dd><dt>Toegankelijk</dt><dd>Elke maker is een eigen element voor TalkBack. De gekozen lijn is ook dikker en het label vet, dus niet alleen anders gekleurd.</dd></dl>
+      
+        <details class="rounds">
+          <summary><span class="ok">Goedgekeurd</span> in ronde 4<span class="muted"> · 3× bijgeschaafd</span></summary>
+          <ol><li><b class="no-t">Ronde 1: afgekeurd.</b> Als raster per maker was het overbodig naast Populair op de makerpagina. De markering hing alleen aan kleur (1,04:1), en de kolom Apple BE was willekeurig.</li><li><b class="no-t">Ronde 2: afgekeurd.</b> Herzien tot een hellingsgrafiek over alle makers. Maar makers werden niet over de bronnen heen gekoppeld, zodat één maker twee halve lijnen kon krijgen. "Niet in de lijst" was onwaar bij 1 show, en rijen van 30px waren te klein.</li><li><b class="no-t">Ronde 3: afgekeurd.</b> Koppeling per show, de rij "Minder dan 2 shows" en rijen van 44px. Door de top 10 had een maker op plek 11+ in de andere lijst echter geen plek.</li><li><b class="ok-t">Ronde 4: goedgekeurd.</b> Twee zones onderaan: "Plek 11+", met de echte plek in het label, en "Minder dan 2 shows". Daardoor zegt de grafiek nergens meer iets onwaars. Spotify-exclusives tellen mee via hun makersnaam. Daarna verwerkt: een eigen rij van 44px per maker in beide zones.</li></ol>
+        </details>
+    </div>
+  </section>
+    
+  <section class="concept" id="c4">
+    <div class="shots">
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar">
+    <div class="mark">Toadcast</div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    <div class="pad" style="padding-bottom:6px"><h1 class="h1 dsp" style="font-size:26px">Bibliotheek</h1></div>
+    
+    <div class="pad tabs"><div class="tab ">Gevolgd</div><div class="tab on">Makers</div><div class="tab ">Wachtrij</div><div class="tab ">Bewaard</div></div>
+    <div class="hr"></div>
+    <div class="pad" style="padding-top:14px">
+      <div class="panel">
+        <div class="row" style="gap:9px;padding-bottom:11px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F0895B" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M13.7 20a2 2 0 01-3.4 0"></path></svg><span class="ph-t">Nieuw van je makers</span><span style="flex:1"></span><span class="ph-s">Sinds gisteren</span></div>
+        <div class="prow"><div class="art a3" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Kort Lontje</div><div class="t2">Nieuwe podcast · Dagblad Noord · 3 afl.</div></div><span class="chev" style="color:var(--onPanelMuted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+        <div class="prow"><div class="art a8" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Doorzagen</div><div class="t2">Nieuwe podcast · Kelderwerk · 1 afl.</div></div><span class="chev" style="color:var(--onPanelMuted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+      </div>
+    </div>
+    <div class="pad lbl2">Je makers · 3</div>
+    <div class="pad list">
+      
+      <div class="lrow"><div class="logo" style="--c:#14504E;--cd:#3b6c6b;width:48px;height:48px;font-size:11px">KADE</div><div class="meta"><div class="t1">Kade Media</div><div class="t2">2 van 31 shows met een nieuwe aflevering</div></div><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+      <div class="lrow"><div class="logo" style="--c:#2B4C7E;--cd:#4a6690;width:48px;height:48px;font-size:16px">DN</div><div class="meta"><div class="t1">Dagblad Noord</div><div class="t2">1 van 11 shows met een nieuwe aflevering</div></div><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+      <div class="lrow"><div class="logo mono" style="width:48px;height:48px;font-size:16px">RO</div><div class="meta"><div class="t1">Radio Oost</div><div class="t2">Niets nieuws in de 12 gevonden shows</div></div><span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span></div>
+    </div>
+    <div class="pad lbl2">Van podcasts die je volgt</div>
+    <div class="pad list">
+      <div class="lrow"><div class="logo" style="--c:#7E3149;--cd:#925367;width:48px;height:48px;font-size:16px">SH</div><div class="meta"><div class="t1">Studio Hemel</div><div class="t2">Je volgt 2 van hun 14 podcasts</div></div><div class="btn btn-o" style="padding:0 16px">Volg</div></div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Bibliotheek → Makers</figcaption>
+      </figure></div>
+    <div class="copy">
+      <p class="num">Concept 4</p>
+      <h2>Makers volgen</h2>
+      <p class="lede">Je volgt een maker, niet al zijn shows. De Bibliotheek krijgt een tabblad Makers, met nieuwe podcasts bovenaan in de bestaande meldingskaart.</p>
+      <dl><dt>Nieuwe podcast</dt><dd>Voor kanalen uit de lijst van nieuwe shows van de verzamelaar; alleen die geven een pushmelding. Zonder kanaal alleen in de kaart, en alleen als de show nooit eerder gezien is, ≤ 3 afleveringen heeft en jonger is dan 14 dagen.</dd><dt>Tellingen</dt><dd>"2 van 31 shows met een nieuwe aflevering". De ID's komen uit de verzamelaar, opgehaald met 1–2 batch-aanroepen, zonder RSS te verversen.</dd><dt>Apple-regel</dt><dd>Makers van shows die je al volgt, worden voorgesteld met een knop Volg.</dd><dt>Geen dubbelingen</dt><dd>Afleveringen blijven onder Gevolgd; Makers toont alleen tellingen en nieuwe shows.</dd></dl>
+      
+        <details class="rounds">
+          <summary><span class="ok">Goedgekeurd</span> in ronde 3<span class="muted"> · 2× bijgeschaafd</span></summary>
+          <ol><li><b class="no-t">Ronde 1: afgekeurd.</b> De mockup verzon Bibliotheek-tabbladen. Een samengevoegde feed van alle shows (217 bij NPO Luister) schaalt niet zonder server, en er was een tweede meldingsstijl naast AlertCard.</li><li><b class="no-t">Ronde 2: afgekeurd.</b> "Eén aanroep per maker" klopte niet (zoeklimiet 60), en een dagelijkse vergelijking op naam zou valse meldingen van nieuwe podcasts geven.</li><li><b class="ok-t">Ronde 3: goedgekeurd.</b> ID-lijst uit de verzamelaar plus batch-lookup; pushmeldingen alleen voor makers met kanaal; zonder kanaal alleen in de kaart, met drie voorwaarden. Daarna verwerkt: kanalen blijven 90 dagen bewaard, "gevonden vandaag" voor makers zonder kanaal.</li></ol>
+        </details>
+    </div>
+  </section>
+    
+  <section class="concept" id="c5">
+    <div class="shots">
+      <figure class="shot">
+        <div class="fit"><div class="scale">
+<div class="ph col">
+  <div class="sa"></div>
+  <div class="appbar" style="padding-left:8px;padding-right:12px">
+    <div class="row" style="gap:4px"><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div><span style="font-size:16.5px;font-weight:700">Tips van de media</span></div>
+    <div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg></div>
+  </div>
+  <div class="body">
+    <div class="pad row" style="gap:8px;overflow:hidden;padding-top:4px">
+      <div class="fchip on" style="gap:6px"><span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span>NL</div>
+      <div class="fchip ">Alle</div><div class="fchip on">Dagblad Noord</div><div class="fchip ">Weekblad Zuid</div><div class="fchip ">Radio 7</div>
+    </div>
+    <div class="pad row" style="justify-content:space-between;padding-top:10px">
+      <span class="tnote">23 tips sinds juni</span>
+      <div class="schip">Nieuwste eerst <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+    </div>
+    <div class="pad" style="padding-top:8px">
+      <div class="linkcard" style="padding:8px 10px 8px 12px">
+        <div class="logo" style="--c:#2B4C7E;--cd:#4a6690;width:36px;height:36px;font-size:12px">DN</div>
+        <div class="meta"><div class="t1" style="font-size:13.5px">Maakt ook podcasts</div><div class="t2">11 van Dagblad Noord · tellen niet als tip</div></div>
+        <span class="chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+      </div>
+    </div>
+    <div class="pad lbl2" style="color:var(--ink2)">September</div>
+    <div class="pad">
+      
+      <div class="tip" style="padding-top:8px">
+        <div class="art a9" style="width:56px;height:56px;border-radius:12px"></div>
+        <div class="ebody">
+          <div class="src" style="font-weight:500">27 sep</div>
+          <div class="t1" style="margin-top:3px">Halve Zolen</div>
+          <div class="hl">Twee broers bellen elke week een schoenmaker, en het wordt steeds beter</div>
+          <div class="rd">Lees het artikel <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+        </div>
+        <div class="pbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+      <div class="tip" style="padding-top:8px">
+        <div class="art a5" style="width:56px;height:56px;border-radius:12px"></div>
+        <div class="ebody">
+          <div class="src" style="font-weight:500">19 sep</div>
+          <div class="t1" style="margin-top:3px">Lange Adem</div>
+          <div class="hl">De beste sportpodcast van dit najaar gaat over verliezen</div>
+          <div class="rd">Lees het artikel <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+        </div>
+        <div class="pbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+      <div class="tip" style="padding-top:8px">
+        <div class="art a4" style="width:56px;height:56px;border-radius:12px"></div>
+        <div class="ebody">
+          <div class="src" style="font-weight:500">12 sep</div>
+          <div class="t1" style="margin-top:3px">Ondergronds</div>
+          <div class="hl">Deze true crime is rustig en precies, zonder sensatie</div>
+          <div class="rd">Lees het artikel <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+        </div>
+        <div class="pbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1 on-mini">Live vanuit Paradiso</div>
+      <div class="t2 on-mini2">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn on-mini"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></div></div>
+        <figcaption>Tips van de media, gefilterd op één medium</figcaption>
+      </figure></div>
+    <div class="copy">
+      <p class="num">Concept 5</p>
+      <h2>Tips per medium</h2>
+      <p class="lede">Een krant of omroep is ook een bron: wie je vertrouwt. Het bestaande Tips-scherm krijgt, als je één medium kiest, een telling, sorteren en een brug naar de eigen podcasts van dat medium.</p>
+      <dl><dt>Sorteren</dt><dd>Nieuwste eerst (met maandkoppen) of Vaakst getipt (met "getipt door 3 media").</dd><dt>Brug</dt><dd>"Maakt ook podcasts" opent de makerpagina, maar alleen bij een exacte naamsovereenkomst. Eigen producties tellen niet als tip; dat filtert de verzamelaar al.</dd><dt>Hergebruik</dt><dd>De bestaande tiprij, kop, verversknop en chiprij. Alleen de regel met het medium valt weg als er op dat medium gefilterd is.</dd></dl>
+      
+        <details class="rounds">
+          <summary><span class="ok">Goedgekeurd</span> in ronde 2<span class="muted"> · 1× bijgeschaafd</span></summary>
+          <ol><li><b class="no-t">Ronde 1: afgekeurd.</b> Als apart kanaalscherm dubbelde het met het mediafilter op Tips en met de makerpagina. De rij toonde citaten die de data niet heeft.</li><li><b class="ok-t">Ronde 2: goedgekeurd.</b> Een kleine uitbreiding van het bestaande Tips-scherm met de ongewijzigde tiprij, sorteren, en een brug naar de makerpagina bij een exacte naamsovereenkomst. Daarna verwerkt: de bestaande titelbalk en landchip, en de datum terug in de rij.</li></ol>
+        </details>
+    </div>
+  </section>
+  </div>
+
+  <section class="block">
+    <h2>Volgorde van bouwen</h2>
+    <ol class="plan">
+      <li><div><h3>Makerpagina en makersnormalisatie</h3><p>Sorteren op Populair, Recent en A–Z op het bestaande scherm, plus de regel die een makersnaam gelijktrekt. Alles hierna leunt daarop.</p></div></li>
+      <li><div><h3>Kanalen in de verzamelaar</h3><p>Per land een bestand met makers: logo, kleur, show-ID's en nieuwe shows. Dat is één extra stap in de nachtelijke ronde, met het token dat er al is.</p></div></li>
+      <li><div><h3>Makers in de hitlijst</h3><p>Het onderscheidende stuk. Voor de beweging is alleen het rekenwerk op de momentopnames nieuw.</p></div></li>
+      <li><div><h3>Volgen, vergelijken, tips</h3><p>Concept 4, 3 en 5 bouwen op het voorgaande en kunnen in willekeurige volgorde.</p></div></li>
+    </ol>
+    <p class="note-p">Alle makers, podcasts en plekken in de schermen zijn verzonnen. De cijfers bij "Wat de data toelaat" zijn gemeten.</p>
+  </section>
+
+  <section class="block">
+    <h2>Bronnen</h2>
+    <ul class="srcs">
+      <li>Apple: <a href="https://podcasters.apple.com/support/886-create-a-channel">Create a channel</a>, <a href="https://podcasters.apple.com/support/4118-set-up-channel-subscription">Set up a channel and subscription</a>, <a href="https://podcasts.apple.com/nl/channel/npo-luister/id6743084397">kanaal NPO Luister</a></li>
+      <li>YouTube: <a href="https://www.androidpolice.com/youtube-oldest-sorting-coming-back/">sorteren op oudste</a>, <a href="https://9to5google.com/2023/04/04/youtube-channel-podcasts-tab/">Podcasts-tabblad</a>, <a href="https://9to5google.com/2024/04/24/youtube-music-podcast-sort/">YouTube Music sorteert podcasts</a></li>
+      <li>Pocket Casts: <a href="https://github.com/Automattic/pocket-casts-android/pull/5864">netwerken in zoeken</a>, <a href="https://github.com/Automattic/pocket-casts-android/pull/5860">netwerk per podcast</a>, <a href="https://pocketcasts.com/discover">Discover</a></li>
+      <li>Podchaser: <a href="https://www.podchaser.com/networks">Networks</a> · Podscribe: <a href="https://podscribe.com/top-publishers">Top Podcast Publishers</a> · NPO: <a href="https://npo.nl/pers/persberichten-en-publicaties/npo-luister-wordt-volwaardig-audioplatform-en-lanceert-nieuwe-app">NPO Luister</a></li>
+    </ul>
+  </section>
+</div>
+<script>
+(function(){
+  function fit(){
+    document.querySelectorAll('.fit').forEach(function(f){
+      var s=f.querySelector('.scale'); if(s) s.style.transform='scale('+(f.clientWidth/390)+')';
+    });
+  }
+  fit(); window.addEventListener('resize',fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(document.body);
+})();
+</script>

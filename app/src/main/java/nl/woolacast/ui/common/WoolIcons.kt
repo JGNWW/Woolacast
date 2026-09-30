@@ -86,7 +86,7 @@ object WoolIcons {
     /* ---- lijsten ---- */
     val Clock = stroke("clock", 2f, StrokeCap.Round, circle(12f, 12f, 9f), "M12 7.5V12l3 2")
     val Trophy = stroke("trophy", 1.8f, StrokeCap.Round, "M8 4h8v5a4 4 0 0 1 -8 0z", "M8 5H5v1.5A3.5 3.5 0 0 0 8.5 10", "M16 5h3v1.5A3.5 3.5 0 0 1 15.5 10", "M10 20h4", "M12 13v7")
-    val Info = stroke("info", 1.7f, StrokeCap.Round, circle(12f, 12f, 9f), "M12 8v5", "M12 16.2v0.1")
+    val Info = stroke("info", 1.7f, StrokeCap.Round, circle(12f, 12f, 9f), "M12 11v5", "M12 7.8v0.1")
     val Bars = stroke("bars", 2.4f, StrokeCap.Round, "M5 20v-5", "M12 20V5", "M19 20v-8")
     val Up = filled("up", 12f, "M6 2l4.5 7h-9z")
     val Down = filled("down", 12f, "M6 10L1.5 3h9z")

@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.domain.Episode
 import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.IconAction
+import nl.woolacast.ui.common.MakerLogo
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.PlayCircle
 import nl.woolacast.ui.common.WoolIcons
@@ -54,6 +55,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
     onPlay: (Episode) -> Unit,
+    onOpenMaker: (name: String, fromShowId: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -84,7 +86,7 @@ fun SearchScreen(
                 Box(Modifier.weight(1f)) {
                     if (state.term.isEmpty()) {
                         Text(
-                            "Zoek podcasts en afleveringen",
+                            "Zoek podcasts, makers en afleveringen",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.5.sp),
                             color = muted
                         )
@@ -128,6 +130,41 @@ fun SearchScreen(
             )
 
             else -> LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+                if (state.makers.isNotEmpty()) {
+                    item { SectionLabel("MAKERS") }
+                    items(state.makers.size) { index ->
+                        val hit = state.makers[index]
+                        val channel = hit.maker.channel
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpenMaker(hit.maker.name, hit.firstShowId) }
+                                .padding(horizontal = 20.dp)
+                                .height(72.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            MakerLogo(hit.maker.name, channel?.logoUrl, channel?.color, 52.dp)
+                            Column(Modifier.weight(1f)) {
+                                Text(hit.maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    when {
+                                        channel != null -> "${channel.showCount} podcasts"
+                                        hit.found == 1 -> "1 podcast in de resultaten"
+                                        else -> "${hit.found} podcasts in de resultaten"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Icon(WoolIcons.ChevronRight, null, tint = muted, modifier = Modifier.size(18.dp))
+                        }
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                }
+
                 if (state.results.podcasts.isNotEmpty()) {
                     item { SectionLabel("PODCASTS") }
                     items(state.results.podcasts.size) { index ->

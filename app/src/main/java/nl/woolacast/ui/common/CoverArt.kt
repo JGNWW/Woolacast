@@ -443,7 +443,8 @@ fun OutlinePillButton(
     icon: ImageVector?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    selected: Boolean = false
+    selected: Boolean = false,
+    enabled: Boolean = true
 ) {
     val shape = RoundedCornerShape(22.dp)
     val fg = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
@@ -455,7 +456,8 @@ fun OutlinePillButton(
                 if (selected) Modifier.background(MaterialTheme.colorScheme.onSurface)
                 else Modifier.border(1.5.dp, outlineOnGlow(), shape)
             )
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
+            .graphicsLayer { alpha = if (enabled) 1f else 0.5f }
             .padding(start = 16.dp, end = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)

@@ -14,7 +14,11 @@ import kotlinx.coroutines.sync.withPermit
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.DatasetMover
+import nl.woolacast.data.local.FollowedMaker
 import nl.woolacast.data.local.FollowedShow
+import nl.woolacast.data.maker.MakerDirectory
+import nl.woolacast.data.maker.MakerRepository
+import nl.woolacast.domain.Maker
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.ui.common.parseDate
 
@@ -39,13 +43,58 @@ data class FeedStatus(val latestDate: String?, val newCount: Int)
 
 enum class LibrarySort(val label: String) { RECENT("Nieuwste eerst"), NAME("Op naam") }
 
+/** Hoe het met een gevolgde maker staat: hoeveel van zijn shows sinds gisteren een nieuwe aflevering hebben. */
+data class MakerStatus(val fresh: Int, val total: Int, val complete: Boolean, val logoUrl: String?, val color: String?)
+
+/** Een nieuwe show van een maker die je volgt. */
+data class MakerNewShow(
+    val makerKey: String,
+    val makerName: String,
+    val showId: String,
+    val title: String,
+    val artworkUrl: String?,
+    val feedUrl: String?,
+    val episodes: Int?,
+    /** Van een kanaal (Apple zegt dat hij nieuw is) of gevonden in de catalogus. */
+    val viaChannel: Boolean,
+    /** Zonder kanaal: de dag waarop de app hem vond. */
+    val foundOn: String? = null
+)
+
+/** Een maker van shows die je al volgt, als voorstel om hem ook te volgen. */
+data class MakerSuggestion(
+    val key: String,
+    val name: String,
+    val followedShows: Int,
+    val totalShows: Int?,
+    val channelId: String?,
+    val logoUrl: String?,
+    val color: String?
+)
+
 class LibraryViewModel(
     private val store: LocalStore,
     private val dataset: ChartsDataset,
-    private val podcasts: PodcastRepository
+    private val podcasts: PodcastRepository,
+    private val makerRepository: MakerRepository
 ) : ViewModel() {
 
     val follows = store.follows
+    val makers = store.makers
+
+    private val _makerStatus = MutableStateFlow<Map<String, MakerStatus>>(emptyMap())
+    val makerStatus: StateFlow<Map<String, MakerStatus>> = _makerStatus.asStateFlow()
+
+    private val _newShows = MutableStateFlow<List<MakerNewShow>>(emptyList())
+    val newShows: StateFlow<List<MakerNewShow>> = _newShows.asStateFlow()
+
+    private val _suggestions = MutableStateFlow<List<MakerSuggestion>>(emptyList())
+    val suggestions: StateFlow<List<MakerSuggestion>> = _suggestions.asStateFlow()
+
+    private var makersLoadedFor: Pair<String, Set<String>>? = null
+
+    private val _makersRefreshing = MutableStateFlow(false)
+    val makersRefreshing: StateFlow<Boolean> = _makersRefreshing.asStateFlow()
     val queue = store.queue
     val saved = store.saved
 
@@ -147,6 +196,134 @@ class LibraryViewModel(
         country = countryCode.uppercase()
     )
 
+    /**
+     * Per gevolgde maker: hoeveel shows sinds gisteren een nieuwe aflevering
+     * hebben, en of er een nieuwe show bij kwam. Met kanaal zijn dat de shows
+     * van Apple's kanaal, in één of twee aanroepen; zonder kanaal wat een
+     * zoekopdracht op naam vindt. Geen enkele feed hoeft hiervoor open.
+     */
+    fun refreshMakers(countryCode: String, force: Boolean = false) {
+        val followed = store.makers.value
+        val signature = countryCode to followed.map { it.key }.toSet()
+        if (!force && signature == makersLoadedFor) {
+            loadSuggestions(countryCode)
+            return
+        }
+        makersLoadedFor = signature
+
+        viewModelScope.launch {
+            _makersRefreshing.value = true
+            val directory = makerRepository.directory(countryCode)
+            val yesterday = LocalDate.now().minusDays(1)
+            val recent = LocalDate.now().minusDays(NEW_SHOW_DAYS)
+            val gate = Semaphore(3)
+            val results = followed.map { followedMaker ->
+                async {
+                    gate.withPermit {
+                        val channel = followedMaker.channelId?.let(directory::channel)
+                            ?: directory.channelNamed(followedMaker.key)
+                        val maker = Maker(followedMaker.key, channel?.name ?: followedMaker.name, channel)
+                        val found = runCatching { makerRepository.shows(maker, countryCode) }.getOrNull()
+                            ?: return@withPermit null
+                        val shows = found.shows
+                        val status = MakerStatus(
+                            fresh = shows.count { show -> parseDate(show.latestRelease?.take(10))?.let { !it.isBefore(yesterday) } == true },
+                            total = shows.size,
+                            complete = found.complete,
+                            logoUrl = channel?.logoUrl ?: followedMaker.logoUrl,
+                            color = channel?.color ?: followedMaker.color
+                        )
+                        val known = followedMaker.knownShowIds.toSet()
+                        // De eerste keer is alles wat er staat al bekend: nieuw is wat daarna komt.
+                        if (known.isEmpty()) {
+                            store.markMakerSeen(followedMaker.key, shows.map { it.podcast.id })
+                            return@withPermit Triple(followedMaker.key, status, emptyList<MakerNewShow>())
+                        }
+                        // Een show is pas nieuw als hij er bij het volgen nog niet was én echt jong is.
+                        val fresh = if (channel != null) {
+                            channel.newShows
+                                .filter { it.id !in known && parseDate(it.createdDate)?.isBefore(recent) == false }
+                                .map { MakerNewShow(maker.key, maker.name, it.id, it.title, it.artworkUrl, it.feedUrl, it.trackCount, viaChannel = true) }
+                        } else {
+                            shows
+                                .filter { show ->
+                                    show.podcast.id !in known &&
+                                        (show.podcast.episodeCount ?: Int.MAX_VALUE) <= NEW_SHOW_MAX_EPISODES &&
+                                        parseDate(show.latestRelease?.take(10))?.isBefore(recent) == false
+                                }
+                                .map {
+                                    MakerNewShow(
+                                        maker.key, maker.name, it.podcast.id, it.podcast.title,
+                                        it.podcast.artworkUrl, it.podcast.feedUrl, it.podcast.episodeCount, viaChannel = false,
+                                        foundOn = followedMaker.foundOn[it.podcast.id] ?: LocalDate.now().toString()
+                                    )
+                                }
+                                .also { found -> if (found.isNotEmpty()) store.markMakerFound(followedMaker.key, found.map { it.showId }) }
+                        }
+                        Triple(followedMaker.key, status, fresh)
+                    }
+                }
+            }.awaitAll().filterNotNull()
+            _makerStatus.value = results.associate { it.first to it.second }
+            _newShows.value = results.flatMap { it.third }
+            _makersRefreshing.value = false
+            loadSuggestions(countryCode, directory)
+        }
+    }
+
+    /** Makers van shows die je volgt, maar die je zelf nog niet volgt. */
+    private fun loadSuggestions(countryCode: String, known: MakerDirectory? = null) {
+        viewModelScope.launch {
+            val directory = known ?: makerRepository.directory(countryCode)
+            val followedKeys = store.makers.value.map { it.key }.toSet()
+            _suggestions.value = store.follows.value
+                .map { show -> directory.makerOf(show.id, show.publisher) }
+                .filter { it.key.isNotEmpty() && it.key !in followedKeys }
+                .groupBy { it.key }
+                .map { (key, group) ->
+                    val maker = group.firstOrNull { it.channel != null } ?: group.first()
+                    MakerSuggestion(
+                        key = key,
+                        name = maker.name,
+                        followedShows = group.size,
+                        totalShows = maker.channel?.showCount,
+                        channelId = maker.channel?.id,
+                        logoUrl = maker.channel?.logoUrl,
+                        color = maker.channel?.color
+                    )
+                }
+                .sortedWith(compareByDescending<MakerSuggestion> { it.followedShows }.thenBy { it.name.lowercase() })
+                .take(5)
+        }
+    }
+
+    fun followSuggestion(suggestion: MakerSuggestion, countryCode: String) {
+        viewModelScope.launch {
+            store.toggleMaker(
+                FollowedMaker(
+                    key = suggestion.key,
+                    name = suggestion.name,
+                    channelId = suggestion.channelId,
+                    logoUrl = suggestion.logoUrl,
+                    color = suggestion.color,
+                    country = countryCode
+                )
+            )
+        }
+    }
+
+    fun unfollowMaker(key: String) {
+        viewModelScope.launch {
+            store.makers.value.firstOrNull { it.key == key }?.let { store.toggleMaker(it) }
+        }
+    }
+
+    /** Een nieuwe show die je opent, is daarna niet meer nieuw. */
+    fun seen(show: MakerNewShow) {
+        _newShows.value = _newShows.value.filterNot { it.showId == show.showId }
+        viewModelScope.launch { store.markMakerSeen(show.makerKey, listOf(show.showId)) }
+    }
+
     fun removeFromQueue(episodeId: String) {
         viewModelScope.launch { store.removeFromQueue(episodeId) }
     }
@@ -157,5 +334,13 @@ class LibraryViewModel(
 
     fun unfollow(show: FollowedShow) {
         viewModelScope.launch { store.toggleFollow(show) }
+    }
+
+    private companion object {
+        /** Zo jong moet een show zijn om als nieuwe podcast te gelden. */
+        const val NEW_SHOW_DAYS = 14L
+
+        /** Zonder kanaal: een show met meer afleveringen is niet nieuw, maar net gevonden. */
+        const val NEW_SHOW_MAX_EPISODES = 3
     }
 }

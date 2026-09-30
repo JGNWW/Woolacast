@@ -16,6 +16,8 @@ import nl.woolacast.data.apple.AppleGenreTree
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.data.local.LocalStore
+import nl.woolacast.data.maker.MakerCheckWorker
+import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.data.reco.RecoRepository
 import nl.woolacast.data.tips.LiveTipsReader
 import nl.woolacast.data.spotify.SpotifyChartSource
@@ -54,6 +56,9 @@ class AppContainer(context: Context) {
 
     val searchRepository = SearchRepository(catalogApi)
 
+    /** Makers: kanalen uit de verzamelaar, shows uit de catalogus, plekken uit de lijsten. */
+    val makerRepository = MakerRepository(chartsDataset, catalogApi, searchRepository, chartRepository, store)
+
     /** Leest de podcastrubrieken van de media zelf, om de tips vers te houden. */
     val liveTips = LiveTipsReader(feedClient, catalogApi)
 
@@ -84,6 +89,9 @@ class WoolacastApp : Application() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             container.store.load()
         }
+        // Meldingen over nieuwe podcasts van gevolgde makers. In een testomgeving
+        // zonder WorkManager slaat dit stil over.
+        runCatching { MakerCheckWorker.schedule(this) }
     }
 }
 
