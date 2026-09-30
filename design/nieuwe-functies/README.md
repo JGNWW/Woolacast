@@ -35,3 +35,12 @@ was idee 10, de auto 11 en instellingen per show 12. Op de pagina zijn ze 8, 9 e
 node design/nieuwe-functies/preview.mjs
 node design/nieuwe-functies/build.mjs
 ```
+
+## Gebouwd: 1, 2, 3 en 7
+
+Downloaden, hoofdstukken, meelezen en OPML zijn gebouwd en beoordeeld door een
+senior developer en een senior designer, tot beiden alle vier goedkeurden
+(drie rondes). Het verloop staat in `bouw-beoordeling-developer.md` en
+`bouw-beoordeling-designer.md`; de schermen van de echte app in `schermen/`
+(`./gradlew testDebugUnitTest -Pscreenshots`, test `FeatureScreenshots`). De
+meting van hoeveel feeds tekst en hoofdstukken leveren staat in `dekking.md`.

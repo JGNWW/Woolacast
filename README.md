@@ -580,6 +580,10 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Afleveringen per categorie, Apple's echte volgorde | via charts-service |
 | Donker thema | werkt |
 | Tips van de media: op Ontdek, als eigen scherm, en op de podcastpagina | werkt in 13 landen |
+| Downloaden: per aflevering en automatisch per show, alleen op wifi, met opslaggrens | gebouwd, nog niet op een toestel getest |
+| Hoofdstukken (Podlove, podcast:chapters, ID3) met slaaptimer "einde hoofdstuk" | werkt |
+| Meelezen met de transcriptie van de maker, met zoeken | werkt (NL ~7%, US ~14% van de shows levert tekst) |
+| OPML importeren en exporteren, zelf een feed toevoegen | werkt |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -612,7 +616,6 @@ historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
 
 ## Nog te doen
 
-- Afleveringen downloaden, zodat luisteren ook zonder verbinding kan.
 - Draaien op een echt toestel: de speler is nog nooit hoorbaar getest.
 - Afhankelijkheden zijn gepind op versies van eind 2024 en werken; lint meldt
   dat er nieuwere zijn (AGP 9.4 inmiddels).

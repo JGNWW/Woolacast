@@ -128,3 +128,32 @@ Suggesties:
 
 - `ShowImporter.kt:78-86`: start je een tweede import (een ander bestand) terwijl de eerste nog loopt, dan blijft de oude job zijn uitkomsten in de nieuwe `session` schrijven. Hij zet die sessie bovendien op `done`. Annuleer `importJob` bij een nieuwe key, of controleer de key in de callback.
 - Een import haalt nog steeds alle feeds op, ook via mobiele data.
+
+## Ronde 3
+
+Beoordeeld: `9d2c5e0e`, vergeleken met `29ec24e6` (met daartussen `fe581fb8`).
+Alle 114 unit-tests slagen (29 overgeslagen, 0 fouten).
+
+Uitslag: **beide goedgekeurd** (1 en 2). Daarmee zijn alle vier de functies
+goedgekeurd.
+
+### 1. Downloaden en automatisch klaarzetten — GOEDGEKEURD
+
+Het blokkerende punt is opgelost. Een 206 zonder hervatting, of een 206 die niet aansluit, gooit nu het deel en `.meta` weg en daarna een `IOException`. `append` kan dus alleen nog waar zijn bij een geldige hervatting, en de volgende poging begint zonder Range. De nieuwe test `een 206 die niet aansluit wordt geen half bestand` dekt precies dit geval.
+
+De suggesties zijn ook verwerkt:
+
+- `.meta` gaat weg bij een 416 op een compleet deel.
+- `cleanUp` wist een orphan niet meer als een download-record die bestandsnaam weer gebruikt.
+- De `renameTo`-fout heeft een eerlijke tekst.
+
+Suggestie die openstaat: "wacht op wifi" pollen elke 5 s in plaats van een `NetworkCallback`.
+
+### 2. Hoofdstukken — GOEDGEKEURD
+
+Het blokkerende punt is opgelost. `onPositionDiscontinuity` met `DISCONTINUITY_REASON_SEEK` legt het stoppunt opnieuw, dus ook bij sprongen uit de melding, het vergrendelscherm, een koptelefoon of Android Auto. De MediaController geeft de nieuwe positie en dit bericht op de hoofdthread af vóór de volgende tick, dus er is geen venster waarin de oude grens nog geldt. `ChapterStopTest` staat in een eigen bestand.
+
+Suggesties:
+
+- Nu de listener elke seek opvangt, zijn de `afterSeek`-aanroepen in `seekTo`/`seekBy`/`seekToMs`/`previous` dubbel. Ze doen geen kwaad, maar kunnen terug naar `syncFromPlayer()`.
+- Het pad via de listener heeft geen test. Een test met een `FakePlayer`/`TestExoPlayer` waarin een externe seek het stoppunt verlegt, legt dit gedrag vast.
