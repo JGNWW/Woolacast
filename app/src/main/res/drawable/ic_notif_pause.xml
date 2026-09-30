@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gegenereerd door tools/notification_icons.py — daar aanpassen, niet hier. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6.025,5.85A1.825,1.825 0 0,1 9.675,5.85L9.675,17.75A1.825,1.825 0 0,1 6.025,17.75ZM14.325,5.85A1.825,1.825 0 0,1 17.975,5.85L17.975,17.75A1.825,1.825 0 0,1 14.325,17.75Z" />
+</vector>
