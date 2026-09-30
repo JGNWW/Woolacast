@@ -11,6 +11,10 @@ import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.MediaTip
 import nl.woolacast.data.dataset.ShowPosition
+import nl.woolacast.data.download.DownloadProgress
+import nl.woolacast.data.download.Downloads
+import nl.woolacast.data.local.DownloadRecord
+import nl.woolacast.data.local.DownloadSettings
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.CachedTips
 import nl.woolacast.data.local.LocalStore
@@ -59,7 +63,10 @@ class DetailViewModel(
     private val dataset: ChartsDataset? = null,
     private val charts: ChartRepository? = null,
     private val liveTips: LiveTipsReader? = null,
-    private val reco: RecoRepository? = null
+    private val reco: RecoRepository? = null,
+    private val downloads: Downloads? = null,
+    /** Na het aanzetten van automatisch downloaden: meteen kijken wat er klaar moet staan. */
+    private val onAutoDownloadChanged: (showId: String) -> Unit = {}
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailUiState(countryCode = countryCode))
@@ -69,6 +76,30 @@ class DetailViewModel(
     val progress: StateFlow<Map<String, Long>> = store.progress
     val queued: StateFlow<List<SavedEpisode>> = store.queue
     val stored: StateFlow<List<SavedEpisode>> = store.saved
+    val downloadRecords: StateFlow<Map<String, DownloadRecord>> = store.downloads
+    val downloadProgress: StateFlow<Map<String, DownloadProgress>> =
+        downloads?.progress ?: MutableStateFlow(emptyMap<String, DownloadProgress>()).asStateFlow()
+    val autoDownload: StateFlow<Map<String, Int>> = store.autoDownload
+    val downloadSettings: StateFlow<DownloadSettings> = store.downloadSettings
+
+    fun waitingForWifi(): Boolean = downloads?.waitingForWifi() ?: false
+
+    fun download(episode: Episode) = viewModelScope.launch { downloads?.enqueue(episode) }
+    fun removeDownload(episodeId: String) = viewModelScope.launch { downloads?.remove(episodeId) }
+    fun retryDownload(episodeId: String) = viewModelScope.launch { downloads?.retry(episodeId) }
+
+    /**
+     * Automatisch downloaden voor deze show. Aanzetten volgt de show ook: de
+     * app kijkt alleen bij shows die je volgt of er iets nieuws is.
+     */
+    fun setAutoDownload(count: Int?) {
+        val podcast = _state.value.podcast ?: return
+        viewModelScope.launch {
+            if (count != null && count > 0 && store.follows.value.none { it.id == podcast.id }) toggleFollowNow(podcast)
+            store.setAutoDownload(podcast.id, count)
+            if (count != null && count > 0) onAutoDownloadChanged(podcast.id)
+        }
+    }
 
     /** Titels uit de afleveringenlijst van het land, om rijen een "#3 NL" te geven. */
     private var chartTitles: Map<String, Int> = emptyMap()
@@ -219,15 +250,22 @@ class DetailViewModel(
     fun toggleFollow() {
         val podcast = _state.value.podcast ?: return
         viewModelScope.launch {
-            store.toggleFollow(
-                FollowedShow(
-                    id = podcast.id,
-                    title = podcast.title,
-                    publisher = podcast.publisher,
-                    artworkUrl = podcast.artworkUrl,
-                    feedUrl = podcast.feedUrl
-                )
-            )
+            val following = store.follows.value.any { it.id == podcast.id }
+            toggleFollowNow(podcast)
+            // Wie ontvolgt, wil ook niet dat de app nog afleveringen binnenhaalt.
+            if (following) store.setAutoDownload(podcast.id, null)
         }
+    }
+
+    private suspend fun toggleFollowNow(podcast: Podcast) {
+        store.toggleFollow(
+            FollowedShow(
+                id = podcast.id,
+                title = podcast.title,
+                publisher = podcast.publisher,
+                artworkUrl = podcast.artworkUrl,
+                feedUrl = podcast.feedUrl
+            )
+        )
     }
 }

@@ -11,7 +11,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import nl.woolacast.domain.Chapter
 import nl.woolacast.domain.Episode
+import nl.woolacast.domain.TranscriptRef
 
 @Serializable
 data class DaySnapshot(val date: String, val ranks: Map<String, Int>)
@@ -78,19 +80,55 @@ data class SavedEpisode(
     val audioUrl: String? = null,
     val durationMillis: Long? = null,
     val releaseDate: String? = null,
-    val link: String? = null
+    val link: String? = null,
+    val chaptersUrl: String? = null,
+    val chapters: List<Chapter> = emptyList(),
+    val transcript: TranscriptRef? = null
 ) {
     fun toEpisode() = Episode(
         id = id, showId = showId, showTitle = showTitle, title = title,
         description = null, artworkUrl = artworkUrl, audioUrl = audioUrl,
-        durationMillis = durationMillis, releaseDate = releaseDate, link = link
+        durationMillis = durationMillis, releaseDate = releaseDate, link = link,
+        chaptersUrl = chaptersUrl, inlineChapters = chapters, transcript = transcript
     )
 }
 
 fun Episode.toSaved() = SavedEpisode(
     id = id, showId = showId, showTitle = showTitle, title = title,
     artworkUrl = artworkUrl, audioUrl = audioUrl,
-    durationMillis = durationMillis, releaseDate = releaseDate, link = link
+    durationMillis = durationMillis, releaseDate = releaseDate, link = link,
+    chaptersUrl = chaptersUrl, chapters = inlineChapters, transcript = transcript
+)
+
+/**
+ * Een gedownloade (of nog te downloaden) aflevering. [fileName] staat in de map
+ * downloads van de app; [auto] zegt of de app hem zelf klaarzette.
+ */
+@Serializable
+data class DownloadRecord(
+    val episode: SavedEpisode,
+    val fileName: String,
+    val state: DownloadState = DownloadState.QUEUED,
+    val bytes: Long = 0L,
+    val auto: Boolean = false,
+    /** Wanneer hij in de rij kwam, als ISO-moment; de oudste ruimt de app het eerst op. */
+    val addedAt: String = "",
+    /** Wanneer je hem uitluisterde; een dag later mag hij weg. */
+    val listenedAt: String? = null,
+    val error: String? = null
+)
+
+@Serializable
+enum class DownloadState { QUEUED, DONE, FAILED }
+
+@Serializable
+data class DownloadSettings(
+    /** Hoeveel ruimte downloads samen mogen innemen. */
+    val limitMb: Int = 2048,
+    /** Alleen op wifi (of een ander onbeperkt netwerk). */
+    val wifiOnly: Boolean = true,
+    /** Uitgeluisterd wissen, een dag na het uitluisteren. */
+    val deleteListened: Boolean = true
 )
 
 /** Wat de app zelf uit de feeds haalde, met het moment erbij. */
@@ -121,7 +159,14 @@ private data class StoreData(
     /** Tips die de app zelf uit de feeds las, per land. */
     val liveTips: Map<String, CachedTips> = emptyMap(),
     /** En hetzelfde per podcast: wie deze show ergens aanraadde. */
-    val showTips: Map<String, CachedTips> = emptyMap()
+    val showTips: Map<String, CachedTips> = emptyMap(),
+    /** Per aflevering-id wat er gedownload is of wordt. */
+    val downloads: Map<String, DownloadRecord> = emptyMap(),
+    val downloadSettings: DownloadSettings = DownloadSettings(),
+    /** Per show hoeveel nieuwe afleveringen de app automatisch klaarzet. */
+    val autoDownload: Map<String, Int> = emptyMap(),
+    /** Afleveringen die je uitluisterde, de nieuwste achteraan. */
+    val listened: List<String> = emptyList()
 )
 
 /**
@@ -158,6 +203,18 @@ class LocalStore(private val file: File) {
     private val _progress = MutableStateFlow<Map<String, Long>>(emptyMap())
     val progress: StateFlow<Map<String, Long>> = _progress.asStateFlow()
 
+    private val _downloads = MutableStateFlow<Map<String, DownloadRecord>>(emptyMap())
+    val downloads: StateFlow<Map<String, DownloadRecord>> = _downloads.asStateFlow()
+
+    private val _downloadSettings = MutableStateFlow(DownloadSettings())
+    val downloadSettings: StateFlow<DownloadSettings> = _downloadSettings.asStateFlow()
+
+    private val _autoDownload = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val autoDownload: StateFlow<Map<String, Int>> = _autoDownload.asStateFlow()
+
+    private val _listened = MutableStateFlow<Set<String>>(emptySet())
+    val listened: StateFlow<Set<String>> = _listened.asStateFlow()
+
     private val _theme = MutableStateFlow("system")
     val theme: StateFlow<String> = _theme.asStateFlow()
 
@@ -188,6 +245,31 @@ class LocalStore(private val file: File) {
         val existing = it.follows.any { followed -> followed.id == show.id }
         val follows = if (existing) it.follows.filterNot { f -> f.id == show.id } else it.follows + show
         it.copy(follows = follows)
+    }
+
+    /** Volgt een rij shows tegelijk; wat je al volgde blijft zoals het was. */
+    suspend fun followAll(shows: List<FollowedShow>) = mutate { data ->
+        val have = data.follows.map { it.id }.toSet()
+        data.copy(follows = data.follows + shows.filter { it.id !in have }.distinctBy { it.id })
+    }
+
+    /**
+     * Een show die op zijn feed gevolgd werd, heeft nu een Apple-id. Alles wat
+     * aan de oude id hing, verhuist mee: automatisch downloaden, downloads en de
+     * wachtrij. Voortgang hangt aan afleveringen en blijft vanzelf.
+     */
+    suspend fun relinkFollow(oldId: String, show: FollowedShow) = mutate { data ->
+        fun SavedEpisode.moved() = if (showId == oldId) copy(showId = show.id) else this
+        val already = data.follows.any { it.id == show.id }
+        data.copy(
+            follows = if (already) data.follows.filterNot { it.id == oldId }
+                      else data.follows.map { if (it.id == oldId) show.copy(lastOpened = it.lastOpened) else it },
+            autoDownload = data.autoDownload[oldId]?.let { count -> data.autoDownload - oldId + (show.id to count) }
+                ?: data.autoDownload,
+            downloads = data.downloads.mapValues { (_, record) -> record.copy(episode = record.episode.moved()) },
+            queue = data.queue.map { it.moved() },
+            saved = data.saved.map { it.moved() }
+        )
     }
 
     /** Onthoudt wanneer je een gevolgde show voor het laatst bekeek. */
@@ -275,14 +357,47 @@ class LocalStore(private val file: File) {
                         else it.saved + episode)
     }
 
-    /** Alleen bewaren als er iets te onthouden valt; anders groeit dit eindeloos. */
-    suspend fun rememberProgress(episodeId: String, positionMs: Long, durationMs: Long) {
-        if (positionMs < 30_000L) return
+    /**
+     * Alleen bewaren als er iets te onthouden valt; anders groeit dit eindeloos.
+     * Geeft true terug als de aflevering daarmee uitgeluisterd is.
+     */
+    suspend fun rememberProgress(episodeId: String, positionMs: Long, durationMs: Long): Boolean {
+        if (positionMs < 30_000L) return false
         val finished = durationMs > 0L && positionMs > durationMs - 60_000L
         mutate { data ->
-            data.copy(progress = if (finished) data.progress - episodeId
-                                 else data.progress + (episodeId to positionMs))
+            data.copy(
+                progress = if (finished) data.progress - episodeId else data.progress + (episodeId to positionMs),
+                listened = if (finished) (data.listened - episodeId + episodeId).takeLast(LISTENED_KEPT) else data.listened,
+                downloads = if (finished) data.downloads[episodeId]?.let { record ->
+                    data.downloads + (episodeId to record.copy(listenedAt = record.listenedAt ?: java.time.Instant.now().toString()))
+                } ?: data.downloads else data.downloads
+            )
         }
+        return finished
+    }
+
+    /* ---- downloads ---- */
+
+    fun download(episodeId: String): DownloadRecord? = data.downloads[episodeId]
+
+    suspend fun putDownload(record: DownloadRecord) = mutate {
+        it.copy(downloads = it.downloads + (record.episode.id to record))
+    }
+
+    /** Past een download aan, als hij nog bestaat. */
+    suspend fun updateDownload(episodeId: String, change: (DownloadRecord) -> DownloadRecord) = mutate { data ->
+        val record = data.downloads[episodeId] ?: return@mutate data
+        data.copy(downloads = data.downloads + (episodeId to change(record)))
+    }
+
+    suspend fun removeDownload(episodeId: String) = mutate { it.copy(downloads = it.downloads - episodeId) }
+
+    suspend fun setDownloadSettings(settings: DownloadSettings) = mutate { it.copy(downloadSettings = settings) }
+
+    /** [count] null of 0 zet automatisch downloaden voor deze show uit. */
+    suspend fun setAutoDownload(showId: String, count: Int?) = mutate {
+        it.copy(autoDownload = if (count == null || count <= 0) it.autoDownload - showId
+                               else it.autoDownload + (showId to count))
     }
 
     /* ---- momentopnames ---- */
@@ -356,10 +471,17 @@ class LocalStore(private val file: File) {
         _saved.value = data.saved
         _progress.value = data.progress
         _theme.value = data.theme
+        _downloads.value = data.downloads
+        _downloadSettings.value = data.downloadSettings
+        _autoDownload.value = data.autoDownload
+        _listened.value = data.listened.toSet()
     }
 
     private companion object {
         const val HISTORY_DAYS = 30
+
+        /** Zoveel uitgeluisterde afleveringen onthouden we. */
+        const val LISTENED_KEPT = 2000
 
         /** Zoveel podcasts onthouden we hun tips van; daarna vallen de oudste af. */
         const val SHOW_TIPS_KEPT = 300

@@ -83,7 +83,10 @@ class PodcastRepository(
                 audioUrl = parsed.audioUrl,
                 durationMillis = parsed.durationMillis,
                 releaseDate = parsed.releaseDate,
-                link = parsed.link
+                link = parsed.link,
+                chaptersUrl = parsed.chaptersUrl,
+                inlineChapters = parsed.inlineChapters,
+                transcript = parsed.transcript
             )
         }
 

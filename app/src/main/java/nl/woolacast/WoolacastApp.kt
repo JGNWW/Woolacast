@@ -13,6 +13,10 @@ import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.SearchRepository
 import nl.woolacast.data.apple.AppleChartSource
 import nl.woolacast.data.apple.AppleGenreTree
+import nl.woolacast.data.chapters.ChapterRepository
+import nl.woolacast.data.download.Downloads
+import nl.woolacast.data.opml.ShowImporter
+import nl.woolacast.data.transcript.TranscriptRepository
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.data.local.LocalStore
@@ -67,14 +71,33 @@ class AppContainer(context: Context) {
 
     val dataset: ChartsDataset get() = chartsDataset
 
-    val player = PlayerController(
+    /** Afleveringen op het toestel. */
+    val downloads: Downloads = Downloads(context, store, playingId = { player.state.value.episodeId })
+
+    /** Hoofdstukken uit de feed, een JSON-bestand of de kop van het mp3-bestand. */
+    val chapters = ChapterRepository(Network.client)
+
+    /** Transcripties die de maker in de feed aanwijst. */
+    val transcripts = TranscriptRepository(Network.client)
+
+    /** Voor werk dat langer duurt dan een scherm, zoals het koppelen na een import. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    /** Een OPML-bestand dat van buiten binnenkwam (delen of openen met Toadcast). */
+    val incomingOpml = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
+
+    /** OPML in en uit, en zelf een feed toevoegen. */
+    val importer = ShowImporter(feedClient, catalogApi, store)
+
+    val player: PlayerController = PlayerController(
         context = context,
         resumePosition = { episodeId -> store.progress.value[episodeId] ?: 0L },
         onProgress = { episodeId, positionMs, durationMs ->
             store.rememberProgress(episodeId, positionMs, durationMs)
         },
         nextInQueue = { store.queue.value.firstOrNull()?.toEpisode() },
-        consumeQueued = { episodeId -> store.removeFromQueue(episodeId) }
+        consumeQueued = { episodeId -> store.removeFromQueue(episodeId) },
+        localUri = { episodeId -> downloads.localFile(episodeId)?.let { android.net.Uri.fromFile(it).toString() } }
     )
 }
 
@@ -88,6 +111,10 @@ class WoolacastApp : Application() {
         container = AppContainer(this)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             container.store.load()
+            // Uitgeluisterde downloads van gisteren mogen weg; en shows met
+            // automatisch downloaden krijgen hun vaste ronde.
+            container.downloads.cleanUp()
+            runCatching { Downloads.scheduleAuto(this@WoolacastApp, container.store.downloadSettings.value) }
         }
         // Meldingen over nieuwe podcasts van gevolgde makers. In een testomgeving
         // zonder WorkManager slaat dit stil over.

@@ -3,6 +3,8 @@ package nl.woolacast.ui.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -215,8 +217,10 @@ fun UnderlineTabs(
     indicator: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        // Passen de tabbladen niet op de breedte, dan schuift de rij opzij in
+        // plaats van dat het laatste woord wordt afgekapt.
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp).height(height),
+            modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp).height(height),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             labels.forEachIndexed { index, label ->

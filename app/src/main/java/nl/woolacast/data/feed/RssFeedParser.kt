@@ -2,6 +2,9 @@ package nl.woolacast.data.feed
 
 import android.util.Xml
 import nl.woolacast.data.Html
+import nl.woolacast.domain.Chapter
+import nl.woolacast.domain.TranscriptFormats
+import nl.woolacast.domain.TranscriptRef
 import java.io.InputStream
 import java.time.Instant
 import java.time.ZoneId
@@ -30,7 +33,10 @@ data class ParsedEpisode(
     val link: String?,
     /** Bij een nieuwsbundelaar: van welk medium deze kop is. */
     val sourceUrl: String? = null,
-    val sourceName: String? = null
+    val sourceName: String? = null,
+    val chaptersUrl: String? = null,
+    val inlineChapters: List<Chapter> = emptyList(),
+    val transcript: TranscriptRef? = null
 )
 
 data class ParsedFeed(
@@ -109,6 +115,29 @@ class RssFeedParser {
                         }
                     "guid" -> if (item != null) item.guid = text(parser)
 
+                    // Podcasting 2.0: hoofdstukken als los JSON-bestand.
+                    "podcast:chapters" -> if (item != null) {
+                        item.chaptersUrl = parser.getAttributeValue(null, "url")?.trim()?.takeIf { it.startsWith("http") }
+                    }
+                    // Podlove Simple Chapters staan in de feed zelf; veel
+                    // Nederlandse en Duitse makers gebruiken die.
+                    "psc:chapter" -> if (item != null) {
+                        val start = parseClock(parser.getAttributeValue(null, "start"))
+                        val title = parser.getAttributeValue(null, "title")?.trim()
+                        if (start != null && !title.isNullOrEmpty()) {
+                            item.chapters += Chapter(start, Html.toPlainText(title) ?: title)
+                        }
+                    }
+                    // Een feed mag meerdere vormen aanbieden; we onthouden ze
+                    // allemaal en kiezen straks de beste.
+                    "podcast:transcript" -> if (item != null) {
+                        val url = parser.getAttributeValue(null, "url")?.trim()
+                        val type = parser.getAttributeValue(null, "type")?.trim()
+                        if (url != null && url.startsWith("http") && !type.isNullOrEmpty()) {
+                            item.transcripts += TranscriptRef(url, type, parser.getAttributeValue(null, "language")?.trim())
+                        }
+                    }
+
                     // Google Nieuws zet in <source url="..."> bij welk medium
                     // een kop hoort. Een podcastfeed heeft dit niet.
                     "source" -> if (item != null) {
@@ -158,6 +187,9 @@ class RssFeedParser {
         var link: String? = null
         var sourceUrl: String? = null
         var sourceName: String? = null
+        var chaptersUrl: String? = null
+        val chapters = mutableListOf<Chapter>()
+        val transcripts = mutableListOf<TranscriptRef>()
 
         fun build(): ParsedEpisode? {
             val heading = title ?: return null
@@ -171,7 +203,11 @@ class RssFeedParser {
                 imageUrl = secure(imageUrl),
                 link = link?.takeIf { it.startsWith("http") },
                 sourceUrl = sourceUrl,
-                sourceName = Html.toPlainText(sourceName)
+                sourceName = Html.toPlainText(sourceName),
+                chaptersUrl = secure(chaptersUrl),
+                inlineChapters = chapters.sortedBy { it.startMs }.distinctBy { it.startMs },
+                transcript = transcripts.minByOrNull { TranscriptFormats.rank(it.type) }
+                    ?.let { it.copy(url = secure(it.url) ?: it.url) }
             )
         }
     }
@@ -189,6 +225,23 @@ class RssFeedParser {
                 3 -> (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000
                 else -> null
             }
+        }
+
+        /**
+         * Een tijd als "01:02:03.500", "02:03" of "123.5", in milliseconden.
+         * Zo schrijft Podlove het begin van een hoofdstuk.
+         */
+        fun parseClock(raw: String?): Long? {
+            val value = raw?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+            val parts = value.split(':')
+            if (parts.size > 3) return null
+            var seconds = 0.0
+            for (part in parts) {
+                val number = part.replace(',', '.').toDoubleOrNull() ?: return null
+                if (number < 0) return null
+                seconds = seconds * 60 + number
+            }
+            return (seconds * 1000).toLong()
         }
 
         /**

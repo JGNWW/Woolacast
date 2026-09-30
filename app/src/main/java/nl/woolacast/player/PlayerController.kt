@@ -42,6 +42,8 @@ sealed interface SleepTimer {
     data object Off : SleepTimer
     data class After(val minutes: Int) : SleepTimer
     data object EndOfEpisode : SleepTimer
+    /** Stopt zodra de speler hier is: het einde van een hoofdstuk. */
+    data class AtPosition(val positionMs: Long) : SleepTimer
 }
 
 data class PlaybackState(
@@ -54,6 +56,8 @@ data class PlaybackState(
     /** Resterende tijd van de slaaptimer; null als er geen loopt. */
     val sleepRemainingMs: Long? = null,
     val sleepAtEnd: Boolean = false,
+    /** Stopt op deze plek in de aflevering (einde van een hoofdstuk); null als dat niet zo is. */
+    val sleepAtMs: Long? = null,
     /** Waar deze aflevering vandaan kwam, bijv. "#3 in Top afleveringen NL". */
     val chartLabel: String? = null,
     val error: String? = null
@@ -84,7 +88,9 @@ class PlayerController(
     /** De eerstvolgende aflevering uit de wachtrij, of null als die leeg is. */
     private val nextInQueue: () -> Episode? = { null },
     /** Wordt aangeroepen zodra een wachtrij-aflevering begint te spelen. */
-    private val consumeQueued: suspend (episodeId: String) -> Unit = {}
+    private val consumeQueued: suspend (episodeId: String) -> Unit = {},
+    /** Het bestand op het toestel, als de aflevering gedownload is. */
+    private val localUri: (episodeId: String) -> String? = { null }
 ) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -174,7 +180,7 @@ class PlayerController(
             return
         }
 
-        val item = episode.toMediaItem(audioUrl)
+        val item = episode.toMediaItem(localUri(episode.id) ?: audioUrl)
 
         val resumeAt = resumePosition(episode.id)
         _state.value = PlaybackState(
@@ -186,6 +192,8 @@ class PlayerController(
             speed = _state.value.speed,
             sleepRemainingMs = _state.value.sleepRemainingMs,
             sleepAtEnd = _state.value.sleepAtEnd,
+            // Het einde van een hoofdstuk hoort bij de vorige aflevering.
+            sleepAtMs = null,
             chartLabel = chartLabel
         )
 
@@ -210,6 +218,14 @@ class PlayerController(
         val player = controller ?: return
         val duration = player.duration.takeIf { it > 0L } ?: return
         player.seekTo((duration * fraction.coerceIn(0f, 1f)).toLong())
+        syncFromPlayer()
+    }
+
+    /** Naar een vaste plek, bijvoorbeeld het begin van een hoofdstuk of een zin. */
+    fun seekToMs(positionMs: Long) {
+        val player = controller ?: return
+        player.seekTo(positionMs.coerceAtLeast(0L))
+        if (!player.isPlaying) player.play()
         syncFromPlayer()
     }
 
@@ -244,17 +260,21 @@ class PlayerController(
         when (timer) {
             SleepTimer.Off -> {
                 sleepEndsAt = null
-                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false)
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false, sleepAtMs = null)
             }
             is SleepTimer.After -> {
                 sleepEndsAt = SystemClock.elapsedRealtime() + timer.minutes * 60_000L
                 _state.value = _state.value.copy(
-                    sleepRemainingMs = timer.minutes * 60_000L, sleepAtEnd = false
+                    sleepRemainingMs = timer.minutes * 60_000L, sleepAtEnd = false, sleepAtMs = null
                 )
             }
             SleepTimer.EndOfEpisode -> {
                 sleepEndsAt = null
-                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = true)
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = true, sleepAtMs = null)
+            }
+            is SleepTimer.AtPosition -> {
+                sleepEndsAt = null
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false, sleepAtMs = timer.positionMs)
             }
         }
     }
@@ -316,6 +336,14 @@ class PlayerController(
                         setSleepTimer(SleepTimer.Off)
                     } else {
                         _state.value = _state.value.copy(sleepRemainingMs = remaining)
+                    }
+                }
+
+                _state.value.sleepAtMs?.let { stopAt ->
+                    if (_state.value.positionMs >= stopAt) {
+                        controller?.pause()
+                        rememberWhereWeAre()
+                        setSleepTimer(SleepTimer.Off)
                     }
                 }
 

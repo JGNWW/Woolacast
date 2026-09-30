@@ -1,5 +1,7 @@
 package nl.woolacast.domain
 
+import kotlinx.serialization.Serializable
+
 /** Beweging ten opzichte van de vorige bewaarde momentopname. */
 sealed interface Movement {
     /** Geen eerdere momentopname om mee te vergelijken. */
@@ -63,5 +65,44 @@ data class Episode(
     val durationMillis: Long?,
     val releaseDate: String?,
     /** Webpagina van de aflevering uit de feed, om te delen; anders de audio-URL. */
-    val link: String? = null
+    val link: String? = null,
+    /** Hoofdstukken als los JSON-bestand (podcast:chapters). */
+    val chaptersUrl: String? = null,
+    /** Hoofdstukken die in de feed zelf staan (Podlove Simple Chapters). */
+    val inlineChapters: List<Chapter> = emptyList(),
+    /** De beste transcriptie die de maker meelevert, als die er is. */
+    val transcript: TranscriptRef? = null
 )
+
+/** Een hoofdstuk: waar het begint en hoe het heet. */
+@Serializable
+data class Chapter(val startMs: Long, val title: String)
+
+/**
+ * Een transcriptie zoals de feed hem aanwijst (podcast:transcript). [type] is
+ * het mediatype: text/vtt, application/x-subrip, application/json, text/html…
+ */
+@Serializable
+data class TranscriptRef(val url: String, val type: String, val language: String? = null) {
+    /** Heeft deze vorm tijden, zodat de tekst kan meelopen? */
+    val timed: Boolean get() = TranscriptFormats.timed(type)
+}
+
+object TranscriptFormats {
+    /**
+     * Welke vorm we het liefst lezen. JSON en VTT dragen sprekers en tijden,
+     * SRT alleen tijden; HTML en platte tekst hebben geen van beide.
+     */
+    fun rank(type: String): Int = when (normalise(type)) {
+        "application/json" -> 0
+        "text/vtt" -> 1
+        "application/x-subrip", "application/srt", "text/srt" -> 2
+        "text/html" -> 3
+        "text/plain" -> 4
+        else -> 5
+    }
+
+    fun timed(type: String): Boolean = rank(type) <= 2
+
+    fun normalise(type: String) = type.substringBefore(';').trim().lowercase()
+}

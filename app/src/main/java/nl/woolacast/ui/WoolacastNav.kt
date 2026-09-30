@@ -51,6 +51,15 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import nl.woolacast.AppContainer
+import androidx.compose.ui.platform.LocalContext
+import nl.woolacast.data.download.Downloads
+import nl.woolacast.domain.Chapter
+import nl.woolacast.ui.common.DownloadUi
+import nl.woolacast.ui.common.downloadUi
+import nl.woolacast.ui.library.DownloadsViewModel
+import nl.woolacast.ui.library.ImportScreen
+import nl.woolacast.ui.library.ImportViewModel
+import nl.woolacast.ui.player.TranscriptLoad
 import nl.woolacast.data.local.toSaved
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.ChartLevel
@@ -114,6 +123,33 @@ fun WoolacastNav(container: AppContainer) {
     val playback by container.player.state.collectAsStateWithLifecycle()
     val queue by container.store.queue.collectAsStateWithLifecycle()
     val saved by container.store.saved.collectAsStateWithLifecycle()
+    val downloadRecords by container.store.downloads.collectAsStateWithLifecycle()
+    val downloadProgress by container.downloads.progress.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Hoofdstukken en tekst horen bij de aflevering die speelt; bij een andere
+    // aflevering beginnen ze opnieuw.
+    val playingEpisode = playback.episode
+    var chapters by remember(playingEpisode?.id) { mutableStateOf<List<Chapter>>(emptyList()) }
+    var transcript by remember(playingEpisode?.id) { mutableStateOf<TranscriptLoad>(TranscriptLoad.Idle) }
+    LaunchedEffect(playingEpisode?.id) {
+        val episode = playingEpisode ?: return@LaunchedEffect
+        chapters = runCatching {
+            container.chapters.chapters(episode, container.downloads.localFile(episode.id))
+        }.getOrDefault(emptyList())
+    }
+    val loadTranscript: () -> Unit = {
+        val ref = playingEpisode?.transcript
+        if (ref != null && transcript !is TranscriptLoad.Ready && transcript != TranscriptLoad.Loading) {
+            transcript = TranscriptLoad.Loading
+            scope.launch {
+                transcript = runCatching { container.transcripts.load(ref) }.fold(
+                    onSuccess = { TranscriptLoad.Ready(it) },
+                    onFailure = { TranscriptLoad.Failed(it.message ?: "Controleer je verbinding en probeer het opnieuw.") }
+                )
+            }
+        }
+    }
 
     // Het tabblad waar we (het laatst) op stonden; op het spelerscherm is er geen.
     var currentTab by remember { mutableStateOf(Tab.CHARTS) }
@@ -160,6 +196,14 @@ fun WoolacastNav(container: AppContainer) {
     val playAndOpen: (Episode, String?) -> Unit = { episode, label ->
         container.player.play(episode, label)
         openPlayer()
+    }
+
+    // Een OPML-bestand dat met Toadcast gedeeld of geopend werd: naar het importscherm.
+    val incoming by container.incomingOpml.collectAsStateWithLifecycle()
+    LaunchedEffect(incoming) {
+        val uri = incoming ?: return@LaunchedEffect
+        container.incomingOpml.value = null
+        navController.navigate("${Tab.LIBRARY.route}/import?uri=${Uri.encode(uri.toString())}")
     }
 
     // Afleveringen uit een hitlijst hebben geen audio-URL; de ViewModel zoekt
@@ -255,8 +299,13 @@ fun WoolacastNav(container: AppContainer) {
                     val libraryViewModel: LibraryViewModel = viewModel(
                         factory = viewModelFactory {
                             initializer {
-                                LibraryViewModel(container.store, container.dataset, container.podcastRepository, container.makerRepository)
+                                LibraryViewModel(container.store, container.dataset, container.podcastRepository, container.makerRepository, container.importer)
                             }
+                        }
+                    )
+                    val downloadsViewModel: DownloadsViewModel = viewModel(
+                        factory = viewModelFactory {
+                            initializer { DownloadsViewModel(context.applicationContext, container.store, container.downloads) }
                         }
                     )
                     LibraryScreen(
@@ -267,7 +316,28 @@ fun WoolacastNav(container: AppContainer) {
                         onSearch = openSearch,
                         onPlay = { episode -> playAndOpen(episode, null) },
                         // Wie een maker volgt, wil zien wat er nieuw is: open op Recent.
-                        onOpenMaker = { name -> openMaker(name, null, MakerSort.RECENT) }
+                        onOpenMaker = { name -> openMaker(name, null, MakerSort.RECENT) },
+                        downloadsViewModel = downloadsViewModel,
+                        onImportFile = { uri ->
+                            navController.navigate("${Tab.LIBRARY.route}/import?uri=${Uri.encode(uri.toString())}")
+                        },
+                        appScope = container.appScope
+                    )
+                }
+                composable("${Tab.LIBRARY.route}/import?uri={uri}") { entry ->
+                    val uri = Uri.parse(entry.arguments?.getString("uri").orEmpty())
+                    val importViewModel: ImportViewModel = viewModel(
+                        key = "import-$uri",
+                        factory = viewModelFactory {
+                            initializer {
+                                ImportViewModel(uri, context.contentResolver, container.importer, container.store, chartsCountry, container.appScope)
+                            }
+                        }
+                    )
+                    ImportScreen(
+                        viewModel = importViewModel,
+                        onBack = { navController.popBackStack() },
+                        onDone = { navController.popBackStack(Tab.LIBRARY.home, inclusive = false) }
                     )
                 }
                 tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
@@ -301,7 +371,17 @@ fun WoolacastNav(container: AppContainer) {
                             openPodcast(it.showId, null, it.showTitle)
                         }
                     },
-                    onDismissError = container.player::clearError
+                    onDismissError = container.player::clearError,
+                    chapters = chapters,
+                    onSeekToMs = container.player::seekToMs,
+                    hasTranscript = episode?.transcript != null,
+                    transcript = transcript,
+                    onOpenTranscript = loadTranscript,
+                    download = episode?.let {
+                        downloadUi(downloadRecords[it.id], downloadProgress[it.id], container.downloads.waitingForWifi())
+                    } ?: DownloadUi.None,
+                    onDownload = { episode?.let { scope.launch { container.downloads.enqueue(it) } } },
+                    onRemoveDownload = { episode?.let { scope.launch { container.downloads.remove(it.id) } } }
                 )
             }
         }
@@ -403,7 +483,9 @@ private fun NavGraphBuilder.tabScreens(
                         dataset = container.dataset,
                         charts = container.chartRepository,
                         liveTips = container.liveTips,
-                        reco = container.reco
+                        reco = container.reco,
+                        downloads = container.downloads,
+                        onAutoDownloadChanged = { id -> runCatching { Downloads.checkNow(navController.context, id) } }
                     )
                 }
             }
