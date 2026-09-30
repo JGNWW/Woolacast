@@ -9,6 +9,8 @@ import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
@@ -82,12 +84,27 @@ class PlaybackService : MediaSessionService() {
             // iets anders doet dan het scherm.
             .setSeekBackIncrementMs(SKIP_BACK_MS)
             .setSeekForwardIncrementMs(SKIP_FORWARD_MS)
+            // Veel podcast-mp3's hebben geen kop die zegt waar wat staat. Zonder
+            // dit geldt zo'n bestand als niet te doorzoeken, en verdwijnen
+            // terug- en vooruitspoelen uit de bediening.
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(
+                    this,
+                    DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true)
+                )
+            )
             .build()
 
         player.addListener(object : Player.Listener {
             // De snelheidsknop draagt zijn eigen waarde als icoon; Media3
             // ververst de melding daar niet vanzelf voor.
             override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+                publishButtons()
+            }
+
+            // Of er te spoelen valt, weet de speler pas als de aflevering
+            // geladen is — ná het moment dat het systeem de knoppen ophaalt.
+            override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
                 publishButtons()
             }
         })
@@ -170,11 +187,16 @@ class PlaybackService : MediaSessionService() {
      * Wat het systeem en andere bedieningen — het vergrendelscherm, Android
      * Auto, een horloge — naast afspelen en pauzeren te zien krijgen. Alleen
      * eigen opdrachten halen die lijst; afspelen zit er al in.
+     *
+     * De volgorde is die van de systeembediening: de eerste twee nemen de vaste
+     * plekken van 'vorige' en 'volgende' naast afspelen in, de volgende twee
+     * komen daarbuiten. Zo staat er snelheid, terug, afspelen, vooruit, ster.
      */
     private fun extraButtons(): ImmutableList<CommandButton> {
-        val row = mutableListOf(speedButton())
+        val row = mutableListOf<CommandButton>()
         if (canSeek(Player.COMMAND_SEEK_BACK)) row += skipButton(back = true)
         if (canSeek(Player.COMMAND_SEEK_FORWARD)) row += skipButton(back = false)
+        row += speedButton()
         row += saveButton()
         return ImmutableList.copyOf(row)
     }
