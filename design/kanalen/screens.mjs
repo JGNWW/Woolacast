@@ -14,6 +14,8 @@ export const ICON = {
   pause: `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg>`,
   fwd: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg>`,
   plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>`,
+  check: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>`,
+  refresh: `<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>`,
   info: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 7.6v.2"></path></svg>`,
   navCharts: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>`,
   navDisc: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>`,
@@ -33,12 +35,32 @@ export const M = {
   concept: { name: 'Concept Media', color: '#A2532F', mark: 'CM', channel: true },
   podium: { name: 'Podium Audio', color: '#1E1B16', mark: 'PA', channel: true },
   kelder: { name: 'Kelderwerk', color: '#332F63', mark: 'KW', channel: true },
-  zuid: { name: 'Zuidkust Audio', mark: 'ZA', channel: false }
+  zuid: { name: 'Zuidkust Audio', mark: 'ZA', channel: false },
+  noordoost: { name: 'Omroep Noordoost Audio', mark: 'ON', channel: false },
+  stad: { name: 'Stadsgeluid', color: '#3C5A2B', mark: 'SG', channel: true },
+  vrij: { name: 'Vrij Spel', color: '#7E5AA0', mark: 'VS', channel: true },
+  licht: { name: 'Lichtkogel', mark: 'LK', channel: false }
+};
+
+// In donker klemmen we de kanaalkleur omhoog tot 3:1 tegen de achtergrond (P5),
+// door hem naar het donkere ink te mengen. Zo verdwijnt een zwart logo niet.
+const lum = (h) => {
+  const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
+  return .2126 * c[0] + .7152 * c[1] + .0722 * c[2];
+};
+const mix = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+export const liftForDark = (h) => {
+  const bg = lum('#0E0F11');
+  for (let t = 0; t <= 1; t += .02) {
+    const c = mix(h, '#EDEEF0', t);
+    if ((lum(c) + .05) / (bg + .05) >= 3) return c;
+  }
+  return h;
 };
 
 // Makerlogo: altijd rond, zodat een maker nooit op een podcasthoes lijkt.
 const logo = (m, size = 44) => m.channel
-  ? `<div class="logo" style="width:${size}px;height:${size}px;background:${m.color};font-size:${Math.round(size * (m.mark.length > 2 ? .22 : .34))}px">${m.mark}</div>`
+  ? `<div class="logo" style="--c:${m.color};--cd:${liftForDark(m.color)};width:${size}px;height:${size}px;font-size:${Math.round(size * (m.mark.length > 2 ? .22 : .34))}px">${m.mark}</div>`
   : `<div class="logo mono" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .34)}px">${m.mark}</div>`;
 
 const chrome = (active) => `
@@ -79,7 +101,9 @@ const label = (t) => `<div class="pad lbl2">${t}</div>`;
 export const CSS = `
 .logo{display:flex;align-items:center;justify-content:center;flex:none;border-radius:50%;color:#FFFDFA;font-weight:800;letter-spacing:.04em;
   font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;box-shadow:inset 0 0 0 1px var(--ring)}
-.logo.mono{background:var(--surf3);color:var(--ink2)}
+.logo{background:var(--c)}
+.ph.dark .logo{background:var(--cd)}
+.logo.mono{background:var(--surf3);color:var(--ink)}
 .ph{--ring:rgba(33,29,23,.10);--tnote:var(--ink2);--panel:#211D17;--onPanel:#F6EFE5;--onPanelMuted:#B3A695;--rank:var(--pri)}
 .on-mini{color:var(--onPanel)}.on-mini2{color:var(--onPanelMuted)}
 /* De gloed loopt tot boven in de statusbalk (fullBleed), op 8% van de kanaalkleur. */
@@ -143,7 +167,7 @@ const makerHead = (m, count, following) => `
     </div>
     <div class="pad row" style="gap:8px;margin-top:14px">
       ${following
-        ? `<div class="btn btn-t">Volgt</div>`
+        ? `<div class="btn btn-o">${ICON.check}Volgt</div>`
         : `<div class="btn btn-p">${ICON.plus}Volg maker</div>`}
     </div>`;
 
@@ -155,16 +179,16 @@ const row = (s, place) => `
         <span class="chev">${ICON.chevR()}</span>
       </div>`;
 
+const note = (src) => `<div class="pad tnote">Plek in <b>${src} · ${FLAG} NL</b> · Top 200 <span class="chev">${ICON.chevS}</span></div>`;
+const outLabel = `<div class="pad lbl2" style="color:var(--ink2)">Niet in de Top 200 · op nieuwste aflevering</div>`;
+
 const kadeIn = [
   ['Kade 12', 'a10', 'Nieuwe afl. vandaag · True crime', 4],
   ['Nachtdienst', 'a2', 'Nieuwe afl. gisteren · Samenleving', 19],
   ['Lange Adem', 'a5', 'Nieuwe afl. 3 dagen geleden · Sport', 37],
   ['Tafel voor Twee', 'a3', 'Nieuwe afl. gisteren · Eten', 88]
 ];
-const kadeOut = [
-  ['Halve Zolen', 'a9', 'Nieuwe afl. 2 dagen geleden · Comedy']
-];
-screens.Maker = { title: '1 · Makerpagina (Apple-kanaal)', ch: M.kade.color, body: `
+screens.Maker = { title: '1 · Makerpagina (Apple-kanaal)', body: `
 <div class="ph col" style="--ch:${M.kade.color}">
   <div class="glow"></div>
   <div class="sa"></div>
@@ -173,51 +197,49 @@ screens.Maker = { title: '1 · Makerpagina (Apple-kanaal)', ch: M.kade.color, bo
     ${makerHead(M.kade, '31 podcasts', false)}
     <div style="height:14px"></div>
     ${chips(['Populair', 'Recent', 'A–Z'], 'Populair')}
-    <div class="pad tnote">Plek in <b>Apple · ${FLAG} NL</b> · alle categorieën <span class="chev">${ICON.chevS}</span></div>
+    ${note('Apple')}
     <div class="pad list">
       ${kadeIn.map(s => row(s, `<span class="place" aria-label="plek ${s[3]} in Apple NL">#${s[3]}</span>`)).join('')}
     </div>
-    <div class="pad lbl2" style="color:var(--ink2)">Niet in de Top 200 · op nieuwste aflevering</div>
-    <div class="pad list">
-      ${kadeOut.map(s => row(s, `<span class="place none">—</span>`)).join('')}
-    </div>
+    ${outLabel}
+    <div class="pad list">${row(['Halve Zolen', 'a9', 'Nieuwe afl. 2 dagen geleden · Comedy'], `<span class="place none">—</span>`)}</div>
   </div>
   ${chrome('charts')}
 </div>` };
 
-const oostShows = [
+const podiumShows = [
   ['Ochtendspits', 'a6', 'Nieuwe afl. vandaag · Nieuws', 9],
   ['Het Oosten Vertelt', 'a4', 'Nieuwe afl. gisteren · Geschiedenis', 64],
   ['Derby', 'a8', 'Nieuwe afl. gisteren · Sport', 131]
 ];
-screens.MakerDonker = { title: '1 · Maker zonder kanaal, donker', dark: true, body: `
-<div class="ph col dark">
+screens.MakerDonker = { title: '1 · Donker kanaallogo, donker thema', dark: true, body: `
+<div class="ph col dark" style="--ch:${liftForDark(M.podium.color)}">
+  <div class="glow"></div>
   <div class="sa"></div>
-  ${titlebar([])}
+  ${titlebar(['share'])}
   <div class="body">
-    ${makerHead(M.oost, '12 gevonden in de Apple-catalogus', true)}
+    ${makerHead(M.podium, '14 podcasts', true)}
     <div style="height:14px"></div>
     ${chips(['Populair', 'Recent', 'A–Z'], 'Populair')}
-    <div class="pad tnote">Plek in <b>Spotify · ${FLAG} NL</b> · Top 200 <span class="chev">${ICON.chevS}</span></div>
+    ${note('Spotify')}
     <div class="pad list">
-      ${oostShows.map(s => row(s, `<span class="place" aria-label="plek ${s[3]} in Spotify NL">#${s[3]}</span>`)).join('')}
+      ${podiumShows.map(s => row(s, `<span class="place" aria-label="plek ${s[3]} in Spotify NL">#${s[3]}</span>`)).join('')}
     </div>
-    <div class="pad lbl2" style="color:var(--ink2)">Niet in de Top 200 · op nieuwste aflevering</div>
-    <div class="pad list">
-      ${row(['Oost aan Tafel', 'a3', 'Nieuwe afl. vorige week · Eten'], `<span class="place none">—</span>`)}
-    </div>
+    ${outLabel}
+    <div class="pad list">${row(['Oost aan Tafel', 'a3', 'Nieuwe afl. vorige week · Eten'], `<span class="place none">—</span>`)}</div>
+    <div class="pad tnote">1 Spotify-show is niet aan Apple te koppelen.</div>
   </div>
   ${chrome('charts')}
 </div>` };
 
 /* ---- 2. Makers in de hitlijst ---- */
+// Gelijke stand (Hemel en Oost, 9 shows): de hoogste plek gaat voor.
 const makers = [
   [M.kade, 24, 2, 'up', 2, ['a10', 'a2', 'a5']],
   [M.noord, 11, 6, 'flat', 0, ['a9', 'a4', 'a6']],
-  [M.oost, 9, 9, 'up', 1, ['a6', 'a4', 'a8']],
   [M.hemel, 9, 1, 'down', 1, ['a5', 'a3', 'a8']],
-  [M.concept, 7, 12, 'down', 2, ['a8', 'a1', 'a7']],
-  [M.podium, 5, 23, 'new', 0, ['a7', 'a2', 'a10']]
+  [M.oost, 9, 9, 'up', 1, ['a6', 'a4', 'a8']],
+  [M.concept, 7, 12, 'new', 0, ['a8', 'a1', 'a7']]
 ];
 const mv = (d, n) => d === 'up' ? `<div class="mv" style="color:var(--up)">${UP}${n}</div>`
   : d === 'down' ? `<div class="mv" style="color:var(--down)">${DOWN}${n}</div>`
@@ -237,9 +259,10 @@ screens.Makers = { title: '2 · Makers in de hitlijst', body: `
       <div class="schip">Categorie ${ICON.chevS}</div>
     </div>
     ${tabs(['Podcasts', 'Afleveringen', 'Trending', 'Nieuw'], 'Podcasts')}
-    <div style="height:12px"></div>
-    ${chips(['Per show', 'Per maker'], 'Per maker')}
-    <div class="pad tnote">Makers met 2+ shows · plek t.o.v. vorige week <span class="chev">${ICON.info}</span></div>
+    <div class="pad row" style="justify-content:space-between;padding-top:8px">
+      <span class="tnote">2+ shows · t.o.v. gisteren <span class="chev" style="padding:0 4px">${ICON.info}</span></span>
+      <div class="schip">Per maker ${ICON.chevS}</div>
+    </div>
     <div class="pad list">
       ${makers.map((m, i) => `
       <div class="lrow">
@@ -253,70 +276,66 @@ screens.Makers = { title: '2 · Makers in de hitlijst', body: `
         ${mv(m[3], m[4])}
       </div>`).join('')}
     </div>
+    <div class="pad row" style="height:48px;gap:6px;font-size:13px;font-weight:600">Vergelijk met Spotify <span class="chev">${ICON.chevR(16)}</span></div>
   </div>
   ${chrome('charts')}
 </div>` };
 
 /* ---- 3. Makers: Apple tegenover Spotify ---- */
-// [maker, plek bij Apple, plek bij Spotify]; null = niet in die lijst.
+// Gekoppeld per show (Spotify-show → Apple-show → Apple-maker), dus één identiteit per maker.
+// [maker, plek bij Apple, plek bij Spotify]; null = minder dan 2 shows in die lijst.
 const pairs = [
-  [M.kade, 1, 2], [M.noord, 2, 1], [M.oost, 3, 5], [M.hemel, 4, 7],
-  [M.concept, 5, 3], [M.podium, 6, null], [M.kelder, 7, 4], [M.zuid, null, 6]
+  [M.kade, 1, 2], [M.noord, 2, 1], [M.hemel, 3, 7], [M.oost, 4, 5], [M.concept, 5, 3],
+  [M.podium, 6, null], [M.kelder, 7, 4], [M.noordoost, 8, null], [M.stad, 9, 8], [M.vrij, 10, 9],
+  [M.zuid, null, 6], [M.licht, null, 10]
 ];
 const SEL = M.hemel;
+const cut = (t, n) => t.length > n ? t.slice(0, n - 1) + '…' : t;
 const slope = () => {
-  const W = 350, top = 34, step = 30, n = 8; // plek 8 = "niet in de lijst"
+  const W = 350, top = 36, step = 44, n = 11; // rij 11 = "minder dan 2 shows"
   const y = (r) => top + ((r ?? n) - 1) * step;
-  const xl = 128, xr = 222;
+  const xl = 150, xr = 200;
   const lines = pairs.map(([m, a, s]) => {
     const on = m === SEL;
     return `<line x1="${xl}" y1="${y(a)}" x2="${xr}" y2="${y(s)}" stroke="${on ? 'var(--pri)' : 'var(--ink3)'}" stroke-width="${on ? 3 : 1.5}" ${a == null || s == null ? 'stroke-dasharray="4 4"' : ''} stroke-linecap="round"></line>`;
   });
   const dots = pairs.flatMap(([m, a, s]) => {
     const on = m === SEL, f = on ? 'var(--pri)' : 'var(--ink2)';
-    return [
-      a != null ? `<circle cx="${xl}" cy="${y(a)}" r="${on ? 5 : 4}" fill="${f}"></circle>` : '',
-      s != null ? `<circle cx="${xr}" cy="${y(s)}" r="${on ? 5 : 4}" fill="${f}"></circle>` : ''
-    ];
+    return [a, s].map((r, i) => r != null ? `<circle cx="${i ? xr : xl}" cy="${y(r)}" r="${on ? 5 : 4}" fill="${f}"></circle>` : '');
   });
   const lab = (m, r, side) => {
     if (r == null) return '';
-    const on = m === SEL;
-    const x = side === 'l' ? xl - 12 : xr + 12;
-    return `<text x="${x}" y="${y(r) + 4.5}" text-anchor="${side === 'l' ? 'end' : 'start'}" font-size="12.5" font-weight="${on ? 700 : 500}" fill="${on ? 'var(--ink)' : 'var(--ink2)'}"><tspan font-weight="700" fill="var(--ink)">${r}</tspan>  ${m.name}</text>`;
+    const on = m === SEL, x = side === 'l' ? xl - 12 : xr + 12;
+    return `<text x="${x}" y="${y(r) + 4.5}" text-anchor="${side === 'l' ? 'end' : 'start'}" font-size="12.5" font-weight="${on ? 700 : 500}" fill="${on ? 'var(--ink)' : 'var(--ink2)'}"><tspan font-weight="700" fill="var(--ink)">${r}</tspan>  ${cut(m.name, 17)}</text>`;
   };
   const labels = pairs.flatMap(([m, a, s]) => [lab(m, a, 'l'), lab(m, s, 'r')]);
-  return `<svg class="slope" width="${W}" height="${y(n) + 16}" viewBox="0 0 ${W} ${y(n) + 16}" role="img" aria-label="Plek van makers bij Apple en bij Spotify">
+  const H = y(n) + 18;
+  return `<svg class="slope" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
     <text x="${xl}" y="14" text-anchor="end" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">APPLE</text>
     <text x="${xr}" y="14" text-anchor="start" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">SPOTIFY</text>
     <line x1="0" y1="${y(n) - step / 2}" x2="${W}" y2="${y(n) - step / 2}" stroke="var(--line)" stroke-width="1"></line>
-    <text x="${xl - 12}" y="${y(n) + 4.5}" text-anchor="end" font-size="12.5" fill="var(--ink2)">Niet in de lijst</text>
-    <text x="${xr + 12}" y="${y(n) + 4.5}" text-anchor="start" font-size="12.5" fill="var(--ink2)">Niet in de lijst</text>
+    <text x="${xl - 12}" y="${y(n) + 4.5}" text-anchor="end" font-size="12.5" fill="var(--ink2)">Minder dan 2 shows</text>
+    <text x="${xr + 12}" y="${y(n) + 4.5}" text-anchor="start" font-size="12.5" fill="var(--ink2)">Minder dan 2 shows</text>
     ${lines.join('')}${dots.join('')}${labels.join('')}
   </svg>`;
 };
 screens.Vergelijk = { title: '3 · Makers: Apple tegenover Spotify', body: `
 <div class="ph col">
   <div class="sa"></div>
-  ${titlebar(['share'])}
+  ${titlebar([])}
   <div class="body">
-    <div class="pad" style="padding-bottom:4px">
-      <h1 class="h1 dsp" style="font-size:26px">Apple tegenover Spotify</h1>
-    </div>
-    <div class="pad tnote" style="padding-bottom:6px">${FLAG} NL · Top 200 · makers met 2+ shows · vandaag</div>
-    <div class="pad" style="padding-top:6px">${slope()}</div>
-    <div class="pad tnote">Tik op een maker om zijn lijn te volgen.</div>
-    <div class="pad" style="padding-top:10px">
+    <div class="pad" style="padding-bottom:2px"><h1 class="h1 dsp" style="font-size:26px">Apple tegenover Spotify</h1></div>
+    <div class="pad tnote">${FLAG} NL · Top 200 · top 10 makers per bron · vandaag</div>
+    <div class="pad" style="padding-top:8px;padding-bottom:6px">
       <div class="linkcard">
         ${logo(SEL, 44)}
-        <div class="meta">
-          <div class="t1">${SEL.name}</div>
-          <div class="t2">Apple #4 · 9 shows</div>
-          <div class="t2">Spotify #7 · 3 shows</div>
-        </div>
+        <div class="meta"><div class="t1">${SEL.name}</div><div class="t2">Apple #3 · 9 shows</div><div class="t2">Spotify #7 · 3 shows</div></div>
         <span class="chev">${ICON.chevR()}</span>
       </div>
     </div>
+    <div class="pad" style="padding-top:8px">${slope()}</div>
+    <div class="pad row" style="height:48px;gap:6px;font-size:13px;font-weight:600">Toon alle 31 makers <span class="chev">${ICON.chevR(16)}</span></div>
+    <div class="pad tnote">4 Spotify-shows zijn niet aan Apple te koppelen en tellen niet mee.</div>
   </div>
   ${chrome('charts')}
 </div>` };
@@ -332,13 +351,13 @@ screens.Volgen = { title: '4 · Makers volgen', body: `
     <div class="pad" style="padding-top:14px">
       <div class="panel">
         <div class="row" style="gap:9px;padding-bottom:11px">${ICON.bell('#F0895B', 19)}<span class="ph-t">Nieuw van je makers</span><span style="flex:1"></span><span class="ph-s">Sinds gisteren</span></div>
-        <div class="prow"><div class="art a3" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Kort Lontje</div><div class="t2">Nieuwe podcast · Dagblad Noord</div></div><span class="pill new">NIEUW</span></div>
-        <div class="prow"><div class="art a8" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Doorzagen</div><div class="t2">Nieuwe podcast · Kelderwerk</div></div><span class="pill new">NIEUW</span></div>
+        <div class="prow"><div class="art a3" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Kort Lontje</div><div class="t2">Nieuwe podcast · Dagblad Noord · 3 afl.</div></div><span class="chev" style="color:var(--onPanelMuted)">${ICON.chevR(16)}</span></div>
+        <div class="prow"><div class="art a8" style="width:36px;height:36px;border-radius:9px;box-shadow:none"></div><div class="meta"><div class="t1">Doorzagen</div><div class="t2">Nieuwe podcast · Kelderwerk · 1 afl.</div></div><span class="chev" style="color:var(--onPanelMuted)">${ICON.chevR(16)}</span></div>
       </div>
     </div>
     ${label('Je makers · 3')}
     <div class="pad list">
-      ${[[M.kade, '2 shows met een nieuwe aflevering'], [M.noord, '1 show met een nieuwe aflevering'], [M.oost, 'Niets nieuws sinds gisteren']].map(([m, t]) => `
+      ${[[M.kade, '2 van 31 shows met een nieuwe aflevering'], [M.noord, '1 van 11 shows met een nieuwe aflevering'], [M.oost, 'Niets nieuws in de 12 gevonden shows']].map(([m, t]) => `
       <div class="lrow">${logo(m, 48)}<div class="meta"><div class="t1">${m.name}</div><div class="t2">${t}</div></div><span class="chev">${ICON.chevR()}</span></div>`).join('')}
     </div>
     ${label('Van podcasts die je volgt')}
@@ -351,43 +370,45 @@ screens.Volgen = { title: '4 · Makers volgen', body: `
 
 /* ---- 5. Tips per medium ---- */
 const tipRows = [
-  ['Halve Zolen', 'a9', 'Twee broers bellen elke week een schoenmaker, en het wordt steeds beter', '27 sep'],
-  ['Lange Adem', 'a5', 'De beste sportpodcast van dit najaar gaat over verliezen', '19 sep'],
-  ['Ondergronds', 'a4', 'Deze true crime is rustig en precies, zonder sensatie', '12 sep']
+  ['Halve Zolen', 'a9', 'Twee broers bellen elke week een schoenmaker, en het wordt steeds beter'],
+  ['Lange Adem', 'a5', 'De beste sportpodcast van dit najaar gaat over verliezen'],
+  ['Ondergronds', 'a4', 'Deze true crime is rustig en precies, zonder sensatie']
 ];
 screens.Tips = { title: '5 · Tips per medium', body: `
 <div class="ph col">
   <div class="sa"></div>
-  ${titlebar([])}
+  <div class="appbar" style="padding-left:8px;padding-right:12px">
+    <div class="row" style="gap:4px"><div class="ibtn">${ICON.back}</div><span style="font-size:16.5px;font-weight:700">Tips van de media</span></div>
+    <div class="ibtn">${ICON.refresh}</div>
+  </div>
   <div class="body">
-    <div class="pad" style="padding-bottom:12px"><h1 class="h1 dsp" style="font-size:26px">Tips van de media</h1></div>
-    <div class="pad row" style="gap:8px;overflow:hidden">
+    <div class="pad row" style="gap:8px;overflow:hidden;padding-top:4px">
+      <div class="fchip" style="gap:6px">${FLAG}NL</div>
       ${['Alle', 'Dagblad Noord', 'Weekblad Zuid', 'Radio 7'].map(t => `<div class="fchip ${t === 'Dagblad Noord' ? 'on' : ''}">${t}</div>`).join('')}
     </div>
     <div class="pad row" style="justify-content:space-between;padding-top:10px">
       <span class="tnote">23 tips sinds juni</span>
       <div class="schip">Nieuwste eerst ${ICON.chevS}</div>
     </div>
+    <div class="pad" style="padding-top:8px">
+      <div class="linkcard" style="padding:8px 10px 8px 12px">
+        ${logo(M.noord, 36)}
+        <div class="meta"><div class="t1" style="font-size:13.5px">Maakt ook podcasts</div><div class="t2">11 van Dagblad Noord · tellen niet als tip</div></div>
+        <span class="chev">${ICON.chevR()}</span>
+      </div>
+    </div>
+    <div class="pad lbl2" style="color:var(--ink2)">September</div>
     <div class="pad">
       ${tipRows.map(t => `
-      <div class="tip">
+      <div class="tip" style="padding-top:8px">
         <div class="art ${t[1]}" style="width:56px;height:56px;border-radius:12px"></div>
         <div class="ebody">
-          <div class="src"><span class="omark" style="background:${M.noord.color}">DN</span>Dagblad Noord <span>· ${t[3]}</span></div>
-          <div class="t1" style="margin-top:5px">${t[0]}</div>
+          <div class="t1">${t[0]}</div>
           <div class="hl">${t[2]}</div>
           <div class="rd">Lees het artikel ${ICON.chevR(13)}</div>
         </div>
         <div class="pbtn">${ICON.play}</div>
       </div>`).join('')}
-    </div>
-    <div class="pad tnote" style="padding-top:6px">Eigen podcasts van Dagblad Noord tellen niet als tip.</div>
-    <div class="pad" style="padding-top:4px">
-      <div class="linkcard">
-        ${logo(M.noord, 44)}
-        <div class="meta"><div class="t1">Maakt ook podcasts</div><div class="t2">11 podcasts van Dagblad Noord</div></div>
-        <span class="chev">${ICON.chevR()}</span>
-      </div>
     </div>
   </div>
   ${chrome('discover')}

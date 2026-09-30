@@ -1,4 +1,4 @@
-# Kanalen — vijf concepten (versie 2)
+# Kanalen — vijf concepten (versie 3)
 
 ## Uitgangspunten (A1–A10 uit ronde 1)
 
@@ -38,8 +38,11 @@
   kanaalkleur (donker 16%, bij een logo met een ring van 1px).
 - **Typografie.** 26 / 14,5 / 12,5, met 11 voor labels. Chips (13) en tabbladen
   (15) volgen hun bestaande component.
-- **Donker.** Met de tokens van Beeldgloed; zie het scherm *Maker zonder kanaal,
-  donker*.
+- **Donker.** Met de tokens van Beeldgloed. De kanaalkleur wordt in donker
+  omhoog geklemd tot hij ≥3:1 haalt tegen `#0E0F11`: hij wordt naar `#EDEEF0`
+  gemengd (`liftForDark`), en de gloed gebruikt die geklemde kleur. Zie het
+  scherm *Donker kanaallogo*, met Podium (`#1E1B16`).
+- **Monogram** van makers zonder kanaal: `--ink` op `--surf3`, ook op 44–48px.
 
 ## 1 · De makerpagina
 Het bestaande `MakerScreen` wordt uitgebreid. Ingangen: de makersregel op de
@@ -58,83 +61,136 @@ podcastpagina (bestaat al), een nieuwe sectie **Makers** in de zoekresultaten
   - **Recent**: nieuwste aflevering eerst (`releaseDate`).
   - **A–Z**.
 - **Rijen.** De plekpil heeft een toegankelijke tekst ("plek 4 in Apple NL").
+- **De toelichting heeft één vaste vorm:** "Plek in {bron} · {land} · Top 200".
+- **Populair met Spotify als bron** koppelt per show: Spotify-show → Apple-show,
+  dezelfde opzoeking als op de podcastpagina. Wat niet te koppelen is, staat onder
+  de lijst ("1 Spotify-show is niet aan Apple te koppelen").
+- **Gevolgd** toont de knop met rand en een vinkje (*Volgt*), zodat hij ook in
+  donker als knop leest.
 
 Geschrapt na ronde 1: de chip "Nieuw", de knop "Nieuwste" en de zelfbedachte
 kanaalvolgorde.
 
 ## 2 · Makers in de hitlijst
-Op Hitlijsten → Podcasts een schakelaar **Per show | Per maker** (twee
-`FilterChipBox`-chips). Het is een weergave van dezelfde ranglijst, geen vijfde
-tabblad. Afleveringen, Trending en Nieuw hebben geen makersweergave.
+Op Hitlijsten → Podcasts wissel je met een `SmallChip` rechts in de
+toelichtingsregel tussen **Per show** en **Per maker**. Dat kost geen extra regel.
+Het is een weergave van dezelfde ranglijst, geen vijfde tabblad. Afleveringen,
+Trending en Nieuw hebben geen makersweergave.
 
 - **Telregel.**
   - Normalisatie zoals hierboven; elke show telt één keer, dus de som is ≤ 200.
-  - Makers met 1 show tonen we niet ("makers met 2+ shows").
-  - Bij een gelijk aantal gaat de maker met de hoogste plek voor.
-  - Het i-icoon opent een sheet "Hoe tellen we?".
+  - Makers met 1 show tonen we niet ("2+ shows").
+  - Bij een gelijk aantal gaat de maker met de hoogste plek voor. Voorbeeld:
+    Studio Hemel (9, hoogste #1) staat boven Radio Oost (9, hoogste #9).
+  - Het i-icoon (aanraakgebied 48dp) opent een sheet "Hoe tellen we?".
   - De lijstgrootte in de toelichting volgt de bron: Spotify-categorieën zijn
     50 diep.
 - **Rij.** Rang, rond logo, naam, "24 shows · hoogste #2", drie hoesjes en de
   beweging.
-- **Beweging** is de verandering in *rang van de maker* ten opzichte van 7 dagen
-  eerder, uit de eigen momentopnames. Dat is dezelfde betekenis als op de andere
-  tabbladen.
-  - Een maker die vorige week niet in de makerslijst stond, krijgt "NIEUW".
-  - Met minder dan 7 dagen momentopnames is er geen pijl en geen "=".
+- **Beweging** is de verandering in *rang van de maker* ten opzichte van
+  **gisteren**. Dat is dezelfde basis als op de andere tabbladen:
+  `store.baseline`.
+  - Op dag één rekent de app de makerslijst van gisteren uit de
+    `shows.history.json` van de verzamelaar, zoals hij elders de `moves` uit de
+    dataset haalt.
+  - Een maker die gisteren niet in de makerslijst stond, krijgt "NIEUW".
+- **Ingang naar 3.** Onder de lijst staat "Vergelijk met Spotify", of "met Apple"
+  als Spotify de bron is. Heeft het land geen lijst bij de andere bron, dan
+  ontbreekt die regel.
 - De aandeelbalk is geschrapt. Tik op een rij opent de makerpagina (1).
 
 ## 3 · Makers: Apple tegenover Spotify
 Een eigen scherm voor de kernbelofte van de app, dezelfde lijst per bron, op het
 niveau van makers.
 
-- **Grafiek.** Twee kolommen met de makersranglijst van Apple en die van Spotify
-  in hetzelfde land (vandaag, Top 200, makers met 2+ shows, telregel van 2).
-  Lijnen verbinden dezelfde maker.
-- **Niet in de lijst.** Een maker die in één lijst ontbreekt, eindigt gestippeld
-  in de rij "Niet in de lijst".
-- **Selectie.** Tik op een maker om zijn lijn te volgen. De kaart eronder geeft
-  voor die maker de plek en het aantal shows per bron, en opent de makerpagina.
-- **Ingang.** Vanuit 2, via "Vergelijk met Spotify" in de toelichting.
-- **Waarom apart van 1.** 1 gaat over de shows van één maker. Dit gaat over alle
-  makers tegelijk: wie groot is op Apple maar klein op Spotify. Dat laat geen
-  andere podcastapp of dienst zien.
-- **Eerlijkheid.** Spotify-makers komen uit `showPublisher`, dus er is geen
-  titelmatching met Apple nodig. Er staan alleen makers in die in minstens één
-  lijst 2 of meer shows hebben.
+- **Grafiek.** Twee kolommen met de makersranglijst van Apple en van Spotify in
+  hetzelfde land (vandaag, Top 200, telregel van 2). Lijnen verbinden dezelfde
+  maker.
+- **Eén identiteit per maker.** De koppeling loopt per **show**: Spotify-show →
+  Apple-show (dezelfde opzoeking als op de podcastpagina), en daarvan de maker
+  van Apple (kanaal of genormaliseerde `artistName`). "Dag en Nacht | Podimo" bij
+  Apple en "Podimo" bij Spotify worden zo nooit twee halve makers. Spotify-shows
+  die niet te koppelen zijn, tellen niet mee. Hun aantal staat onder de grafiek.
+- **Onderste rij: "Minder dan 2 shows".** Een maker staat in beide kolommen
+  zodra hij in één lijst 2+ shows heeft. Heeft hij in de andere lijst 0 of 1,
+  dan eindigt zijn lijn gestippeld in die onderste rij. Dat is waar, want
+  "niet in de lijst" zou het niet zijn.
+- **Schaal.**
+  - Standaard de top 10 van beide lijsten. Daaronder "Toon alle 31 makers";
+    de NL Top 200 heeft er 25–35 met 2+ shows.
+  - Rijen van 44px; de hele label plus stip is het aanraakvlak (≥44×140).
+  - Namen langer dan de kolom (±17 tekens) krijgen een ellips, zoals
+    "Omroep Noordoost…". De volledige naam staat in de kaart en in de
+    TalkBack-tekst.
+- **Selectie en toegankelijkheid.**
+  - De kaart bovenaan geeft de gekozen maker met plek en aantal shows per bron,
+    en opent de makerpagina.
+  - De grafiek zelf is `aria-hidden`. Elke maker is een eigen knooppunt:
+    "Studio Hemel: Apple plek 3, 9 shows; Spotify plek 7, 3 shows".
+  - Een lijst in dezelfde volgorde ligt ernaast voor TalkBack.
+  - Kleur is niet de enige drager: de geselecteerde lijn is dikker en het label
+    vet.
+- **Randgevallen.**
+  - Er is geen deelknop.
+  - Landen zonder lijst bij een van de bronnen (zoals BE bij Spotify) hebben
+    geen ingang naar dit scherm.
+  - Gelijke stand zoals in 2.
+- **Waarom apart van 1 en 2.** 1 gaat over de shows van één maker, 2 over één
+  bron. Dit gaat over alle makers in twee bronnen tegelijk: wie groot is op Apple
+  maar klein op Spotify.
 
 ## 4 · Makers volgen
 Bibliotheek krijgt een tabblad: **Gevolgd · Makers · Wachtrij · Bewaard**. Het
 model is dat van Apple, maar dan licht: je volgt een maker, niet al zijn shows.
 
 - **Bovenaan de bestaande `AlertCard`** (donker paneel, bel, "Sinds gisteren"),
-  met rijen "Nieuwe podcast · {maker}". De show is de titel en de hele rij is
-  tikbaar.
-  - Bron voor kanalen: `new-shows` uit de verzamelaar.
-  - Andere makers: een dagelijkse `byMaker`-vergelijking op nieuwe ID's, via
-    WorkManager.
-  - Een pushmelding alleen met de meldingsrechten van Android 13+.
-- **Je makers.** Per maker "N shows met een nieuwe aflevering" sinds gisteren,
-  uit `releaseDate` in één zoekopdracht per maker, dus zonder RSS te verversen.
-  Tik opent de makerpagina op *Recent*. Er is geen samengevoegde afleveringsfeed,
-  dus een maker met 217 shows vraagt nog steeds één aanroep.
+  met rijen "Nieuwe podcast · {maker} · N afl.". De show is de titel, de hele rij
+  is tikbaar, en de NIEUW-pil staat er niet: kop en rij zeggen het al.
+- **Wanneer is een show nieuw?**
+  - Makers **met kanaal**: via `new-shows` uit de verzamelaar. Alleen deze
+    krijgen een pushmelding (WorkManager, en de meldingsrechten van
+    Android 13+).
+  - Makers **zonder kanaal**: alleen in de kaart, nooit als pushmelding, en
+    alleen als het ID nooit eerder gezien is, `trackCount` ≤ 3 heeft en een
+    `releaseDate` van de laatste 14 dagen. Een oude show die in de
+    zoekresultaten omhoog schuift, of een show die van naam veranderde, telt dus
+    niet.
+- **Je makers.** Per maker "N van M shows met een nieuwe aflevering" sinds
+  gisteren.
+  - Makers **met kanaal**: de lijst met show-ID's komt uit de verzamelaar,
+    gevolgd door een batch-lookup (≤ 200 ID's per aanroep, dus 1–2 aanroepen,
+    ook bij 217 shows). `releaseDate` zegt of er een nieuwe aflevering is.
+  - Makers **zonder kanaal**: `byMaker`, en de tekst zegt "in de 12 gevonden
+    shows". Het is geen volledige telling.
+  - Er wordt geen RSS ververst. Tik opent de makerpagina op *Recent*.
 - **Van podcasts die je volgt.** Makers van shows die je al volgt, met een
-  knop *Volg*. Dat is de Apple-regel: volg je een show uit een kanaal, dan komt
-  het kanaal in je Bibliotheek.
+  knop *Volg*. Dat is de Apple-regel.
+- **Lege toestand.** "Nog geen makers gevolgd", met direct daaronder de
+  suggesties uit "Van podcasts die je volgt".
 - **Ontdubbelen.** Afleveringen blijven onder *Gevolgd*. *Makers* toont alleen
   tellingen en nieuwe shows, dus niets verschijnt twee keer.
 
 ## 5 · Tips per medium
-Het bestaande Tips-scherm met het mediafilter krijgt twee dingen.
+Het bestaande Tips-scherm houdt zijn opbouw: `TitleBar("Tips van de media")` met
+de verversknop, en de chiprij met eerst het land, dan Alle, dan de media. Als er
+één medium gekozen is, komen er drie dingen bij.
 
-1. **Kop en sortering voor het gekozen medium.** De kop toont "23 tips sinds
-   juni". Een `SmallChip` biedt *Nieuwste eerst* en *Vaakst getipt* (het aantal
-   media dat dezelfde show tipte). De rijen zijn de bestaande `TipRow`: kop van
-   het artikel zonder aanhalingstekens, "Lees het artikel" en de afspeelknop.
-2. **De brug naar de maker.** Heeft het medium zelf podcasts (een Apple-kanaal of
-   makersnaam), dan staat onder de tips een kaart "Maakt ook podcasts", die de
-   makerpagina opent. Een regel zegt: "Eigen podcasts van … tellen niet als tip".
-   Dat regelt `same_house` in `collect.py` al. Omgekeerd krijgt de makerpagina
-   van zo'n medium de regel "Tipt ook podcasts →".
+1. **Een telling en sortering.** "23 tips sinds juni", en een `SmallChip` met
+   *Nieuwste eerst* en *Vaakst getipt*.
+   - Bij *Nieuwste eerst* blijven de maandkoppen van `groupFor`.
+   - Bij *Vaakst getipt* vervallen de maandkoppen en staat het aantal in de rij
+     ("getipt door 3 media").
+2. **Direct daaronder een compacte kaart "Maakt ook podcasts"**, met de
+   vermelding "tellen niet als tip". Dat regelt `same_house` in `collect.py` al.
+   - De kaart opent de makerpagina.
+   - Hij verschijnt alleen bij een **exacte** overeenkomst tussen medium en maker
+     na normalisatie, niet op de ruimere woordheuristiek van `same_house`.
+   - Omgekeerd krijgt de makerpagina van zo'n medium de regel
+     "Tipt ook podcasts →".
+3. **`TipRow` blijft `TipRow`**, met één parameter: de regel met het medium
+   verdwijnt als er op dat medium gefilterd is, omdat hij dan elke rij hetzelfde
+   zou zeggen. De kop van het artikel staat zonder aanhalingstekens, met
+   "Lees het artikel" en de afspeelknop.
 
 Zo is "bron" ook: wie je vertrouwt. Er komt geen apart kanaalscherm naast Tips.
 
