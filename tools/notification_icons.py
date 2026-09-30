@@ -193,8 +193,11 @@ def star_solid():
 # Inter Bold. Wat niet past ("1,5x") krimpt, en alle krimpers even veel, zodat
 # de tekst niet van maat verspringt als je de snelheid rondklikt.
 
-CAP_HEIGHT = 10.24
-BASELINE = 18.22
+# Groter dan op de voorbeeldmelding (daar 10,2 dp): op het toestel viel "1x"
+# naast de andere knoppen weg.
+CAP_HEIGHT = 12.5
+# Het midden van de kapitaalhoogte, voor elk label gelijk, ook als het krimpt.
+TEXT_MIDDLE = 12.0
 TEXT_LEFT = 0.0
 MAX_WIDTH = 23.6
 SPEEDS = [("0_8", "0,8x"), ("1_0", "1x"), ("1_2", "1,2x"),
@@ -236,6 +239,7 @@ class Label:
         self.left, self.width = left, right - left
 
     def path(self, size):
+        baseline = TEXT_MIDDLE + size / 2
         glyphs = self.font.getGlyphSet()
         cmap = self.font.getBestCmap()
         pen = SVGPathPen(glyphs, ntos=fmt)
@@ -245,11 +249,11 @@ class Label:
             if c in DRAWN:
                 contours, lsb, _ = DRAWN[c]
                 for cont in contours:
-                    out.append(poly_path([(ox + (lsb + px) * size, BASELINE - py * size)
+                    out.append(poly_path([(ox + (lsb + px) * size, baseline - py * size)
                                           for px, py in cont]))
             else:
                 s = size / self.cap
-                glyphs[cmap[ord(c)]].draw(TransformPen(pen, (s, 0, 0, -s, ox, BASELINE)))
+                glyphs[cmap[ord(c)]].draw(TransformPen(pen, (s, 0, 0, -s, ox, baseline)))
         return "".join(out) + pen.getCommands()
 
 
