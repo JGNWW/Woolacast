@@ -86,7 +86,7 @@ fun SearchScreen(
                 Box(Modifier.weight(1f)) {
                     if (state.term.isEmpty()) {
                         Text(
-                            "Zoek podcasts en afleveringen",
+                            "Zoek podcasts, makers en afleveringen",
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.5.sp),
                             color = muted
                         )
@@ -149,9 +149,9 @@ fun SearchScreen(
                                 Text(hit.maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text(
                                     when {
-                                        channel != null -> "Maker · ${channel.showCount} podcasts"
-                                        hit.found == 1 -> "Maker · 1 podcast in de resultaten"
-                                        else -> "Maker · ${hit.found} podcasts in de resultaten"
+                                        channel != null -> "${channel.showCount} podcasts"
+                                        hit.found == 1 -> "1 podcast in de resultaten"
+                                        else -> "${hit.found} podcasts in de resultaten"
                                     },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,

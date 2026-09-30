@@ -56,7 +56,9 @@ data class MakerNewShow(
     val feedUrl: String?,
     val episodes: Int?,
     /** Van een kanaal (Apple zegt dat hij nieuw is) of gevonden in de catalogus. */
-    val viaChannel: Boolean
+    val viaChannel: Boolean,
+    /** Zonder kanaal: de dag waarop de app hem vond. */
+    val foundOn: String? = null
 )
 
 /** Een maker van shows die je al volgt, als voorstel om hem ook te volgen. */
@@ -252,9 +254,11 @@ class LibraryViewModel(
                                 .map {
                                     MakerNewShow(
                                         maker.key, maker.name, it.podcast.id, it.podcast.title,
-                                        it.podcast.artworkUrl, it.podcast.feedUrl, it.podcast.episodeCount, viaChannel = false
+                                        it.podcast.artworkUrl, it.podcast.feedUrl, it.podcast.episodeCount, viaChannel = false,
+                                        foundOn = followedMaker.foundOn[it.podcast.id] ?: LocalDate.now().toString()
                                     )
                                 }
+                                .also { found -> if (found.isNotEmpty()) store.markMakerFound(followedMaker.key, found.map { it.showId }) }
                         }
                         Triple(followedMaker.key, status, fresh)
                     }

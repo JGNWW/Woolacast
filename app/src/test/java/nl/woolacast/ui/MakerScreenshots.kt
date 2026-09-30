@@ -117,7 +117,8 @@ class MakerScreenshots {
     private val outside = listOf(
         Show(1101, "Oost aan Tafel", "Radio Oost", "amber", "Eten", 8),
         Show(1102, "Zaterdagavond Thuis", "Kade Media", "amber", "Comedy", 9),
-        Show(1103, "Kort Lontje", "Dagblad Noord", "blauwgroen", "Comedy", 2, episodes = 3)
+        Show(1103, "Kort Lontje", "Dagblad Noord", "blauwgroen", "Comedy", 2, episodes = 3),
+        Show(1104, "Oost Kort", "Radio Oost", "rood", "Nieuws", 3, episodes = 2)
     )
 
     private val makers = DatasetMakers(
@@ -281,7 +282,7 @@ class MakerScreenshots {
         val makers = if (followMakers) """[
             {"key":"kademedia","name":"Kade Media","channelId":"c-kade","logoUrl":"https://test.local/logo-kade.png","color":"14504e","followedOn":"${daysAgo(20)}","knownShowIds":["1001","1003","1005","1009","1013","1102"]},
             {"key":"podiumaudio","name":"Podium Audio","channelId":"c-podium","logoUrl":"https://test.local/logo-podium.png","color":"1e1b16","followedOn":"${daysAgo(20)}","knownShowIds":["1008","1012"]},
-            {"key":"radiooost","name":"Radio Oost","followedOn":"${daysAgo(20)}","knownShowIds":["1004","1007","1011","1101"]}
+            {"key":"radiooost","name":"Radio Oost","followedOn":"${daysAgo(20)}","knownShowIds":["1004","1007","1011","1101"],"foundOn":{"1104":"${daysAgo(3)}"}}
         ]""" else "[]"
         file.writeText("""{"follows":$follows,"makers":$makers,"snapshots":{
             "${query.key}":[{"date":"$yesterday","ranks":{${ranks(showRanks)}}}],

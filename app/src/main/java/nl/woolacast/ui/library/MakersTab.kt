@@ -45,6 +45,7 @@ import nl.woolacast.ui.common.PanelCard
 import nl.woolacast.ui.common.PanelRow
 import nl.woolacast.ui.common.SectionLabel
 import nl.woolacast.ui.common.WoolIcons
+import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
 
 /**
@@ -113,7 +114,7 @@ private fun NewShowsCard(shows: List<MakerNewShow>, onOpen: (MakerNewShow) -> Un
                     show.makerName,
                     // Van een kanaal zegt Apple zelf dat hij nieuw is; anders vonden wij hem net.
                     if (show.viaChannel) show.episodes?.let { if (it == 1) "1 afl." else "$it afl." }
-                    else "gevonden vandaag"
+                    else "gevonden ${relativeDay(show.foundOn) ?: "vandaag"}"
                 ).joinToString(" · "),
                 onClick = { onOpen(show) }
             )

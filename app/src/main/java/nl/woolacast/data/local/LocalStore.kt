@@ -43,7 +43,9 @@ data class FollowedMaker(
     /** Het land waar je hem volgde: daar kijkt de dagelijkse controle. */
     val country: String = "nl",
     /** Nieuwe shows waar al een melding over ging; die komt geen tweede keer. */
-    val notifiedShowIds: List<String> = emptyList()
+    val notifiedShowIds: List<String> = emptyList(),
+    /** Per nieuwe show zonder kanaal: de dag waarop de app hem vond. */
+    val foundOn: Map<String, String> = emptyMap()
 )
 
 @Serializable
@@ -201,6 +203,15 @@ class LocalStore(private val file: File) {
         if (data.makers.none { it.key == key }) return@mutate data
         data.copy(makers = data.makers.map {
             if (it.key == key) it.copy(knownShowIds = (it.knownShowIds + showIds).distinct()) else it
+        })
+    }
+
+    /** Onthoudt wanneer een nieuwe show voor het eerst gevonden werd; een tweede keer verandert niets. */
+    suspend fun markMakerFound(key: String, showIds: Collection<String>) = mutate { data ->
+        val today = LocalDate.now().toString()
+        data.copy(makers = data.makers.map { maker ->
+            if (maker.key != key) maker
+            else maker.copy(foundOn = maker.foundOn + showIds.filterNot { it in maker.foundOn }.associateWith { today })
         })
     }
 

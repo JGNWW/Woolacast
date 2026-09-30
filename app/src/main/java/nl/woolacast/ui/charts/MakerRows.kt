@@ -74,7 +74,7 @@ internal fun ViewLine(
     val muted = LocalChartColors.current.muted
     Row(
         // Even hoog in beide weergaven, zodat de lijst niet verspringt bij het wisselen.
-        modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(top = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp).heightIn(min = 44.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
@@ -157,7 +157,7 @@ private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                "${row.count} podcasts · hoogste #${row.best}",
+                "${row.count} podcasts · beste #${row.best}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -192,7 +192,7 @@ private fun CoverStack(urls: List<String?>) {
     val gap = 2.dp
     Box(
         Modifier
-            .width(46.dp)
+            .width(52.dp)
             .height(22.dp)
             .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
     ) {
@@ -200,7 +200,7 @@ private fun CoverStack(urls: List<String?>) {
             Artwork(
                 url, 22.dp, corner = 5.dp, elevation = 0.dp,
                 modifier = Modifier
-                    .offset(x = (12 * index).dp)
+                    .offset(x = (15 * index).dp)
                     .drawWithContent {
                         if (index > 0) {
                             val g = gap.toPx()

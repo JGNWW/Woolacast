@@ -1,6 +1,8 @@
 package nl.woolacast.ui.maker
 
 import android.content.Intent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -84,6 +87,7 @@ fun MakerScreen(
     val listState = rememberLazyListState()
     // Voorbij de kop staat de naam in de balk, zoals de titel op de podcastpagina.
     val titleShown by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+    val titleAlpha by animateFloatAsState(if (titleShown) 1f else 0f, tween(150), label = "titel")
     val share: (() -> Unit)? = channel?.url?.let { url ->
         {
             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -108,7 +112,8 @@ fun MakerScreen(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 60.dp, end = 20.dp)
-                        .graphicsLayer { alpha = if (titleShown) 1f else 0f }
+                        .graphicsLayer { alpha = titleAlpha }
+                        .then(if (titleShown) Modifier else Modifier.clearAndSetSemantics {})
                 )
             }
 
@@ -189,7 +194,9 @@ private fun MakerHeader(state: MakerUiState, following: Boolean, onToggleFollow:
                 text = if (following) "Gevolgd" else "Volg maker",
                 icon = if (following) WoolIcons.Check else WoolIcons.Plus,
                 onClick = onToggleFollow,
-                selected = following
+                selected = following,
+                // Pas volgen als bekend is wie de maker is (kanaal of naam).
+                enabled = !state.loading
             )
             if (onShare != null) OutlineCircleButton(WoolIcons.Share, "Maker delen", onShare)
         }
