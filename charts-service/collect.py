@@ -273,11 +273,13 @@ MAKERS_MAX_SHOWS = 400
 # bij, waaronder Vroeg! en Pauw & De Wit. Zoeken is streng begrensd: Apple
 # noemt zo'n twintig per minuut, en geeft een 403 na een handvol snelle
 # aanroepen. Dus een pauze tussen elke zoekopdracht, één budget per ronde dat
-# over de landen verdeeld wordt (achttien landen × drie seconden telt op), en
-# elke maker eens per week opnieuw. De app zoekt zelf nog op naam voor wat er
-# sindsdien bij kwam.
+# over de landen verdeeld wordt (achttien landen × drie seconden telt op; wat
+# een land niet opmaakt, gaat naar de volgende), en elke maker eens per twee
+# weken opnieuw. De eerste ronde voor NL kostte 240 zoekopdrachten; daarna is
+# het zo'n twintig per land per dag. De app zoekt zelf nog op naam voor wat
+# er sindsdien bij kwam.
 APPLE_SEARCH = "https://itunes.apple.com/search"
-MAKERS_SEARCH_DAYS = 7
+MAKERS_SEARCH_DAYS = 14
 MAKERS_SEARCH_TOTAL = 360
 MAKERS_SEARCH_PAUSE = 3.0
 MAKERS_SEARCH_TERMS = 30
@@ -457,7 +459,7 @@ def _due(entry: dict | None) -> bool:
     return searched <= (datetime.now(timezone.utc) - timedelta(days=MAKERS_SEARCH_DAYS)).strftime("%Y-%m-%d")
 
 
-def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_TOTAL) -> int:
+def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_TOTAL) -> tuple[int, int]:
     """
     apple/{land}/makers.json, met twee soorten makers:
     - channels: de Apple-kanalen van de shows die vandaag in een Apple-lijst van
@@ -471,7 +473,7 @@ def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_T
     """
     headers = _amp_headers()
     if not headers:
-        return 0
+        return 0, 0
 
     ids = []
     for history in sorted((root / "apple" / country).glob("*/shows.history.json")):
@@ -607,7 +609,7 @@ def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_T
     print(f"  apple   {country}       makers     {search.used} zoekopdrachten, "
           f"{sum(len(c['shows']) - len(c['channelShows']) for c in channels.values())} shows erbij "
           f"bij kanalen, {len(out_makers)} makers zonder kanaal", flush=True)
-    return len(channels)
+    return len(channels), search.used
 
 
 # ------------------------------------------------------------------ Mediatips
@@ -2458,7 +2460,8 @@ def write_index(root: pathlib.Path) -> None:
 # ------------------------------------------------------------------- klussen
 
 def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
-    for country in countries:
+    searches_left = MAKERS_SEARCH_TOTAL
+    for index, country in enumerate(countries):
         collected = []
         for genre_id in GENRES:
             shows = apple_shows(country, genre_id, limit)
@@ -2491,8 +2494,9 @@ def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
         print(f"  apple   {country}    26 new        {got:3}", flush=True)
 
         # Na de lijsten: de kanalen van wie er vandaag in staat.
-        budget = max(20, MAKERS_SEARCH_TOTAL // len(countries))
-        print(f"  apple   {country}       makers     {write_makers(root, country, budget):3}", flush=True)
+        found, used = write_makers(root, country, searches_left // (len(countries) - index))
+        searches_left -= used
+        print(f"  apple   {country}       makers     {found:3}", flush=True)
 
         if collected:
             write_movers(root, country, collected)
@@ -2561,7 +2565,7 @@ def main() -> int:
             print(f"  tips    {country}  {write_tips(root, country):3}", flush=True)
     elif args.job == "makers":
         for country in countries:
-            print(f"  apple   {country}       makers     {write_makers(root, country):3}", flush=True)
+            print(f"  apple   {country}       makers     {write_makers(root, country)[0]:3}", flush=True)
     elif args.job == "new":
         for country in countries:
             print(f"  apple   {country}    26 new        {write_new_shows(root, country, args.limit):3}", flush=True)

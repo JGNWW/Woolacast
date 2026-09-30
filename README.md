@@ -503,8 +503,10 @@ Luister BNNVARA", "NPO Luister VPRO", …). Wat dezelfde makerssleutel heeft,
 komt achter de shows van het kanaal (`channelShows` is wat Apple zelf aan het
 kanaal hangt). Makers zonder kanaal met twee of meer shows in de lijsten krijgen
 zo ook een eigen lijst (`makers`). Zoeken is streng begrensd, dus: drie
-seconden tussen elke zoekopdracht, 160 per ronde, en elke maker om de drie
-dagen opnieuw.
+seconden tussen elke zoekopdracht, 360 per dagelijkse ronde verdeeld over de
+landen (wat een land niet opmaakt, gaat naar de volgende), en elke maker om de
+twee weken opnieuw. De eerste volledige ronde voor NL kostte 240
+zoekopdrachten en een kwartier; NPO Luister ging van 217 naar 469 shows.
 
 **Het gezicht van een maker.** Kanaallogo's zijn er maar voor een derde van de
 makers, dus de app gebruikt ze niet. Een maker krijgt het gezicht van zijn
