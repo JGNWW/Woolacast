@@ -122,7 +122,7 @@ fun WoolacastNav(container: AppContainer) {
     // het hitlijstenscherm daarna toont.
     val chartsViewModel: ChartsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { ChartsViewModel(container.chartRepository, container.podcastRepository) }
+            initializer { ChartsViewModel(container.chartRepository, container.podcastRepository, container.makerRepository) }
         }
     )
     val chartsState by chartsViewModel.state.collectAsStateWithLifecycle()
@@ -149,6 +149,12 @@ fun WoolacastNav(container: AppContainer) {
         )
     }
     val openSearch = { navController.navigate("${currentTab.route}/search") }
+    val openMaker: (String, String?) -> Unit = { name, fromShowId ->
+        navController.navigate(
+            "${currentTab.route}/maker/${Uri.encode(name)}?country=$chartsCountry" +
+                "&from=${Uri.encode(fromShowId.orEmpty())}"
+        )
+    }
     val openPlayer = { navController.navigate(PLAYER_ROUTE) { launchSingleTop = true } }
     val playAndOpen: (Episode, String?) -> Unit = { episode, label ->
         container.player.play(episode, label)
@@ -186,7 +192,9 @@ fun WoolacastNav(container: AppContainer) {
         // staat de hoes over de volle breedte.
         val route = currentRoute?.route.orEmpty()
         // Hitlijsten ook: daar gloeit de hoes van de nummer 1 tot in de statusbalk.
-        val fullBleed = route == PLAYER_ROUTE || route.contains("/podcast/") || route == Tab.CHARTS.home
+        // En de pagina van een maker: zijn kleur gloeit tot boven in de statusbalk.
+        val fullBleed = route == PLAYER_ROUTE || route.contains("/podcast/") || route.contains("/maker/") ||
+            route == Tab.CHARTS.home
         NavHost(
             navController = navController,
             startDestination = Tab.CHARTS.route,
@@ -202,10 +210,11 @@ fun WoolacastNav(container: AppContainer) {
                         playingId = playback.episodeId,
                         onSearch = openSearch,
                         onAlerts = { selectTab(Tab.LIBRARY) },
-                        onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) }
+                        onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) },
+                        onOpenMaker = { name, fromShowId -> openMaker(name, fromShowId) }
                     )
                 }
-                tabScreens(Tab.CHARTS, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
             }
 
             navigation(startDestination = Tab.DISCOVER.home, route = Tab.DISCOVER.route) {
@@ -237,7 +246,7 @@ fun WoolacastNav(container: AppContainer) {
                         }
                     )
                 }
-                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
             }
 
             navigation(startDestination = Tab.LIBRARY.home, route = Tab.LIBRARY.route) {
@@ -245,7 +254,7 @@ fun WoolacastNav(container: AppContainer) {
                     val libraryViewModel: LibraryViewModel = viewModel(
                         factory = viewModelFactory {
                             initializer {
-                                LibraryViewModel(container.store, container.dataset, container.podcastRepository)
+                                LibraryViewModel(container.store, container.dataset, container.podcastRepository, container.makerRepository)
                             }
                         }
                     )
@@ -255,10 +264,11 @@ fun WoolacastNav(container: AppContainer) {
                         playingId = playback.episodeId,
                         onOpenPodcast = openPodcast,
                         onSearch = openSearch,
-                        onPlay = { episode -> playAndOpen(episode, null) }
+                        onPlay = { episode -> playAndOpen(episode, null) },
+                        onOpenMaker = { name -> openMaker(name, null) }
                     )
                 }
-                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
             }
 
             composable(PLAYER_ROUTE) {
@@ -302,6 +312,7 @@ private fun NavGraphBuilder.tabScreens(
     navController: NavHostController,
     container: AppContainer,
     chartsCountry: String,
+    chartsSource: SourceId,
     playingId: String?,
     openPodcast: (String, String?, String) -> Unit,
     playAndOpen: (Episode, String?) -> Unit
@@ -319,7 +330,7 @@ private fun NavGraphBuilder.tabScreens(
         val listViewModel: ChartsViewModel = viewModel(
             key = "list-${query.key}",
             factory = viewModelFactory {
-                initializer { ChartsViewModel(container.chartRepository, container.podcastRepository, query) }
+                initializer { ChartsViewModel(container.chartRepository, container.podcastRepository, initialQuery = query) }
             }
         )
         LaunchedEffect(listViewModel) {
@@ -424,10 +435,13 @@ private fun NavGraphBuilder.tabScreens(
             factory = viewModelFactory {
                 initializer {
                     MakerViewModel(
-                        repository = container.searchRepository,
+                        repository = container.makerRepository,
+                        store = container.store,
                         publisher = publisher,
                         countryCode = countryCode,
-                        fromShowId = entry.arguments?.getString("from")?.takeIf { it.isNotBlank() }
+                        fromShowId = entry.arguments?.getString("from")?.takeIf { it.isNotBlank() },
+                        // "Populair" gaat over de bron die op Hitlijsten gekozen is.
+                        initialSource = chartsSource
                     )
                 }
             }

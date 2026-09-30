@@ -32,7 +32,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 UA = "Toadcast-charts/1.0 (+https://github.com/JGNWW/Woolacast)"
 TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -257,6 +257,150 @@ def write_new_shows(root: pathlib.Path, country: str, limit: int) -> int:
         "genreLabel": result["label"], "updated": NOW, "count": len(ranked), "entries": ranked,
     }, ensure_ascii=False, separators=(",", ":")))
     return len(ranked)
+
+
+# ------------------------------------------------------------ makers (kanalen)
+
+# Een kanaal dat uit alle lijsten valt, houden we zo lang vast. Wie een maker
+# volgt, merkt anders niet dat de meldingen stilletjes ophouden.
+MAKERS_KEEP_DAYS = 90
+MAKERS_MAX_SHOWS = 400
+
+
+def _amp_headers() -> dict | None:
+    token = apple_token()
+    if not token:
+        return None
+    return {"Authorization": f"Bearer {token}", "Origin": APPLE_WEB, "User-Agent": "Mozilla/5.0"}
+
+
+def _art(attrs: dict, key: str = "artwork", size: int = 600) -> str | None:
+    url = (attrs.get(key) or {}).get("url", "")
+    return url.replace("{w}x{h}bb.{f}", f"{size}x{size}bb.png" if key == "logoArtwork" else f"{size}x{size}bb.jpg") \
+        if url else None
+
+
+def apple_channels_of(country: str, show_ids: list[str], headers: dict) -> dict[str, str]:
+    """Per show het Apple-kanaal waar hij bij hoort, honderd shows per aanroep."""
+    found = {}
+    for start in range(0, len(show_ids), 100):
+        batch = ",".join(show_ids[start:start + 100])
+        page = fetch(f"{APPLE_AMP}/catalog/{country}/podcasts?ids={batch}&include=channel",
+                     headers=headers)
+        for item in (page or {}).get("data", []):
+            channel = (item.get("relationships", {}).get("channel", {}).get("data") or [])
+            if channel:
+                found[item["id"]] = channel[0]["id"]
+    return found
+
+
+def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
+    """
+    Wat Apple over een kanaal weet: naam, logo en kleur, alle shows (op Apple's
+    eigen volgorde) en de lijst nieuwe shows. Dat laatste is waar een melding
+    "nieuwe podcast" op kan leunen.
+    """
+    base = f"{APPLE_AMP}/catalog/{country}/podcast-channels/{channel_id}"
+    head = fetch(base, headers=headers)
+    if not head or not head.get("data"):
+        return None
+    attrs = head["data"][0].get("attributes", {})
+
+    shows = []
+    url = f"{base}/view/top-shows?limit=50"
+    while url and len(shows) < MAKERS_MAX_SHOWS:
+        page = fetch(url, headers=headers)
+        if not page:
+            break
+        shows += [item["id"] for item in page.get("data", []) if item.get("type") == "podcasts"]
+        nxt = page.get("next")
+        url = (APPLE_AMP.rsplit("/v1", 1)[0] + nxt + "&limit=50") if nxt else None
+
+    fresh = []
+    page = fetch(f"{base}/view/new-shows?limit=20&extend%5Bpodcasts%5D=feedUrl", headers=headers)
+    for item in (page or {}).get("data", []):
+        if item.get("type") != "podcasts":
+            continue
+        a = item.get("attributes", {})
+        fresh.append({
+            "id": item["id"],
+            "title": a.get("name", ""),
+            "artworkUrl": _art(a),
+            "feedUrl": a.get("feedUrl"),
+            "createdDate": a.get("createdDate"),
+            "releaseDate": a.get("releaseDateTime"),
+            "trackCount": a.get("trackCount"),
+        })
+
+    logo = attrs.get("logoArtwork") or {}
+    return {
+        "id": channel_id,
+        "name": attrs.get("name", ""),
+        "color": logo.get("bgColor") or attrs.get("backgroundSwatch"),
+        "logo": _art(attrs, "logoArtwork", 300),
+        "url": attrs.get("url"),
+        "showCount": attrs.get("showCount") or len(shows),
+        "shows": list(dict.fromkeys(shows)),
+        "newShows": fresh,
+        "seen": TODAY,
+    }
+
+
+def write_makers(root: pathlib.Path, country: str) -> int:
+    """
+    apple/{land}/makers.json: de Apple-kanalen van de shows die vandaag in een
+    Apple-lijst van dit land staan, plus per show zijn kanaal. De app gebruikt
+    het voor het logo en de kleur van een maker, voor de volledige lijst van
+    zijn shows, en om te merken dat een gevolgde maker iets nieuws begint.
+    """
+    headers = _amp_headers()
+    if not headers:
+        return 0
+
+    ids = []
+    for history in sorted((root / "apple" / country).glob("*/shows.history.json")):
+        days = json.loads(history.read_text()).get("days", {})
+        if days:
+            ids += list(days[max(days)].keys())
+    ids = list(dict.fromkeys(ids))
+
+    target = root / "apple" / country / "makers.json"
+    before = json.loads(target.read_text()) if target.exists() else {}
+    kept = {c["id"]: c for c in before.get("channels", [])}
+
+    show_channel = apple_channels_of(country, ids, headers)
+    # Alleen kanalen met twee of meer shows in de lijsten: een kanaal met één
+    # show is meestal een betaalde variant van die show, geen maker om te volgen.
+    # Wat eerder al bekend was, blijft erbij (zie hieronder).
+    counts: dict[str, int] = {}
+    for channel_id in show_channel.values():
+        counts[channel_id] = counts.get(channel_id, 0) + 1
+    wanted = sorted({c for c, n in counts.items() if n >= 2} | (set(kept) & set(counts)))
+    channels = {}
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        for channel in pool.map(lambda cid: apple_channel(country, cid, headers), wanted):
+            if channel:
+                channels[channel["id"]] = channel
+    # Wie maar één show in de lijst had, krijgt geen kanaal in het bestand.
+    show_channel = {s: c for s, c in show_channel.items() if c in channels}
+
+    # Gevolgde makers mogen niet verdwijnen omdat ze vandaag nergens in staan.
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=MAKERS_KEEP_DAYS)).strftime("%Y-%m-%d")
+    for channel_id, channel in kept.items():
+        if channel_id not in channels and channel.get("seen", "") >= cutoff:
+            channels[channel_id] = channel
+
+    for channel in channels.values():
+        for show_id in channel.get("shows", []):
+            show_channel.setdefault(show_id, channel["id"])
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({
+        "country": country, "updated": NOW,
+        "channels": sorted(channels.values(), key=lambda c: c["name"].lower()),
+        "showChannel": show_channel,
+    }, ensure_ascii=False, separators=(",", ":")))
+    return len(channels)
 
 
 # ------------------------------------------------------------------ Mediatips
@@ -2139,6 +2283,9 @@ def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
         got = write_new_shows(root, country, 100)
         print(f"  apple   {country}    26 new        {got:3}", flush=True)
 
+        # Na de lijsten: de kanalen van wie er vandaag in staat.
+        print(f"  apple   {country}       makers     {write_makers(root, country):3}", flush=True)
+
         if collected:
             write_movers(root, country, collected)
             write_shows(root, country, collected)
@@ -2173,6 +2320,10 @@ def main() -> int:
     new.add_argument("--limit", type=int, default=100)
     new.add_argument("--out", default="charts")
 
+    mk = sub.add_parser("makers", help="Apple-kanalen van de shows in de lijsten")
+    mk.add_argument("--countries", default="nl")
+    mk.add_argument("--out", default="charts")
+
     pro = sub.add_parser("prospect", help="zoekt per land welke media een leesbare podcastrubriek hebben")
     pro.add_argument("--countries", default="nl")
     pro.add_argument("--out", default="charts")
@@ -2200,6 +2351,9 @@ def main() -> int:
         for country in countries:
             print(f"  {country}:", flush=True)
             print(f"  tips    {country}  {write_tips(root, country):3}", flush=True)
+    elif args.job == "makers":
+        for country in countries:
+            print(f"  apple   {country}       makers     {write_makers(root, country):3}", flush=True)
     elif args.job == "new":
         for country in countries:
             print(f"  apple   {country}    26 new        {write_new_shows(root, country, args.limit):3}", flush=True)

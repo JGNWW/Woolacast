@@ -27,6 +27,21 @@ data class FollowedShow(
     val lastOpened: String? = null
 )
 
+/**
+ * Een maker die je volgt. [knownShowIds] zijn de shows die hij had toen je hem
+ * voor het laatst bekeek: wat er daarna bij komt, is nieuw.
+ */
+@Serializable
+data class FollowedMaker(
+    val key: String,
+    val name: String,
+    val channelId: String? = null,
+    val logoUrl: String? = null,
+    val color: String? = null,
+    val followedOn: String = "",
+    val knownShowIds: List<String> = emptyList()
+)
+
 @Serializable
 data class CachedEntry(
     val rank: Int,
@@ -82,6 +97,7 @@ data class CachedTips(
 @Serializable
 private data class StoreData(
     val follows: List<FollowedShow> = emptyList(),
+    val makers: List<FollowedMaker> = emptyList(),
     val snapshots: Map<String, List<DaySnapshot>> = emptyMap(),
     val charts: Map<String, CachedChart> = emptyMap(),
     val queue: List<SavedEpisode> = emptyList(),
@@ -114,6 +130,9 @@ class LocalStore(private val file: File) {
 
     private val _follows = MutableStateFlow<List<FollowedShow>>(emptyList())
     val follows: StateFlow<List<FollowedShow>> = _follows.asStateFlow()
+
+    private val _makers = MutableStateFlow<List<FollowedMaker>>(emptyList())
+    val makers: StateFlow<List<FollowedMaker>> = _makers.asStateFlow()
 
     private val _queue = MutableStateFlow<List<SavedEpisode>>(emptyList())
     val queue: StateFlow<List<SavedEpisode>> = _queue.asStateFlow()
@@ -153,6 +172,24 @@ class LocalStore(private val file: File) {
         if (data.follows.none { it.id == showId }) return@mutate data
         val today = LocalDate.now().toString()
         data.copy(follows = data.follows.map { if (it.id == showId) it.copy(lastOpened = today) else it })
+    }
+
+    /* ---- makers ---- */
+
+    fun isMakerFollowed(key: String) = _makers.value.any { it.key == key }
+
+    suspend fun toggleMaker(maker: FollowedMaker) = mutate { data ->
+        val present = data.makers.any { it.key == maker.key }
+        data.copy(makers = if (present) data.makers.filterNot { it.key == maker.key }
+                           else data.makers + maker.copy(followedOn = LocalDate.now().toString()))
+    }
+
+    /** Wat je nu van deze maker gezien hebt; alleen wat daarna komt heet nieuw. */
+    suspend fun markMakerSeen(key: String, showIds: Collection<String>) = mutate { data ->
+        if (data.makers.none { it.key == key }) return@mutate data
+        data.copy(makers = data.makers.map {
+            if (it.key == key) it.copy(knownShowIds = (it.knownShowIds + showIds).distinct()) else it
+        })
     }
 
     /* ---- wachtrij en bewaard ---- */
@@ -260,6 +297,7 @@ class LocalStore(private val file: File) {
 
     private fun publish() {
         _follows.value = data.follows
+        _makers.value = data.makers
         _queue.value = data.queue
         _saved.value = data.saved
         _progress.value = data.progress

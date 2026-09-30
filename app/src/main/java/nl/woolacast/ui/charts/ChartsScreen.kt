@@ -80,10 +80,12 @@ fun ChartsScreen(
     onOpenPodcast: (showId: String, feedUrl: String?, countryCode: String, title: String) -> Unit,
     onSearch: () -> Unit,
     onAlerts: () -> Unit,
+    onOpenMaker: (name: String, fromShowId: String?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var filtersOpen by remember { mutableStateOf(false) }
+    var countingOpen by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(state.toast) {
@@ -223,7 +225,21 @@ fun ChartsScreen(
                                 }
                             }
                         }
-                        chartRows(chart, state.resolvingId, onOpenPodcast, viewModel::play)
+                        if (chart.query.level == ChartLevel.SHOWS) {
+                            item(key = "view") {
+                                ViewLine(
+                                    byMaker = state.byMaker,
+                                    listSize = chart.entries.size,
+                                    onByMaker = viewModel::setByMaker,
+                                    onExplain = { countingOpen = true }
+                                )
+                            }
+                        }
+                        if (chart.query.level == ChartLevel.SHOWS && state.byMaker) {
+                            makerRows(state.makers, onOpenMaker)
+                        } else {
+                            chartRows(chart, state.resolvingId, onOpenPodcast, viewModel::play)
+                        }
                     }
 
                     else -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -241,6 +257,10 @@ fun ChartsScreen(
                 shape = RoundedCornerShape(12.dp)
             )
         }
+    }
+
+    if (countingOpen) {
+        CountingSheet(onDismiss = { countingOpen = false })
     }
 
     if (filtersOpen) {

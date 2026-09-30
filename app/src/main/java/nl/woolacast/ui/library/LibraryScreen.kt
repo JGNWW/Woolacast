@@ -63,7 +63,7 @@ import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
 
 private enum class LibraryTab(val label: String) {
-    FOLLOWED("Gevolgd"), QUEUE("Wachtrij"), SAVED("Bewaard")
+    FOLLOWED("Gevolgd"), MAKERS("Makers"), QUEUE("Wachtrij"), SAVED("Bewaard")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,9 +75,14 @@ fun LibraryScreen(
     onOpenPodcast: (showId: String, feedUrl: String?, title: String) -> Unit,
     onSearch: () -> Unit,
     onPlay: (Episode) -> Unit,
+    onOpenMaker: (name: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val follows by viewModel.follows.collectAsStateWithLifecycle()
+    val makers by viewModel.makers.collectAsStateWithLifecycle()
+    val makerStatus by viewModel.makerStatus.collectAsStateWithLifecycle()
+    val newShows by viewModel.newShows.collectAsStateWithLifecycle()
+    val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
     val queue by viewModel.queue.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
     val alerts by viewModel.alerts.collectAsStateWithLifecycle()
@@ -91,6 +96,9 @@ fun LibraryScreen(
     LaunchedEffect(countryCode, follows.size) {
         viewModel.loadAlerts(countryCode)
         viewModel.refreshFeeds()
+    }
+    LaunchedEffect(countryCode, makers.size, follows.size) {
+        viewModel.refreshMakers(countryCode)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -141,6 +149,25 @@ fun LibraryScreen(
                     alerts = alerts,
                     onOpenPodcast = onOpenPodcast,
                     onUnfollow = viewModel::unfollow
+                )
+            }
+            LibraryTab.MAKERS -> PullToRefreshBox(
+                isRefreshing = false,
+                onRefresh = { viewModel.refreshMakers(countryCode, force = true) },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                MakersTab(
+                    makers = makers,
+                    status = makerStatus,
+                    newShows = newShows,
+                    suggestions = suggestions,
+                    onOpenMaker = onOpenMaker,
+                    onOpenNewShow = { show ->
+                        viewModel.seen(show)
+                        onOpenPodcast(show.showId, show.feedUrl, show.title)
+                    },
+                    onFollow = viewModel::followSuggestion,
+                    onUnfollow = viewModel::unfollowMaker
                 )
             }
             LibraryTab.QUEUE -> EpisodeTab(

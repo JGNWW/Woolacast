@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.woolacast.data.ChartRepository
 import nl.woolacast.data.PodcastRepository
+import nl.woolacast.data.maker.MakerRank
+import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.domain.Catalog
 import nl.woolacast.domain.Category
 import nl.woolacast.domain.Chart
@@ -39,7 +41,11 @@ data class ChartsUiState(
     /** Korte melding onderin, bijvoorbeeld als een aflevering niet te vinden is. */
     val toast: String? = null,
     /** Wanneer deze lijst is opgehaald, als "17:53". */
-    val loadedAt: String? = null
+    val loadedAt: String? = null,
+    /** De lijst per maker in plaats van per show; alleen op het tabblad Podcasts. */
+    val byMaker: Boolean = false,
+    /** De makersranglijst van de huidige lijst; null zolang hij nog geteld wordt. */
+    val makers: List<MakerRank>? = null
 )
 
 /** Een aflevering uit de lijst die speelbaar is gemaakt, met waar hij vandaan komt. */
@@ -48,6 +54,7 @@ data class PlayRequest(val episode: Episode, val label: String?)
 class ChartsViewModel(
     private val repository: ChartRepository,
     private val podcasts: PodcastRepository,
+    private val makers: MakerRepository? = null,
     initialQuery: ChartQuery = ChartQuery(
         source = SourceId.APPLE,
         country = Catalog.defaultCountry,
@@ -85,6 +92,11 @@ class ChartsViewModel(
         update { it.copy(country = country ?: it.country, category = category ?: it.category) }
 
     fun refresh() = load()
+
+    /** Wisselt tussen de lijst per show en per maker; dezelfde lijst, anders geteld. */
+    fun setByMaker(byMaker: Boolean) {
+        _state.value = _state.value.copy(byMaker = byMaker)
+    }
 
     fun dismissToast() {
         _state.value = _state.value.copy(toast = null)
@@ -160,9 +172,14 @@ class ChartsViewModel(
             runCatching { repository.chart(query) }
                 .onSuccess { chart ->
                     _state.value = _state.value.copy(
-                        loading = false, chart = chart, notice = null,
+                        loading = false, chart = chart, notice = null, makers = null,
                         loadedAt = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                     )
+                    // Ook als je hem niet bekijkt: zo is er morgen een makersranglijst om mee te vergelijken.
+                    if (query.level == ChartLevel.SHOWS && makers != null) {
+                        val rows = runCatching { makers.rankMakers(chart) }.getOrDefault(emptyList())
+                        if (_state.value.query == query) _state.value = _state.value.copy(makers = rows)
+                    }
                 }
                 .onFailure { error ->
                     _state.value = _state.value.copy(

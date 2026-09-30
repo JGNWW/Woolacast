@@ -3,7 +3,9 @@ package nl.woolacast.data
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import nl.woolacast.data.apple.AppleCatalogApi
+import nl.woolacast.data.apple.LookupResult
 import nl.woolacast.domain.Episode
+import nl.woolacast.domain.MakerShow
 import nl.woolacast.domain.Podcast
 
 data class SearchResults(
@@ -23,27 +25,15 @@ class SearchRepository(private val catalog: AppleCatalogApi) {
      * geeft zijn shows nu eens uit als "BNNVARA" en dan als "NPO Luister /
      * BNNVARA", en dat is dezelfde maker.
      */
-    suspend fun byMaker(publisher: String, countryCode: String, limit: Int = 60): List<Podcast> {
+    suspend fun byMaker(publisher: String, countryCode: String, limit: Int = 60): List<MakerShow> {
         val naam = publisher.trim()
         if (naam.length < 2) return emptyList()
         val found = runCatching { catalog.search(naam, countryCode, "podcast", limit) }
             .getOrNull()?.results.orEmpty()
         return found
             .filter { sameMaker(naam, it.artistName.orEmpty()) }
-            .mapNotNull { result ->
-                val id = result.collectionId?.toString() ?: return@mapNotNull null
-                Podcast(
-                    id = id,
-                    title = result.collectionName ?: result.trackName.orEmpty(),
-                    publisher = result.artistName.orEmpty(),
-                    artworkUrl = result.artworkUrl600 ?: result.artworkUrl100,
-                    description = Html.toPlainText(result.description),
-                    genre = result.primaryGenreName,
-                    episodeCount = result.trackCount,
-                    feedUrl = result.feedUrl
-                )
-            }
-            .distinctBy { it.id }
+            .mapNotNull { result -> result.toMakerShow() }
+            .distinctBy { it.podcast.id }
     }
 
     private fun sameMaker(wanted: String, found: String): Boolean {
@@ -96,4 +86,22 @@ class SearchRepository(private val catalog: AppleCatalogApi) {
             }
         )
     }
+}
+
+/** Een zoek- of opzoekresultaat als show van een maker; null als het geen show is. */
+internal fun LookupResult.toMakerShow(): MakerShow? {
+    val id = collectionId?.toString() ?: return null
+    return MakerShow(
+        podcast = Podcast(
+            id = id,
+            title = collectionName ?: trackName.orEmpty(),
+            publisher = artistName.orEmpty(),
+            artworkUrl = artworkUrl600 ?: artworkUrl100,
+            description = Html.toPlainText(description),
+            genre = primaryGenreName,
+            episodeCount = trackCount,
+            feedUrl = feedUrl
+        ),
+        latestRelease = releaseDate
+    )
 }

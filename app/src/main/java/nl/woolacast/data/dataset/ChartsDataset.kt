@@ -98,6 +98,38 @@ data class ShowTracking(
     val spotifyUri: String? = null
 )
 
+/** Een Apple-kanaal zoals `apple/{land}/makers.json` het geeft. */
+@Serializable
+data class DatasetChannel(
+    val id: String = "",
+    val name: String = "",
+    val color: String? = null,
+    val logo: String? = null,
+    val url: String? = null,
+    val showCount: Int = 0,
+    val shows: List<String> = emptyList(),
+    val newShows: List<DatasetChannelShow> = emptyList()
+)
+
+@Serializable
+data class DatasetChannelShow(
+    val id: String = "",
+    val title: String = "",
+    val artworkUrl: String? = null,
+    val feedUrl: String? = null,
+    val createdDate: String? = null,
+    val trackCount: Int? = null
+)
+
+@Serializable
+data class DatasetMakers(
+    val country: String = "",
+    val updated: String? = null,
+    val channels: List<DatasetChannel> = emptyList(),
+    /** Per Apple-show-id het kanaal waar hij bij hoort. */
+    val showChannel: Map<String, String> = emptyMap()
+)
+
 interface ChartsDatasetApi {
     @GET
     suspend fun chart(@Url url: String): DatasetChart
@@ -110,6 +142,9 @@ interface ChartsDatasetApi {
 
     @GET
     suspend fun shows(@Url url: String): Map<String, ShowRecord>
+
+    @GET
+    suspend fun makers(@Url url: String): DatasetMakers
 
     @GET
     suspend fun tips(@Url url: String): MediaTips
@@ -141,6 +176,7 @@ class ChartsDataset(
     private val movers = mutableMapOf<String, DatasetMovers?>()
     private val tips = mutableMapOf<String, MediaTips?>()
     private val feeds = mutableMapOf<String, TipFeeds?>()
+    private val makers = mutableMapOf<String, DatasetMakers?>()
 
     private fun ChartQuery.datasetPath(): String {
         val source = if (this.source == SourceId.SPOTIFY) "spotify" else "apple"
@@ -291,6 +327,19 @@ class ChartsDataset(
     /** De tips over één show, om ze op de podcastpagina te tonen. */
     suspend fun tipsFor(showId: String, countryCode: String): List<MediaTip> =
         tips(countryCode)?.entries?.filter { it.showId == showId }.orEmpty()
+
+    /**
+     * De Apple-kanalen van dit land: logo, kleur en shows van elke maker die
+     * Apple als kanaal kent. Null: nog niet verzameld; dan valt de app terug op
+     * de makersnaam.
+     */
+    suspend fun makers(countryCode: String): DatasetMakers? = mutex.withLock {
+        if (makers.containsKey(countryCode)) return@withLock makers[countryCode]
+        runCatching { api.makers("$baseUrl/apple/$countryCode/makers.json") }
+            .getOrNull()
+            .takeIf { it != null && it.channels.isNotEmpty() }
+            .also { makers[countryCode] = it }
+    }
 
     suspend fun movers(countryCode: String): List<DatasetMover> = mutex.withLock {
         val cached = movers[countryCode]
