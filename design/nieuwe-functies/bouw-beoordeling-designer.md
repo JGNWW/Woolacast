@@ -187,3 +187,29 @@ Alle drie de punten zijn opgelost.
 Ook de suggesties zijn goed doorgevoerd: de reden staat op een eigen regel, "5 feeds" blijft
 in beeld, de uitgeschakelde export staat op 38% en het TalkBack-label is compleet. In het
 donker is alles in orde.
+
+## Ronde 3
+
+Getoetst op `9d2c5e0e` (functie 3), met `tekst-zoeken-licht.png` en `tekst-zoeken-donker.png`.
+Uitslag: **functie 3 is goedgekeurd**. Daarmee zijn alle vier de functies goedgekeurd.
+
+### 3. Meelezen — GOEDGEKEURD
+
+Het blokkerende punt is opgelost. `highlight()` zet het woord van een treffer nu in
+`onSurface`. Nagerekend:
+
+| Treffer | Licht | Donker |
+|---|---|---|
+| Gewone treffer | 12,3:1 | 9,5:1 |
+| Gekozen treffer (sterkere amber met een streep) | 8,9:1 | 5,5:1 |
+
+Alles haalt AA, en op beide schermafbeeldingen is dat ook te zien. De gekozen treffer blijft
+duidelijk anders dan de andere.
+
+### Wat verder is meegenomen (functies 1 en 2, al goedgekeurd)
+
+- Mislukte downloads staan nu onder een eigen kop "Mislukt".
+- "Einde hoofdstuk" rekent het stoppunt ook opnieuw uit bij sprongen van buiten de app, via
+  `onPositionDiscontinuity` (`DISCONTINUITY_REASON_SEEK`). Dat is afgerond.
+
+Nog open, als suggestie en niet blokkerend: verwijderen ongedaan kunnen maken met een snackbar.
