@@ -1,0 +1,598 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap"><style>:root{
+  --bg:#FAF6F0; --surf:#FFFDFA; --surf2:#F2EBE0; --surf3:#E8DFD1;
+  --line:#E4DACA; --line2:#F0E8DC;
+  --ink:#211D17; --ink2:#6E6458; --ink3:#988C7A;
+  --pri:#C4542B; --priInk:#FFFDFA; --priC:#FBE3D4; --priOn:#5A2110;
+  --up:#0E8A4E; --down:#C03A24;
+  --appl:#C4542B; --spot:#0E8A4E; --yout:#1B6FE0;
+}
+*{box-sizing:border-box}
+body{margin:0}
+a{color:var(--pri);text-decoration:none}
+a:hover{color:var(--priOn)}
+.ph{width:390px;height:844px;overflow:hidden;position:relative;background:var(--bg);
+  font-family:'Instrument Sans',ui-sans-serif,system-ui,sans-serif;color:var(--ink);
+  font-size:14px;line-height:1.35;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+.dsp{font-family:'Bricolage Grotesque','Instrument Sans',ui-sans-serif,system-ui,sans-serif}
+.sa{height:48px;flex:none}
+.col{display:flex;flex-direction:column}
+.body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.body>*{flex:none}
+.pad{padding-left:20px;padding-right:20px}
+.row{display:flex;align-items:center}
+
+/* ---- top app bar ---- */
+.appbar{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 12px 0 20px;flex:none}
+.mark{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pri)}
+.ibtn{width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);flex:none}
+.ibtn:hover{background:var(--surf2)}
+.h1{font-size:32px;font-weight:700;letter-spacing:-.022em;line-height:1.05;margin:0}
+.h2{font-size:19px;font-weight:700;letter-spacing:-.014em;margin:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+
+/* ---- source chips ---- */
+.srcrow{display:flex;gap:8px;overflow:hidden}
+.src{display:flex;align-items:center;gap:8px;height:44px;padding:0 15px 0 11px;border-radius:12px;
+  background:var(--surf);border:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink2);
+  white-space:nowrap;flex:none;cursor:pointer}
+.src .dot{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#FFFDFA;background:var(--ink3);flex:none}
+.src.on{background:var(--ink);border-color:var(--ink);color:#FBF6EE}
+.src.on .dot{background:var(--pri)}
+.src.off{opacity:.42}
+
+/* ---- context / filter bar ---- */
+.ctx{display:flex;align-items:center;gap:8px;height:46px;padding:0 8px 0 12px;border-radius:14px;
+  background:var(--surf2);border:1px solid var(--line2);cursor:pointer}
+.ctx .lbl{font-size:13.5px;font-weight:600;letter-spacing:-.005em}
+.ctx .sep{color:var(--ink3)}
+.flag{width:20px;height:14px;border-radius:3px;overflow:hidden;flex:none;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(33,29,23,.12) inset}
+.flag i{flex:1;display:block}
+
+/* ---- tabs ---- */
+.tabs{display:flex;gap:24px;height:46px;align-items:center}
+.tab{font-size:15px;font-weight:600;color:var(--ink3);height:46px;display:flex;align-items:center;
+  position:relative;cursor:pointer}
+.tab.on{color:var(--ink)}
+.tab.on:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--pri)}
+
+/* ---- chart rows ---- */
+.list{display:flex;flex-direction:column}
+.lrow{display:flex;align-items:center;gap:12px;height:72px;border-bottom:1px solid var(--line2)}
+.rank{width:26px;text-align:right;font-size:19px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);flex:none}
+.rank.top{color:var(--pri)}
+.art{width:52px;height:52px;border-radius:11px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.t1{font-size:14.5px;font-weight:600;letter-spacing:-.008em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mv{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:700;
+  font-variant-numeric:tabular-nums;flex:none;width:38px;justify-content:flex-end}
+.mv.new{font-size:10px;letter-spacing:.08em;color:var(--pri)}
+.mv.flat{color:var(--ink3)}
+
+/* ---- artwork ---- */
+.a1{background-color:#B5482A;background-image:radial-gradient(circle at 70% 32%,#F4E3CE 0 24%,rgba(0,0,0,0) 24%)}
+.a2{background-color:#14504E;background-image:linear-gradient(115deg,rgba(0,0,0,0) 40%,#E9D9B8 40% 57%,rgba(0,0,0,0) 57%)}
+.a3{background-color:#DFA83A;background-image:radial-gradient(circle at 50% 106%,#25201A 0 46%,rgba(0,0,0,0) 46%)}
+.a4{background-color:#332F63;background-image:repeating-linear-gradient(90deg,#EDE2CE 0 5px,rgba(0,0,0,0) 5px 15px)}
+.a5{background-color:#7E3149;background-image:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 0 21%,#F0DCC6 21% 33%,rgba(0,0,0,0) 33%)}
+.a6{background-color:#3C5A2B;background-image:conic-gradient(from 200deg at 28% 72%,#DCE8C4 0 25%,rgba(0,0,0,0) 25%)}
+.a7{background-color:#1E1B16;background-image:radial-gradient(circle at 50% 50%,#D9683C 0 17%,rgba(0,0,0,0) 17%);background-size:24px 24px}
+.a8{background-color:#D2825A;background-image:conic-gradient(from 0deg at 100% 0%,#2A241D 0 25%,rgba(0,0,0,0) 25%)}
+.a9{background-color:#2B4C7E;background-image:linear-gradient(0deg,#E7D8BE 0 33%,rgba(0,0,0,0) 33%)}
+.a10{background-color:#7E5AA0;background-image:radial-gradient(circle at 24% 24%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%),radial-gradient(circle at 76% 76%,#F2E6D4 0 19%,rgba(0,0,0,0) 19%)}
+
+/* ---- buttons & chips ---- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:13px;
+  font-size:14.5px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
+.btn-p{background:var(--pri);color:var(--priInk)}
+.btn-o{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-t{background:var(--surf2);color:var(--ink)}
+.chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;
+  background:var(--surf);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.chip.on{background:var(--priC);border-color:#EFC7AF;color:var(--priOn)}
+.chip.dis{opacity:.38}
+
+/* ---- mini player + bottom nav ---- */
+.mini{display:flex;align-items:center;gap:12px;height:60px;margin:0 12px 6px;padding:0 8px 0 8px;border-radius:15px;
+  background:var(--ink);color:#F6EFE5;box-shadow:0 6px 20px rgba(33,29,23,.22);flex:none}
+.mini .art{width:44px;height:44px;border-radius:9px;box-shadow:none}
+.nav{display:flex;align-items:center;justify-content:space-around;height:64px;flex:none;
+  border-top:1px solid var(--line2);background:var(--bg)}
+.navi{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:96px;height:64px;
+  color:var(--ink3);font-size:11px;font-weight:600}
+.navi.on{color:var(--pri)}
+.gest{height:22px;flex:none;display:flex;align-items:center;justify-content:center}
+.gest i{width:120px;height:4px;border-radius:2px;background:var(--line);display:block}
+
+/* ---- misc ---- */
+.card{background:var(--surf);border:1px solid var(--line2);border-radius:16px}
+.sect{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.hr{height:1px;background:var(--line2)}
+.note{font-size:11.5px;color:var(--ink3);line-height:1.4}
+.scroll-fade{position:absolute;left:0;right:0;height:44px;pointer-events:none}
+.lbl2{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:14px 0 9px}
+.ebody{flex:1 1 auto;min-width:0}
+
+/* ---- episode rows ---- */
+.erow{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--line2);align-items:flex-start}
+.erank{width:24px;text-align:right;font-size:18px;font-weight:800;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--ink3);padding-top:3px;flex:none}
+.erank.top{color:var(--pri)}
+.eart{width:56px;height:56px;border-radius:12px;flex:none;box-shadow:0 1px 3px rgba(33,29,23,.14)}
+.etitle{font-size:14.5px;font-weight:600;letter-spacing:-.008em;line-height:1.28;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.eshow{font-size:12.5px;color:var(--ink2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emeta{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:11.5px;color:var(--ink3);font-weight:500}
+.pill{display:flex;align-items:center;gap:3px;height:19px;padding:0 7px;border-radius:6px;
+  font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.pbtn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);display:flex;
+  align-items:center;justify-content:center;color:var(--ink);flex:none;margin-top:6px}
+.sdot{width:18px;height:18px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:800;color:#FBF6EE;flex:none}
+
+.logo{display:flex;align-items:center;justify-content:center;flex:none;color:#FFFDFA;font-weight:800;letter-spacing:.04em;
+  font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;box-shadow:0 1px 3px rgba(33,29,23,.16)}
+.chead{padding:6px 0 16px;background:linear-gradient(180deg,color-mix(in srgb,var(--ch) 13%,var(--bg)) 0%,var(--bg) 100%)}
+.segs{display:flex;gap:6px;padding-top:12px;padding-bottom:4px}
+.seg{height:36px;padding:0 13px;border-radius:10px;display:flex;align-items:center;font-size:13px;font-weight:600;
+  color:var(--ink2);background:var(--surf);border:1px solid var(--line);white-space:nowrap}
+.seg.on{background:var(--ink);border-color:var(--ink);color:#FBF6EE}
+.tnote{display:flex;align-items:center;gap:6px;min-height:30px;font-size:11.5px;color:var(--ink3)}
+.lrow.c{height:60px}
+.lrow.c .art{width:44px;height:44px;border-radius:9px}
+.lrow.c .t1{font-size:14px}.lrow.c .t2{font-size:12px}
+.place{display:flex;align-items:center;gap:5px;height:24px;padding:0 8px 0 5px;border-radius:7px;background:var(--surf2);
+  font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);flex:none}
+.place.none{background:transparent;color:var(--ink3);font-weight:600;padding:0 2px}
+.mini-chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:10px;background:var(--surf);border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+.mini-chip.on{background:var(--ink);border-color:var(--ink);color:#FBF6EE}
+.share{height:4px;border-radius:2px;background:var(--surf3);overflow:hidden;margin-top:5px}
+.share i{display:block;height:4px;background:var(--pri);border-radius:2px}
+.covers{display:flex;flex:none}
+.covers .art{width:24px;height:24px;border-radius:6px;margin-left:-6px;box-shadow:0 0 0 2px var(--bg)}
+.grid{display:grid;grid-template-columns:1fr 54px 54px 54px;align-items:center;column-gap:4px}
+.grid .h{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);text-align:center;line-height:1.2}
+.cell{height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+  font-variant-numeric:tabular-nums;background:var(--surf2);color:var(--ink)}
+.cell.hi{background:var(--priC);color:var(--priOn)}
+.cell.no{background:transparent;color:var(--ink3);font-weight:500}
+.srccard{flex:1 1 0;min-width:0;padding:10px 11px;border-radius:14px;background:var(--surf);border:1px solid var(--line2)}
+.srccard .n{font-size:22px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1}
+.srccard .l{font-size:11px;color:var(--ink2);font-weight:600}
+.day{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);padding:12px 0 2px}
+.chrow{display:flex;gap:14px;overflow:hidden;padding-top:4px;padding-bottom:12px}
+.chitem{display:flex;flex-direction:column;align-items:center;gap:6px;width:60px;flex:none;font-size:11px;font-weight:600;color:var(--ink2);text-align:center;line-height:1.2}
+.chitem .dot{width:8px;height:8px;border-radius:4px;background:var(--pri);position:absolute;top:-2px;right:-2px;box-shadow:0 0 0 2px var(--bg)}
+.chlabel{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2);font-weight:600}
+.chlabel i{width:10px;height:10px;border-radius:3px;display:block;flex:none}
+.alert{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--priC);color:var(--priOn)}
+.tip{padding:12px 0;border-bottom:1px solid var(--line2);display:flex;gap:12px}
+.tip .q{font-size:12.5px;color:var(--ink2);line-height:1.4;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tip .w{font-size:11.5px;color:var(--ink3);margin-top:6px;display:flex;gap:8px;align-items:center}
+
+.board{display:flex;gap:40px;padding:40px;background:#DDD5C8;width:max-content}
+.board figure{margin:0}.board figcaption{font:600 14px 'Instrument Sans',sans-serif;margin-bottom:10px}
+.ph{border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.18)}</style></head><body><div class="board">
+<figure id="Kanaal"><figcaption>1 · De kanaalpagina</figcaption>
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M8 8l4-4 4 4"></path><path d="M6 13v6h12v-6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    
+    <div class="chead" style="--ch:#14504E">
+      <div class="pad row" style="gap:14px;align-items:center">
+        <div class="logo" style="width:64px;height:64px;border-radius:16px;background:#14504E;font-size:14px">KADE</div>
+        <div class="meta" style="gap:3px">
+          <div class="eyebrow">Kanaal</div>
+          <h1 class="h1 dsp" style="font-size:26px">Kade Media</h1>
+          <div class="t2">31 podcasts · 6 in de Top 200</div>
+        </div>
+      </div>
+      <div class="pad row" style="gap:8px;margin-top:14px">
+        <div class="btn btn-p" style="height:40px;padding:0 16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Volg kanaal</div>
+        <div class="btn btn-o" style="height:40px;padding:0 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg>Nieuwste</div>
+      </div>
+    </div>
+    
+    <div class="pad segs"><div class="seg on">Populair</div><div class="seg ">Recent</div><div class="seg ">Nieuw</div><div class="seg ">A–Z</div></div>
+    <div class="pad tnote">Hoogste plek in de hitlijst · Apple · <span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span> NL · alle categorieën</div>
+    <div class="pad list">
+      
+      <div class="lrow c">
+        <div class="art a10"></div>
+        <div class="meta"><div class="t1">Kade 12</div><div class="t2">Nieuwe afl. vandaag · True crime</div></div>
+        <span class="place">#4</span>
+      </div>
+      <div class="lrow c">
+        <div class="art a2"></div>
+        <div class="meta"><div class="t1">Nachtdienst</div><div class="t2">Nieuwe afl. gisteren · Samenleving</div></div>
+        <span class="place">#19</span>
+      </div>
+      <div class="lrow c">
+        <div class="art a5"></div>
+        <div class="meta"><div class="t1">Lange Adem</div><div class="t2">Nieuwe afl. 3 dagen geleden · Sport</div></div>
+        <span class="place">#37</span>
+      </div>
+      <div class="lrow c">
+        <div class="art a3"></div>
+        <div class="meta"><div class="t1">Tafel voor Twee</div><div class="t2">Nieuwe afl. gisteren · Eten</div></div>
+        <span class="place">#88</span>
+      </div>
+      <div class="lrow c">
+        <div class="art a7"></div>
+        <div class="meta"><div class="t1">Koud Spoor</div><div class="t2">Nieuwe afl. vorige week · True crime</div></div>
+        <span class="place">#140</span>
+      </div>
+      <div class="lrow c">
+        <div class="art a8"></div>
+        <div class="meta"><div class="t1">Zaterdagavond Thuis</div><div class="t2">Nieuwe afl. 2 dagen geleden · Comedy</div></div>
+        <span class="place">#171</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></figure>
+<figure id="Makers"><figcaption>2 · Makers als hitlijst</figcaption>
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar">
+    <div class="mark">Toadcast</div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></div><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M13.7 20a2 2 0 01-3.4 0"></path></svg></div></div>
+  </div>
+  <div class="body">
+    <div class="pad row" style="justify-content:space-between;padding-bottom:12px">
+      <h1 class="h1 dsp" style="font-size:26px">Hitlijsten</h1>
+      <span class="note">Bijgewerkt 06:00</span>
+    </div>
+    <div class="pad row" style="gap:8px;padding-bottom:8px">
+      <div class="mini-chip on">Apple Podcasts <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      <div class="mini-chip"><span class="flag"><i style="background:#AE1C28"></i><i style="background:#FFFDFA"></i><i style="background:#21468B"></i></span>NL <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+      <div class="mini-chip">Categorie <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></div>
+    </div>
+    <div class="pad tabs" style="height:40px;gap:14px">
+      <div class="tab " style="font-size:13.5px;height:40px">Podcasts</div><div class="tab " style="font-size:13.5px;height:40px">Afleveringen</div><div class="tab " style="font-size:13.5px;height:40px">Trending</div><div class="tab " style="font-size:13.5px;height:40px">Nieuw</div><div class="tab on" style="font-size:13.5px;height:40px">Makers</div>
+    </div>
+    <div class="hr"></div>
+    <div class="pad tnote">Wie de meeste podcasts in de Top 200 heeft · Apple · NL</div>
+    <div class="pad list">
+      
+      <div class="lrow" style="height:66px">
+        <div class="rank top" style="font-size:16px;width:22px">1</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#14504E;font-size:10px">KADE</div>
+        <div class="meta">
+          <div class="t1">Kade Media</div>
+          <div class="t2">24 in de lijst · hoogste #2</div>
+          <div class="share"><i style="width:100%"></i></div>
+        </div>
+        <div class="covers"><div class="art a10"></div><div class="art a2"></div><div class="art a5"></div></div>
+        <div class="mv " style="width:30px;color:var(--up)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg>2</div>
+      </div>
+      <div class="lrow" style="height:66px">
+        <div class="rank top" style="font-size:16px;width:22px">2</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#2B4C7E;font-size:15px">DN</div>
+        <div class="meta">
+          <div class="t1">Dagblad Noord</div>
+          <div class="t2">11 in de lijst · hoogste #6</div>
+          <div class="share"><i style="width:45.83333333333333%"></i></div>
+        </div>
+        <div class="covers"><div class="art a9"></div><div class="art a4"></div><div class="art a6"></div></div>
+        <div class="mv flat" style="width:30px;color:">=</div>
+      </div>
+      <div class="lrow" style="height:66px">
+        <div class="rank top" style="font-size:16px;width:22px">3</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#7E3149;font-size:15px">SH</div>
+        <div class="meta">
+          <div class="t1">Studio Hemel</div>
+          <div class="t2">9 in de lijst · hoogste #1</div>
+          <div class="share"><i style="width:37.5%"></i></div>
+        </div>
+        <div class="covers"><div class="art a5"></div><div class="art a3"></div><div class="art a8"></div></div>
+        <div class="mv " style="width:30px;color:var(--up)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg>1</div>
+      </div>
+      <div class="lrow" style="height:66px">
+        <div class="rank " style="font-size:16px;width:22px">4</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#A2532F;font-size:15px">CM</div>
+        <div class="meta">
+          <div class="t1">Concept Media</div>
+          <div class="t2">7 in de lijst · hoogste #12</div>
+          <div class="share"><i style="width:29.166666666666668%"></i></div>
+        </div>
+        <div class="covers"><div class="art a8"></div><div class="art a1"></div><div class="art a7"></div></div>
+        <div class="mv " style="width:30px;color:var(--down)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L1.5 3h9z"></path></svg>1</div>
+      </div>
+      <div class="lrow" style="height:66px">
+        <div class="rank " style="font-size:16px;width:22px">5</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#1E1B16;font-size:15px">PA</div>
+        <div class="meta">
+          <div class="t1">Podium Audio</div>
+          <div class="t2">5 in de lijst · hoogste #23</div>
+          <div class="share"><i style="width:20.833333333333336%"></i></div>
+        </div>
+        <div class="covers"><div class="art a7"></div><div class="art a2"></div><div class="art a10"></div></div>
+        <div class="mv flat" style="width:30px;color:">=</div>
+      </div>
+      <div class="lrow" style="height:66px">
+        <div class="rank " style="font-size:16px;width:22px">6</div>
+        <div class="logo" style="width:44px;height:44px;border-radius:12px;background:#332F63;font-size:15px">KW</div>
+        <div class="meta">
+          <div class="t1">Kelderwerk</div>
+          <div class="t2">4 in de lijst · hoogste #9</div>
+          <div class="share"><i style="width:16.666666666666664%"></i></div>
+        </div>
+        <div class="covers"><div class="art a4"></div><div class="art a6"></div><div class="art a3"></div></div>
+        <div class="mv " style="width:30px;color:var(--up)"><svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4.5 7h-9z"></path></svg>3</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></figure>
+<figure id="PerBron"><figcaption>3 · Eén kanaal per bron</figcaption>
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M8 8l4-4 4 4"></path><path d="M6 13v6h12v-6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    
+    <div class="chead" style="--ch:#14504E">
+      <div class="pad row" style="gap:14px;align-items:center">
+        <div class="logo" style="width:64px;height:64px;border-radius:16px;background:#14504E;font-size:14px">KADE</div>
+        <div class="meta" style="gap:3px">
+          <div class="eyebrow">Kanaal</div>
+          <h1 class="h1 dsp" style="font-size:26px">Kade Media</h1>
+          <div class="t2">31 podcasts</div>
+        </div>
+      </div>
+      <div class="pad row" style="gap:8px;margin-top:14px">
+        <div class="btn btn-t" style="height:40px;padding:0 16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Volgt</div>
+        <div class="btn btn-o" style="height:40px;padding:0 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg>Nieuwste</div>
+      </div>
+    </div>
+    
+    <div class="pad segs"><div class="seg ">Podcasts</div><div class="seg on">Per bron</div><div class="seg ">Afleveringen</div></div>
+    <div class="pad row" style="gap:8px;padding-top:10px;padding-bottom:12px">
+      <div class="srccard"><div class="n">6</div><div class="l">Apple · NL</div></div>
+      <div class="srccard"><div class="n">4</div><div class="l">Spotify · NL</div></div>
+      <div class="srccard"><div class="n">2</div><div class="l">Apple · BE</div></div>
+    </div>
+    <div class="pad">
+      <div class="grid" style="padding-bottom:6px">
+        <div class="h" style="text-align:left">Plek in de Top 200</div><div class="h">Apple<br>NL</div><div class="h">Spotify<br>NL</div><div class="h">Apple<br>BE</div>
+      </div>
+      
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a10" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Kade 12</div></div>
+        <div class="cell hi">4</div><div class="cell ">11</div><div class="cell hi">2</div>
+      </div>
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a2" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Nachtdienst</div></div>
+        <div class="cell ">19</div><div class="cell hi">7</div><div class="cell no">—</div>
+      </div>
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a5" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Lange Adem</div></div>
+        <div class="cell ">37</div><div class="cell no">—</div><div class="cell ">58</div>
+      </div>
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a3" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Tafel voor Twee</div></div>
+        <div class="cell ">88</div><div class="cell ">42</div><div class="cell no">—</div>
+      </div>
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a7" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Koud Spoor</div></div>
+        <div class="cell ">140</div><div class="cell no">—</div><div class="cell no">—</div>
+      </div>
+      <div class="grid" style="height:52px;border-top:1px solid var(--line2)">
+        <div class="row" style="gap:10px;min-width:0"><div class="art a9" style="width:36px;height:36px;border-radius:8px"></div><div class="t1" style="font-size:13.5px">Halve Zolen</div></div>
+        <div class="cell no">—</div><div class="cell ">96</div><div class="cell no">—</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></figure>
+<figure id="Volgen"><figcaption>4 · Kanalen volgen</figcaption>
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar">
+    <div class="mark">Toadcast</div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20.5 20.5L16.6 16.6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    <div class="pad" style="padding-bottom:10px"><h1 class="h1 dsp" style="font-size:26px">Bibliotheek</h1></div>
+    <div class="pad tabs" style="height:40px;gap:18px">
+      <div class="tab " style="font-size:14px;height:40px">Podcasts</div><div class="tab on" style="font-size:14px;height:40px">Kanalen</div><div class="tab " style="font-size:14px;height:40px">Wachtrij</div><div class="tab " style="font-size:14px;height:40px">Meldingen</div>
+    </div>
+    <div class="hr"></div>
+    <div class="pad chrow" style="padding-top:14px">
+      <div class="chitem"><div style="position:relative"><div class="logo" style="width:52px;height:52px;border-radius:14px;background:#14504E;font-size:11px">KADE</div><i class="dot"></i></div>Kade Media</div><div class="chitem"><div style="position:relative"><div class="logo" style="width:52px;height:52px;border-radius:14px;background:#2B4C7E;font-size:18px">DN</div><i class="dot"></i></div>Dagblad Noord</div><div class="chitem"><div style="position:relative"><div class="logo" style="width:52px;height:52px;border-radius:14px;background:#7E3149;font-size:18px">SH</div></div>Studio Hemel</div><div class="chitem"><div style="position:relative"><div class="logo" style="width:52px;height:52px;border-radius:14px;background:#332F63;font-size:18px">KW</div></div>Kelderwerk</div>
+    </div>
+    <div class="pad"><div class="alert">
+      <div class="logo" style="width:40px;height:40px;border-radius:11px;background:#2B4C7E;font-size:14px">DN</div>
+      <div class="meta"><div class="t1" style="font-size:13.5px">Nieuwe podcast van Dagblad Noord</div><div class="t2" style="color:var(--priOn)">Kort Lontje · 3 afleveringen</div></div>
+      <div class="btn btn-p" style="height:36px;padding:0 12px;font-size:13px">Bekijk</div>
+    </div></div>
+    <div class="pad">
+      
+      <div class="day">Vandaag</div>
+      
+      <div class="erow" style="padding:11px 0">
+        <div class="eart a10" style="width:48px;height:48px;border-radius:10px"></div>
+        <div class="ebody">
+          <div class="etitle" style="font-size:14px">De tip die alles veranderde</div>
+          <div class="emeta" style="margin-top:5px"><span class="chlabel"><i style="background:#14504E"></i>Kade Media</span>· Kade 12 · 48 min</div>
+        </div>
+        <div class="pbtn" style="margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+      <div class="erow" style="padding:11px 0">
+        <div class="eart a9" style="width:48px;height:48px;border-radius:10px"></div>
+        <div class="ebody">
+          <div class="etitle" style="font-size:14px">Het kabinet en de klok</div>
+          <div class="emeta" style="margin-top:5px"><span class="chlabel"><i style="background:#2B4C7E"></i>Dagblad Noord</span>· Vandaag in Zeven · 22 min</div>
+        </div>
+        <div class="pbtn" style="margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+      <div class="day">Gisteren</div>
+      
+      <div class="erow" style="padding:11px 0">
+        <div class="eart a2" style="width:48px;height:48px;border-radius:10px"></div>
+        <div class="ebody">
+          <div class="etitle" style="font-size:14px">Zeven uur in de nacht</div>
+          <div class="emeta" style="margin-top:5px"><span class="chlabel"><i style="background:#14504E"></i>Kade Media</span>· Nachtdienst · 41 min</div>
+        </div>
+        <div class="pbtn" style="margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+      <div class="erow" style="padding:11px 0">
+        <div class="eart a3" style="width:48px;height:48px;border-radius:10px"></div>
+        <div class="ebody">
+          <div class="etitle" style="font-size:14px">Wat eten we op zondag</div>
+          <div class="emeta" style="margin-top:5px"><span class="chlabel"><i style="background:#14504E"></i>Kade Media</span>· Tafel voor Twee · 35 min</div>
+        </div>
+        <div class="pbtn" style="margin-top:2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></figure>
+<figure id="Tipgever"><figcaption>5 · De tipgever als kanaal</figcaption>
+<div class="ph col">
+  <div class="sa"></div>
+  
+  <div class="appbar" style="padding-left:6px">
+    <div class="ibtn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></div>
+    <div class="row" style="gap:0"><div class="ibtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M8 8l4-4 4 4"></path><path d="M6 13v6h12v-6"></path></svg></div></div>
+  </div>
+  <div class="body">
+    
+    <div class="chead" style="--ch:#2B4C7E">
+      <div class="pad row" style="gap:14px;align-items:center">
+        <div class="logo" style="width:64px;height:64px;border-radius:16px;background:#2B4C7E;font-size:22px">DN</div>
+        <div class="meta" style="gap:3px">
+          <div class="eyebrow">Krant · tipt en maakt</div>
+          <h1 class="h1 dsp" style="font-size:26px">Dagblad Noord</h1>
+          <div class="t2">23 tips sinds juni · 11 eigen podcasts</div>
+        </div>
+      </div>
+      <div class="pad row" style="gap:8px;margin-top:14px">
+        <div class="btn btn-p" style="height:40px;padding:0 16px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Volg kanaal</div>
+        <div class="btn btn-o" style="height:40px;padding:0 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"></path></svg>Nieuwste</div>
+      </div>
+    </div>
+    
+    <div class="pad segs"><div class="seg on">Tipt</div><div class="seg ">Maakt</div></div>
+    <div class="pad tnote">Nieuwste tips eerst · uit de podcastrubriek</div>
+    <div class="pad">
+      
+      <div class="tip">
+        <div class="art a9" style="width:52px;height:52px;border-radius:11px"></div>
+        <div class="ebody">
+          <div class="t1">Halve Zolen</div>
+          <div class="q">“Twee broers die elke week een schoenmaker bellen, en het wordt steeds beter.”</div>
+          <div class="w">2 dagen geleden · ook getipt door 2 anderen</div>
+        </div>
+      </div>
+      <div class="tip">
+        <div class="art a5" style="width:52px;height:52px;border-radius:11px"></div>
+        <div class="ebody">
+          <div class="t1">Lange Adem</div>
+          <div class="q">“De beste sportpodcast van dit najaar gaat over verliezen.”</div>
+          <div class="w">vorige week</div>
+        </div>
+      </div>
+      <div class="tip">
+        <div class="art a4" style="width:52px;height:52px;border-radius:11px"></div>
+        <div class="ebody">
+          <div class="t1">Ondergronds</div>
+          <div class="q">“Rustig, precies en nergens sensatie: zo hoort true crime te klinken.”</div>
+          <div class="w">12 sep · ook getipt door 4 anderen</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mini">
+    <div class="art a1"></div>
+    <div class="meta">
+      <div class="t1" style="color:#F6EFE5">Live vanuit Paradiso</div>
+      <div class="t2" style="color:#B3A695">De Deadline · nog 18 min</div>
+    </div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="5" width="3.6" height="14" rx="1.2"></rect><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"></rect></svg></div>
+    <div class="ibtn" style="color:#F6EFE5"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 12h14"></path><path d="M14 7l5 5-5 5"></path></svg></div>
+  </div>
+  <div class="nav">
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 20v-7"></path><path d="M12 20V4"></path><path d="M19 20v-11"></path></svg>Hitlijsten</div>
+    <div class="navi on"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M15 9l-2 4.2L9 15l2-4.2z"></path></svg>Ontdek</div>
+    <div class="navi "><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5v14"></path><path d="M9.5 5v14"></path><path d="M14.5 6.2l5 12.8"></path></svg>Bibliotheek</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div></figure>
+</div></body></html>
