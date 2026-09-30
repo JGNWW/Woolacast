@@ -72,3 +72,59 @@ Suggesties:
 
 - Volledig gekwalificeerde namen midden in de code (`kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>` in `WoolacastApp.kt`, `nl.woolacast.data.opml.Opml.write` en `kotlinx.coroutines.withContext` in `LibraryViewModel.export`, `androidx.compose.foundation.Canvas` in `PlayerScreen`) en ongesorteerde imports wijken af van de rest van de code. De Nederlandse commentaren zijn wel consistent en van goede dichtheid.
 - `LocalStore.download()` leest het niet-volatile `data` buiten de mutex, vanaf de threads van de workers. Maak het `@Volatile` of lees uit `_downloads.value`.
+
+## Ronde 2
+
+Beoordeeld: `29ec24e6`, vergeleken met `7b21984a`. Alle 113 unit-tests slagen
+(29 overgeslagen, 0 fouten). Regelnummers verwijzen naar `29ec24e6`.
+
+Uitslag: **2 goedgekeurd** (3, 4), **2 afgekeurd** (1, 2). Bij allebei gaat het
+om één restpunt dat met een paar regels op te lossen is.
+
+### 1. Downloaden en automatisch klaarzetten — AFGEKEURD
+
+Van ronde 1 is opgelost: 1.2 (`fits()` en `evicted` maken een einde aan het rondpompen), 1.3 (`toggleFollow`), 1.4 (`orphans` houden het bestand vast), 1.5 (back-upregels voor beide API-routes) en 1.6 (`AudioFetcherTest` met MockWebServer). Punt 1.1 is grotendeels opgelost: `If-Range`, `.meta` en 416 werken nu goed.
+
+Blokkerend:
+
+1. `data/download/AudioFetcher.kt:59-66` — een 206 die níét aansluit (`continues()` is false: een ander begin of een andere totale lengte) krijgt `append = false`. Het deelantwoord wordt dan vanaf byte 0 als heel bestand weggeschreven. `total` is de lengte van alleen dat stuk, dus de controle `done < total` slaagt en de aflevering wordt DONE met het begin eraf. Bij een m4a zonder `moov` is hij onspeelbaar, bij een mp3 mist het begin. Het gebeurt als een server `If-Range` negeert maar `Range` wel honoreert, precies het geval waartegen deze code moet beschermen. De afwijking wordt dus wél gezien, maar daarna wordt het verkeerde gedaan. Oplossing: gooi bij een 206 met `!append` `part` en `.meta` weg en gooi een `IOException` (de volgende poging begint schoon zonder Range). Voeg een test toe: "206 met een ander totaal plakt niet en schrijft geen stuk als geheel".
+
+Suggesties:
+
+- `Downloads.kt:153`: een orphan wordt op bestandsnaam gewist. Die naam hangt vast aan de aflevering-id. Wis je de download van wat speelt en download je hem daarna opnieuw, dan krijgt de nieuwe download dezelfde naam. Bij de volgende wissel wist `cleanUp` dan het nieuwe bestand, terwijl het record DONE blijft. Haal de orphan-regel weg in `enqueue`, of sla orphans over waarvoor een record bestaat.
+- `AudioFetcher.kt:52`: het 416-pad "al compleet" laat het `.meta`-bestand staan tot de download ooit gewist wordt. Wis het daar ook.
+- `DownloadWorker.reason`: "Kon het bestand niet opslaan" (een mislukte `renameTo`) wordt "Niet genoeg ruimte". Dat klopt meestal niet; maak er "Opslaan lukte niet" van.
+- Het pollen elke 5 s voor "wacht op wifi" staat nog open (bewust niet gedaan; blijft een suggestie).
+
+### 2. Hoofdstukken — AFGEKEURD
+
+`EndOfChapter` als modus met `chapterStop()` is de goede opzet. Het cachen van netwerkfouten en de ID3-kop in één venster zijn opgelost.
+
+Blokkerend:
+
+1. `player/PlayerController.kt:148` / `player/PlaybackService.kt:339-340` — het stoppunt wordt alleen opnieuw berekend bij sprongen via `PlayerController` (`afterSeek`). De −15/+30-knoppen in de melding, op het vergrendelscherm, via een koptelefoon of van andere media-controllers roepen `session.player.seekBack/seekForward/seekTo` rechtstreeks aan. Met "Einde hoofdstuk" aan en +30 over de hoofdstukgrens op het vergrendelscherm pauzeert de volgende tick meteen: dezelfde bug als in ronde 1, via een andere ingang. Oplossing: reken het stoppunt opnieuw in de bestaande `listener.onEvents` bij `EVENT_POSITION_DISCONTINUITY` (reden `DISCONTINUITY_REASON_SEEK`). Dat vangt elke bron, en de losse `afterSeek`-aanroepen kunnen dan weg.
+
+Suggesties:
+
+- `ChapterStopTest` staat in `SpeedsTest.kt` met volledig gekwalificeerde namen. Geef hem een eigen bestand met gewone imports, zoals de andere tests.
+
+### 3. Transcriptie meelezen — GOEDGEKEURD
+
+De productvoorwaarde is afgehandeld: de dekking is gemeten (`dekking.md`: NL 5–7%, US 14%) en de gebruiker heeft expliciet gekozen om nu te bouwen. De bouw zelf is in orde. De groottegrens van 5 MB via `source.request` is correct (de charset uit Content-Type, anders UTF-8), en `&amp;` wordt nu als laatste ontsleuteld.
+
+Suggesties (uit ronde 1, blijven staan): terugval naar VTT/SRT als de beste vorm faalt, en kiezen op taal.
+
+### 4. OPML import/export + zelf feed toevoegen — GOEDGEKEURD
+
+Alle drie de blokkerende punten zijn opgelost:
+
+- `openPodcast` vult de feed aan uit de gevolgde shows, en `detail()` zoekt een `feed-`-id nooit meer op titel op.
+- De import draait in `appScope` en volgt per geslaagde feed meteen; het scherm pakt de sessie weer op.
+- `ShowImporterTest` dekt import, koppelen/meeverhuizen en ontvolgen.
+
+De export met `lookupMany` en de controle op `savedInstanceState` zijn netjes.
+
+Suggesties:
+
+- `ShowImporter.kt:78-86`: start je een tweede import (een ander bestand) terwijl de eerste nog loopt, dan blijft de oude job zijn uitkomsten in de nieuwe `session` schrijven. Hij zet die sessie bovendien op `done`. Annuleer `importJob` bij een nieuwe key, of controleer de key in de callback.
+- Een import haalt nog steeds alle feeds op, ook via mobiele data.

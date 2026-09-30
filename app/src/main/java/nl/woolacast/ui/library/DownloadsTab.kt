@@ -89,7 +89,8 @@ data class DownloadsUi(
     val usedBytes: Long get() = records.filter { it.state == DownloadState.DONE }.sumOf { it.bytes }
     val autoBytes: Long get() = records.filter { it.state == DownloadState.DONE && it.auto }.sumOf { it.bytes }
     val limitBytes: Long get() = settings.limitMb.toLong() * 1024 * 1024
-    val pending: List<DownloadRecord> get() = records.filter { it.state != DownloadState.DONE }
+    val pending: List<DownloadRecord> get() = records.filter { it.state == DownloadState.QUEUED }
+    val failed: List<DownloadRecord> get() = records.filter { it.state == DownloadState.FAILED }
     val done: List<DownloadRecord> get() = records.filter { it.state == DownloadState.DONE }
 }
 
@@ -168,6 +169,19 @@ fun DownloadsTab(
             }
         }
 
+        if (ui.failed.isNotEmpty()) {
+            item { GroupLabel("Mislukt") }
+            items(ui.failed, key = { "f-" + it.episode.id }) { record ->
+                DownloadRow(
+                    record = record,
+                    state = downloadUi(record, null, ui.waitingForWifi),
+                    playing = false,
+                    onPlay = null,
+                    onRemove = { viewModel.remove(record.episode.id) },
+                    onRetry = { viewModel.retry(record.episode.id) }
+                )
+            }
+        }
         if (ui.pending.isNotEmpty()) {
             item { GroupLabel("Bezig") }
             items(ui.pending, key = { "p-" + it.episode.id }) { record ->

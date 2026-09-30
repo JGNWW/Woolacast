@@ -204,7 +204,7 @@ private fun Lines(
                             )
                         }
                         Text(
-                            highlight(line.text, query, colors.highlight, colors.highlightStrong, isHit),
+                            highlight(line.text, query, colors.highlight, colors.highlightStrong, MaterialTheme.colorScheme.onSurface, isHit),
                             fontSize = 17.sp,
                             lineHeight = 25.sp,
                             fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
@@ -299,7 +299,7 @@ private fun SearchField(
  * Zet elke treffer van [query] in de markeerkleur. De gekozen treffer krijgt de
  * sterkere kleur en een streep eronder, zodat hij ook binnen de oplichtende zin opvalt.
  */
-private fun highlight(text: String, query: String, color: Color, strong: Color, chosen: Boolean): AnnotatedString {
+private fun highlight(text: String, query: String, color: Color, strong: Color, ink: Color, chosen: Boolean): AnnotatedString {
     val needle = query.trim()
     if (needle.length < 2) return AnnotatedString(text)
     return buildAnnotatedString {
@@ -309,7 +309,9 @@ private fun highlight(text: String, query: String, color: Color, strong: Color, 
             if (at < 0) { append(text.substring(from)); break }
             append(text.substring(from, at))
             withStyle(
+                // Het woord zelf in de volle tekstkleur: grijs op amber haalt het contrast niet.
                 SpanStyle(
+                    color = ink,
                     background = if (chosen) strong else color,
                     textDecoration = if (chosen) TextDecoration.Underline else null
                 )

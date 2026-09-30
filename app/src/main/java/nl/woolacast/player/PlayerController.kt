@@ -151,6 +151,16 @@ class PlayerController(
             if (playbackState == Player.STATE_ENDED) onEnded()
         }
 
+        // Ook sprongen van buiten de app (melding, koptelefoon, Android Auto)
+        // verleggen het einde van het hoofdstuk.
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            if (reason == Player.DISCONTINUITY_REASON_SEEK && _state.value.sleepAtMs != null) aimAtChapterEnd()
+        }
+
         override fun onPlayerError(error: PlaybackException) {
             _state.value = _state.value.copy(
                 isPlaying = false,

@@ -105,3 +105,85 @@ Zet de reden op een eigen regel. Een lange bestandsnaam duwt "5 feeds" uit de ko
 "Opnieuw" een bezig-toestand. De titel van een uitgeschakelde export staat in `outline`
 (≈1,3:1); gebruik `onSurface` op 38%. Het TalkBack-label "Shows importeren of exporteren" mist
 "feed toevoegen".
+
+## Ronde 2
+
+Getoetst op `29ec24e6`: de 29 nieuwe schermafbeeldingen (nu in een `Surface`, met donkere
+versies) en de gewijzigde code. Uitslag: **1, 2 en 4 goedgekeurd, 3 afgekeurd** op één punt.
+
+A en B zijn opgelost. De thema-rollen zijn ingevuld, er is geen paars of roze meer te zien, en
+de donkere schermen zijn nu bruikbaar en kloppen met de app.
+
+### 1. Downloaden — GOEDGEKEURD
+
+Alle vier de punten zijn opgelost.
+
+- De schakelaar in de stand uit haalt nu 4,4:1 in licht (duim tegen spoor) en 5,8:1 in donker.
+- De foutreden staat in gewone taal op een eigen regel, met een knop "Opnieuw" en een ✕.
+- Op de podcastpagina staan nu dezelfde tekens als op de knop: een ring, een stippelring,
+  een vinkje en een waarschuwing.
+- De chips zijn 48 dp. De bladen hebben dezelfde kleur. "Download verwijderen" is nu een
+  gewone actie.
+
+Suggesties:
+
+- Een mislukte download staat nog onder de kop "Bezig". Maak er "Bezig of mislukt" van, of
+  geef mislukte downloads een eigen groep.
+- Verwijderen (✕ en in het blad) kan nog steeds niet ongedaan worden gemaakt. Een snackbar
+  "Ongedaan maken" zou helpen.
+
+### 2. Hoofdstukken — GOEDGEKEURD
+
+Alle drie de punten zijn opgelost.
+
+- De tijden en de voorbije titels staan in `onSurfaceVariant`: 5,7:1.
+- `SleepTimer.EndOfChapter` rekent na elke sprong in de app het einde van het huidige
+  hoofdstuk opnieuw uit.
+- De rij is `selectable` met "Speelt nu".
+- De knop is 48 dp en heeft een volledig TalkBack-label. De Timer leest nu "Slaaptimer: einde
+  van dit hoofdstuk".
+
+Suggestie:
+
+- `afterSeek()` draait alleen bij sprongen via de app zelf. Springt iemand via de melding,
+  een koptelefoon of Android Auto voorbij het stoppunt, dan pauzeert de speler nog steeds
+  meteen. Reken het stoppunt daarom ook opnieuw uit in `onPositionDiscontinuity`.
+
+### 3. Meelezen — AFGEKEURD
+
+Blokkerend:
+
+1. `highlight()` in TranscriptSheet.kt geeft de treffer alleen een achtergrond. De tekst houdt
+   de kleur van de regel (`onSurfaceVariant`). Het contrast op 17 sp:
+
+   | Treffer | Licht | Donker |
+   |---|---|---|
+   | Gewone treffer | Ink2 op #F6D9A8: 4,25:1 | NightInk2 op #4A3A1C: 4,35:1 |
+   | Gekozen treffer | op #E9B45C: 3,07:1 | op #7A5A1E: 2,51:1 |
+
+   Alle vier halen de norm van 4,5:1 niet. Juist het woord dat je zoekt wordt daardoor
+   slechter leesbaar. De mockup gebruikte `ink` op de markering. Oplossing: geef de span
+   `color = onSurface`. Dan wordt het:
+
+   | Treffer | Licht | Donker |
+   |---|---|---|
+   | Gewone treffer | 12,3:1 | 9,5:1 |
+   | Gekozen treffer | 8,9:1 | 5,5:1 |
+
+Verder is alles goed:
+
+- De amberkleur past bij het palet.
+- De gekozen treffer valt op.
+- "Geen treffers" en een "Terug naar nu" van 48 dp met `Role.Button` zijn doorgevoerd.
+
+### 4. OPML — GOEDGEKEURD
+
+Alle drie de punten zijn opgelost.
+
+- Er staat nu "1 show".
+- De voortgangsbalk heeft een eigen spoor, zonder stopstipje.
+- De rand van het veld haalt 5,7:1, en de dialoog heeft de kleur van de bladen.
+
+Ook de suggesties zijn goed doorgevoerd: de reden staat op een eigen regel, "5 feeds" blijft
+in beeld, de uitgeschakelde export staat op 38% en het TalkBack-label is compleet. In het
+donker is alles in orde.
