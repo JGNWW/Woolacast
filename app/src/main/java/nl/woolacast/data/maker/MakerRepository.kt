@@ -5,6 +5,7 @@ import nl.woolacast.data.SearchRepository
 import nl.woolacast.data.apple.AppleCatalogApi
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.DatasetChannel
+import nl.woolacast.data.dataset.DatasetMaker
 import nl.woolacast.data.dataset.DatasetMakers
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.toMakerShow
@@ -20,13 +21,20 @@ import nl.woolacast.domain.MakerShow
 import nl.woolacast.domain.Makers
 import nl.woolacast.domain.SourceId
 
-/** De Apple-kanalen van één land, op id, op makerssleutel en per show. */
+/**
+ * De Apple-kanalen van één land, op id, op makerssleutel en per show. Plus de
+ * makers zonder kanaal die de verzamelaar in de catalogus opzocht.
+ */
 class MakerDirectory(data: DatasetMakers?) {
     private val channels: Map<String, Channel> =
         data?.channels.orEmpty().associate { it.id to it.toChannel() }
     private val byKey: Map<String, Channel> =
         channels.values.associateBy { Makers.key(it.name) }
     private val showChannel: Map<String, String> = data?.showChannel.orEmpty()
+    private val collected: Map<String, DatasetMaker> = data?.makers.orEmpty().associateBy { it.key }
+
+    /** Wat de verzamelaar vond van een maker zonder kanaal. */
+    fun collected(key: String): DatasetMaker? = collected[key]
 
     fun channel(id: String): Channel? = channels[id]
 
@@ -95,9 +103,10 @@ class MakerRepository(
         directory(countryCode).makerOf(fromShowId, publisher)
 
     /**
-     * De shows van een maker. Met een kanaal is dat de volledige lijst van
-     * Apple, opgehaald in één of twee aanroepen; zonder kanaal een zoekopdracht
-     * op naam, en dan is de lijst wat de catalogus erbij vindt.
+     * De shows van een maker. Met een kanaal is dat de lijst van de
+     * verzamelaar: het kanaal plus wat zoeken op naam erbij vond, opgehaald in
+     * een paar aanroepen. Zonder kanaal wat de verzamelaar vond, aangevuld met
+     * een zoekopdracht op naam voor wat er sindsdien bij kwam.
      */
     suspend fun shows(maker: Maker, countryCode: String): MakerShows =
         findShows(maker, countryCode).also { store.rememberMakerFace(maker.key, MakerFace.of(it.shows)) }
@@ -107,23 +116,32 @@ class MakerRepository(
      * anders wat de verzamelaar van zijn kanaal vastlegde. Null als geen van
      * beide er is; dan toont een scherm de hoezen die het zelf kent.
      */
-    fun face(maker: Maker): List<String>? =
-        store.makerFace(maker.key) ?: maker.channel?.covers?.takeIf { it.isNotEmpty() }
+    fun face(maker: Maker, directory: MakerDirectory? = null): List<String>? =
+        store.makerFace(maker.key)
+            ?: maker.channel?.covers?.takeIf { it.isNotEmpty() }
+            ?: directory?.collected(maker.key)?.covers?.takeIf { it.isNotEmpty() }
 
     private suspend fun findShows(maker: Maker, countryCode: String): MakerShows {
         val channel = maker.channel
         if (channel != null && channel.showIds.isNotEmpty()) {
-            val found = channel.showIds.chunked(LOOKUP_BATCH).flatMap { ids ->
-                runCatching { catalog.lookupMany(ids.joinToString(","), countryCode) }
-                    .getOrNull()?.results.orEmpty()
-                    .mapNotNull { it.toMakerShow() }
-            }.distinctBy { it.podcast.id }
-                // Op Apple's volgorde, net als de hoezen van de verzamelaar.
+            val found = lookup(channel.showIds, countryCode)
+                // Op de volgorde van de verzamelaar, net als de hoezen.
                 .sortedBy { show -> channel.showIds.indexOf(show.podcast.id).takeIf { it >= 0 } ?: Int.MAX_VALUE }
             if (found.isNotEmpty()) return MakerShows(found, complete = true)
         }
-        return MakerShows(search.byMaker(maker.name, countryCode), complete = false)
+        val known = directory(countryCode).collected(maker.key)?.shows.orEmpty()
+        val collected = if (known.isEmpty()) emptyList() else lookup(known, countryCode)
+            .sortedBy { show -> known.indexOf(show.podcast.id) }
+        val searched = search.byMaker(maker.name, countryCode)
+        return MakerShows((collected + searched).distinctBy { it.podcast.id }, complete = false)
     }
+
+    private suspend fun lookup(ids: List<String>, countryCode: String): List<MakerShow> =
+        ids.chunked(LOOKUP_BATCH).flatMap { batch ->
+            runCatching { catalog.lookupMany(batch.joinToString(","), countryCode) }
+                .getOrNull()?.results.orEmpty()
+                .mapNotNull { it.toMakerShow() }
+        }.distinctBy { it.podcast.id }
 
     /**
      * Waar de shows van deze maker staan in de lijst over alle categorieën van
@@ -160,10 +178,11 @@ class MakerRepository(
      */
     suspend fun rankMakers(chart: Chart): List<MakerRank> {
         val key = MAKERS_PREFIX + chart.query.key
-        val rows = MakerRanking.rank(chart, directory(chart.query.country.code), store.baseline(key))
+        val directory = directory(chart.query.country.code)
+        val rows = MakerRanking.rank(chart, directory, store.baseline(key))
         // Een lijst uit de cache is niet van vandaag; die leggen we niet opnieuw vast.
         if (chart.cachedAt == null && rows.isNotEmpty()) store.record(key, MakerRanking.snapshot(rows))
-        return rows.map { row -> face(row.maker)?.let { row.copy(artworks = it) } ?: row }
+        return rows.map { row -> face(row.maker, directory)?.let { row.copy(artworks = it) } ?: row }
     }
 
     private fun titleKey(title: String) = title.lowercase().filter { it.isLetterOrDigit() }

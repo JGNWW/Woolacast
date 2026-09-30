@@ -69,7 +69,7 @@ class SearchViewModel(
             .values
             .map { group ->
                 val maker = group.map { it.first }.firstOrNull { it.channel != null } ?: group.first().first
-                MakerHit(maker, group.size, group.first().second.id, repository.face(maker) ?: group.map { it.second.artworkUrl })
+                MakerHit(maker, group.size, group.first().second.id, repository.face(maker, directory) ?: group.map { it.second.artworkUrl })
             }
             .filter { it.maker.key.contains(wanted) || it.found >= 2 }
             .sortedWith(compareByDescending<MakerHit> { it.maker.key.contains(wanted) }.thenByDescending { it.found })
