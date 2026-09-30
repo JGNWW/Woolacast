@@ -508,9 +508,24 @@ def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_T
         if channel_id not in channels and channel.get("seen", "") >= cutoff:
             channels[channel_id] = channel
 
+    # Welke namen bij een kanaal horen. Eerst zijn eigen naam, zoals de app hem
+    # kent. De naam waaronder zijn shows in de catalogus staan alleen als geen
+    # ander kanaal zo heet en geen tweede kanaal die naam ook gebruikt: de shows
+    # van NPO Klassiek heten "NPO Luister / AVROTROS", en die van NPO Luister
+    # horen niet bij Klassiek.
+    name_keys = {maker_key(c["name"]) for c in channels.values()}
+    publisher_count = Counter(maker_key(c.get("publisher", "")) for c in channels.values())
+
+    def names_of(channel: dict) -> dict[str, str]:
+        names = {maker_key(channel["name"]): channel["name"]}
+        publisher = channel.get("publisher", "")
+        key = maker_key(publisher)
+        if key and key not in name_keys and publisher_count[key] == 1:
+            names[key] = publisher
+        return names
+
     # Makers zonder kanaal: gegroepeerd op dezelfde sleutel als in de app.
-    channel_keys = {maker_key(c["name"]) for c in channels.values()} | \
-                   {maker_key(c.get("publisher", "")) for c in channels.values()}
+    channel_keys = {key for c in channels.values() for key in names_of(c)}
     loose: dict[str, dict] = {}
     for show_id, (publisher, art) in about.items():
         parts = maker_parts(publisher)
@@ -542,8 +557,14 @@ def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_T
             entry.setdefault("covers", previous["covers"])
         if not _due(previous):
             continue
-        name = entry.get("publisher") or entry["name"]
-        found = search_maker(name, {maker_key(entry["name"]), maker_key(name)}, search)
+        names = names_of(entry) if kind == "channel" else {entry["key"]: entry["name"]}
+        found: dict[str, str | None] | None = {}
+        for name in names.values():
+            part = search_maker(name, set(names), search)
+            if part is None:
+                found = None
+                break
+            found.update({s: a for s, a in part.items() if s not in found})
         if found is not None:
             entry["searched"], entry["found"] = TODAY, found
 
