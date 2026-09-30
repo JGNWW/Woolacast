@@ -178,7 +178,7 @@ private fun spoken(row: MakerRank): String {
         Movement.Flat -> "gelijk gebleven"
         Movement.Unknown -> null
     }
-    return listOfNotNull("Plek ${row.rank}", row.maker.name, "${row.count} podcasts", "hoogste plek ${row.best}", move)
+    return listOfNotNull("Plek ${row.rank}", row.maker.name, "${row.count} podcasts", "beste plek ${row.best}", move)
         .joinToString(", ")
 }
 
@@ -242,7 +242,7 @@ internal fun CountingSheet(onDismiss: () -> Unit) {
             listOf(
                 "Elke podcast telt bij één maker. Kent Apple de podcast als deel van een kanaal, dan is dat kanaal de maker. Anders het eerste deel van de makersnaam: \"NPO Luister / BNNVARA\" telt bij NPO Luister.",
                 "Alleen makers met twee of meer podcasts in deze lijst staan erin.",
-                "Hebben twee makers evenveel podcasts, dan gaat de maker met de hoogste plek voor.",
+                "Hebben twee makers evenveel podcasts, dan gaat de maker met de beste plek voor.",
                 "De pijl is de verandering in de plek van de maker sinds gisteren, zoals in de rest van de app. De eerste dag is er nog geen pijl."
             ).forEach { line ->
                 Text(
