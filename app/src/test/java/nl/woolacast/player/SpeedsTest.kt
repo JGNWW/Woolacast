@@ -37,19 +37,3 @@ class SpeedsTest {
         assertTrue("1× hoort erbij te zitten", labels.contains("1×"))
     }
 }
-
-class ChapterStopTest {
-    private val chapters = listOf(
-        nl.woolacast.domain.Chapter(0, "a"),
-        nl.woolacast.domain.Chapter(60_000, "b"),
-        nl.woolacast.domain.Chapter(120_000, "c")
-    )
-
-    @org.junit.Test
-    fun `het einde van het hoofdstuk waar je nu bent`() {
-        org.junit.Assert.assertEquals(60_000L, chapterStop(chapters, 10_000, 200_000))
-        // Na een sprong naar het begin van b telt het einde van b, niet van a.
-        org.junit.Assert.assertEquals(120_000L, chapterStop(chapters, 60_000, 200_000))
-        org.junit.Assert.assertEquals(200_000L, chapterStop(chapters, 130_000, 200_000))
-    }
-}

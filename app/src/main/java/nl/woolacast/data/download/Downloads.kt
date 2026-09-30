@@ -150,8 +150,10 @@ class Downloads(
     suspend fun cleanUp(now: Instant = Instant.now()) {
         val playing = playingId()
         // Bestanden die bleven staan omdat ze speelden: nu weg, tenzij ze nog spelen.
+        // Een bestand dat intussen opnieuw gedownload is, hoort weer bij een download en blijft.
+        val inUse = store.downloads.value.values.map { it.fileName }.toSet()
         store.orphans.value.filterValues { it != playing }.forEach { (fileName, _) ->
-            File(dir, fileName).delete()
+            if (fileName !in inUse) File(dir, fileName).delete()
             store.removeOrphan(fileName)
         }
         // Half beluisterd telt ook als beschermd: dat wil je nog afmaken.

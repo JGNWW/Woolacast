@@ -49,14 +49,20 @@ class AudioFetcher(private val client: OkHttpClient) {
         client.newCall(request).execute().use { response ->
             if (response.code == 416 && resume) {
                 // Het deel was al compleet; de app stopte voor het hernoemen.
-                if (saved!!.total > 0L && already == saved.total) return already
+                if (saved!!.total > 0L && already == saved.total) { meta.delete(); return already }
                 part.delete(); meta.delete()
                 throw IOException("HTTP 416")
             }
             if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
             val body = response.body ?: throw IOException("Leeg antwoord.")
 
-            val append = resume && response.code == 206 && continues(response, already, saved!!.total)
+            // Een 206 die niet aansluit (de server negeerde If-Range maar deed wel
+            // de Range): dat stuk is geen heel bestand. Opnieuw, en dan schoon.
+            if (response.code == 206 && !(resume && continues(response, already, saved!!.total))) {
+                part.delete(); meta.delete()
+                throw IOException("Het vervolg sloot niet aan.")
+            }
+            val append = response.code == 206
             val start = if (append) already else 0L
             val total = body.contentLength().takeIf { it > 0L }?.plus(start) ?: 0L
             if (!append) Meta(validator(response), total).write(meta)

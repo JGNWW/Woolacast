@@ -128,7 +128,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
                 code == "403" || code == "401" -> "De maker staat downloaden niet toe ($code)"
                 code != null && code.startsWith("5") -> "De server van de maker heeft een storing ($code)"
                 message.contains("te klein") -> "Geen audio gevonden op dit adres"
-                message.contains("opslaan") -> "Niet genoeg ruimte op het toestel"
+                message.contains("opslaan") -> "Het bestand kon niet worden bewaard"
                 message.contains("viel weg") -> "De verbinding viel weg"
                 else -> "Downloaden lukte niet"
             }

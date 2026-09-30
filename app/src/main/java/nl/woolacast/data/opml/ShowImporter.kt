@@ -76,12 +76,15 @@ class ShowImporter(
      */
     fun startImport(scope: CoroutineScope, key: String, fileName: String?, feeds: List<OpmlFeed>, countryCode: String) {
         if (_session.value?.key == key && (importJob?.isActive == true || _session.value?.done == true)) return
+        // Een nieuwe import vervangt een lopende; de oude mag niet in de nieuwe sessie schrijven.
+        importJob?.cancel()
         _session.value = ImportSession(key, fileName, feeds.size)
         importJob = scope.launch {
             import(feeds) { outcome ->
-                _session.value = _session.value?.let { it.copy(outcomes = it.outcomes + outcome) }
+                _session.value = _session.value?.takeIf { it.key == key }?.let { it.copy(outcomes = it.outcomes + outcome) }
+                    ?: _session.value
             }
-            _session.value = _session.value?.copy(done = true)
+            _session.value = _session.value?.let { if (it.key == key) it.copy(done = true) else it }
             startLinking(scope, countryCode)
         }
     }

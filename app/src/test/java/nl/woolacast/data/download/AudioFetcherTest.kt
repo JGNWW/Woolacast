@@ -75,6 +75,24 @@ class AudioFetcherTest {
     }
 
     @Test
+    fun `een 206 die niet aansluit wordt geen half bestand`() {
+        part.writeBytes(audio.copyOfRange(0, 40_000))
+        File(part.path + AudioFetcher.META).writeText("\"v1\"\n${audio.size}")
+        // De server negeert If-Range maar doet de Range wel, voor een andere versie.
+        server.enqueue(
+            MockResponse().setResponseCode(206).setBody(body(otherAudio.copyOfRange(40_000, otherAudio.size)))
+                .setHeader("Content-Range", "bytes 40000-119999/120000")
+        )
+        try {
+            AudioFetcher(client).fetch(server.url("/afl.mp3").toString(), part)
+            throw AssertionError("had moeten falen")
+        } catch (expected: IOException) {
+        }
+        assertFalse(part.exists())
+        assertFalse(File(part.path + AudioFetcher.META).exists())
+    }
+
+    @Test
     fun `zonder bewaarde versie niet verdergaan`() {
         part.writeBytes(audio.copyOfRange(0, 40_000))
         server.enqueue(MockResponse().setBody(body(audio)))
