@@ -75,23 +75,36 @@ sealed interface ImportUi {
 /** Een geïmporteerde show zoals hij nu in de bibliotheek staat: gekoppeld of nog alleen op zijn feed. */
 data class ImportedShow(val title: String, val artworkUrl: String?, val feedUrl: String, val linked: Boolean)
 
+/**
+ * Leest het bestand en geeft de import door aan [ShowImporter], die in
+ * [appScope] doorloopt als je het scherm verlaat. Kom je terug, dan pakt dit
+ * scherm dezelfde import weer op.
+ */
 class ImportViewModel(
     private val uri: Uri,
     private val resolver: ContentResolver,
     private val importer: ShowImporter,
     private val store: LocalStore,
     private val countryCode: String,
-    /** Leeft langer dan dit scherm, zodat het koppelen doorloopt als je weggaat. */
     private val appScope: CoroutineScope
 ) : ViewModel() {
 
-    private val _ui = MutableStateFlow<ImportUi>(ImportUi.Reading)
-    val ui: StateFlow<ImportUi> = _ui.asStateFlow()
+    private val problem = MutableStateFlow<ImportUi?>(ImportUi.Reading)
+
+    val ui: StateFlow<ImportUi> = combine(problem, importer.session) { local, session ->
+        when {
+            session != null && session.key == uri.toString() -> when {
+                session.done -> ImportUi.Done(session.fileName, session.outcomes)
+                else -> ImportUi.Checking(session.checked, session.total)
+            }
+            else -> local ?: ImportUi.Reading
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, ImportUi.Reading)
 
     val linking: StateFlow<LinkProgress> = importer.linking
 
     /** De gevolgde shows uit dit bestand, zoals ze nu zijn: het koppelen verandert ze onder je ogen. */
-    val imported: StateFlow<List<ImportedShow>> = combine(_ui, store.follows) { ui, follows ->
+    val imported: StateFlow<List<ImportedShow>> = combine(ui, store.follows) { ui, follows ->
         val done = ui as? ImportUi.Done ?: return@combine emptyList()
         val byFeed = follows.filter { it.feedUrl != null }.associateBy { Opml.key(it.feedUrl!!) }
         done.outcomes.filterIsInstance<ImportOutcome.Followed>().mapNotNull { outcome ->
@@ -101,37 +114,29 @@ class ImportViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
-        run()
+        if (importer.session.value?.key != uri.toString()) read()
     }
 
-    private fun run() = viewModelScope.launch {
-        _ui.value = ImportUi.Reading
+    private fun read() = viewModelScope.launch {
         val name = runCatching { displayName() }.getOrNull()
         val feeds = runCatching {
             withContext(Dispatchers.IO) {
                 resolver.openInputStream(uri)?.use { Opml.parse(it) } ?: error("Kon het bestand niet openen.")
             }
         }.getOrElse {
-            _ui.value = ImportUi.Error("Dit is geen OPML-bestand, of het is niet te lezen. Exporteer je shows opnieuw uit de andere app.")
+            problem.value = ImportUi.Error("Dit is geen OPML-bestand, of het is niet te lezen. Exporteer je shows opnieuw uit de andere app.")
             return@launch
         }
         if (feeds.isEmpty()) {
-            _ui.value = ImportUi.Error("Er staan geen podcastfeeds in dit bestand.")
+            problem.value = ImportUi.Error("Er staan geen podcastfeeds in dit bestand.")
             return@launch
         }
-        _ui.value = ImportUi.Checking(0, feeds.size)
-        val outcomes = importer.import(feeds) { done, total -> _ui.value = ImportUi.Checking(done, total) }
-        _ui.value = ImportUi.Done(name, outcomes)
-        importer.startLinking(appScope, countryCode)
+        problem.value = null
+        importer.startImport(appScope, uri.toString(), name, feeds, countryCode)
     }
 
     /** Eén feed nog eens proberen, bijvoorbeeld na een time-out. */
-    fun retry(feed: OpmlFeed) = viewModelScope.launch {
-        val current = _ui.value as? ImportUi.Done ?: return@launch
-        val again = importer.import(listOf(feed)) { _, _ -> }.first()
-        _ui.value = current.copy(outcomes = current.outcomes.map { if (it.feed == feed) again else it })
-        if (again is ImportOutcome.Followed) importer.startLinking(appScope, countryCode)
-    }
+    fun retry(feed: OpmlFeed) = importer.retry(appScope, feed, countryCode)
 
     private suspend fun displayName(): String? = withContext(Dispatchers.IO) {
         resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
@@ -189,10 +194,7 @@ fun ImportScreen(viewModel: ImportViewModel, onBack: () -> Unit, onDone: () -> U
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(Modifier.height(6.dp))
-                                LinearProgressIndicator(
-                                    progress = { if (linking.total > 0) linking.done.toFloat() / linking.total else 0f },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                Progress(if (linking.total > 0) linking.done.toFloat() / linking.total else 0f)
                                 Text(
                                     "Dat gaat rustig, één zoekopdracht per paar seconden. Je kunt de app gewoon gebruiken.",
                                     style = MaterialTheme.typography.bodySmall,
@@ -248,9 +250,24 @@ fun ImportScreen(viewModel: ImportViewModel, onBack: () -> Unit, onDone: () -> U
 private fun Busy(text: String, fraction: Float?) {
     Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(text, style = MaterialTheme.typography.bodyLarge)
-        if (fraction != null) LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
-        else LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        if (fraction != null) Progress(fraction)
+        else LinearProgressIndicator(
+            modifier = Modifier.fillMaxWidth(),
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
     }
+}
+
+/** De balk in de kleuren van de app, zonder het stopstipje van Material. */
+@Composable
+private fun Progress(fraction: Float) {
+    LinearProgressIndicator(
+        progress = { fraction },
+        modifier = Modifier.fillMaxWidth(),
+        trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        gapSize = 0.dp,
+        drawStopIndicator = {}
+    )
 }
 
 @Composable
@@ -285,13 +302,26 @@ private fun Hero(followed: Int, fileName: String?, feeds: Int) {
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.semantics { heading() }
             )
-            Text(
-                listOfNotNull(fileName?.let { "uit $it" }, "$feeds ${if (feeds == 1) "feed" else "feeds"}").joinToString(" · "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Een lange bestandsnaam wordt afgekapt; het aantal feeds blijft staan.
+            Row {
+                if (fileName != null) {
+                    Text(
+                        "uit $fileName",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Text(" · ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text(
+                    "$feeds ${if (feeds == 1) "feed" else "feeds"}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
         }
     }
 }
@@ -336,8 +366,14 @@ private fun FailedRow(outcome: ImportOutcome.Failed, onRetry: () -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            // De reden is het belangrijkst en krijgt een eigen regel; het adres mag afgekapt.
             Text(
-                "${outcome.feed.url.substringAfter("://")} · ${outcome.reason}",
+                outcome.reason,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.fall
+            )
+            Text(
+                outcome.feed.url.substringAfter("://"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

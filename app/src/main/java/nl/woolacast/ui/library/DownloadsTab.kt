@@ -63,6 +63,8 @@ import nl.woolacast.data.local.DownloadState
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.domain.Episode
 import nl.woolacast.ui.common.Artwork
+import nl.woolacast.ui.common.ButtonKind
+import nl.woolacast.ui.common.WoolButton
 import nl.woolacast.ui.common.DownloadButton
 import nl.woolacast.ui.common.DownloadUi
 import nl.woolacast.ui.common.FilterChipBox
@@ -237,14 +239,14 @@ private fun StorageHeader(ui: DownloadsUi, onSettings: () -> Unit) {
                 }
         ) {
             if (autoShare > 0f) Box(Modifier.fillMaxHeight().weight(autoShare).background(MaterialTheme.colorScheme.primary))
-            if (ownShare > 0f) Box(Modifier.fillMaxHeight().weight(ownShare).background(colors.muted))
+            if (ownShare > 0f) Box(Modifier.fillMaxHeight().weight(ownShare).background(MaterialTheme.colorScheme.onSurfaceVariant))
             val rest = 1f - autoShare - ownShare
             if (rest > 0f) Spacer(Modifier.weight(rest))
         }
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Legend(MaterialTheme.colorScheme.primary, "Automatisch")
-            Legend(colors.muted, "Zelf gedownload")
+            Legend(MaterialTheme.colorScheme.onSurfaceVariant, "Zelf gedownload")
         }
         Spacer(Modifier.height(14.dp))
         val shape = RoundedCornerShape(16.dp)
@@ -333,28 +335,33 @@ private fun DownloadRow(
                     episode.showTitle.takeIf { it.isNotBlank() },
                     when (state) {
                         DownloadUi.Done -> byteSize(record.bytes)
-                        is DownloadUi.Failed -> state.reason
+                        is DownloadUi.Failed -> null
                         else -> state.label()
                     },
                     if (state == DownloadUi.Done) minutes(episode.durationMillis) else null
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
-                color = if (state is DownloadUi.Failed) LocalChartColors.current.fall else muted,
+                color = muted,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            // Wat er misging krijgt een eigen regel: dat is waar het om gaat.
+            if (state is DownloadUi.Failed) {
+                Text(state.reason, style = MaterialTheme.typography.bodySmall, color = LocalChartColors.current.fall, maxLines = 2)
+            }
             if (record.auto && state == DownloadUi.Done) {
                 Spacer(Modifier.height(5.dp))
                 Tag("Automatisch")
             }
         }
-        if (state == DownloadUi.Done) {
-            IconAction(WoolIcons.Close, "Download verwijderen", onRemove, tint = muted, iconSize = 18.dp)
-        } else {
-            DownloadButton(state, onDownload = onRetry, onCancel = onRemove, onRetry = onRetry, onDone = {})
-            if (state is DownloadUi.Failed) {
+        when (state) {
+            DownloadUi.Done -> IconAction(WoolIcons.Close, "Download verwijderen", onRemove, tint = muted, iconSize = 18.dp)
+            is DownloadUi.Failed -> {
+                // Net als op het importscherm: een knop die zegt wat hij doet.
+                WoolButton("Opnieuw", onClick = onRetry, kind = ButtonKind.OUTLINE)
                 IconAction(WoolIcons.Close, "Weghalen", onRemove, tint = muted, iconSize = 18.dp)
             }
+            else -> DownloadButton(state, onDownload = onRetry, onCancel = onRemove, onRetry = onRetry, onDone = {})
         }
     }
     HorizontalDivider(modifier = Modifier.padding(start = 80.dp), color = MaterialTheme.colorScheme.outlineVariant)
@@ -398,7 +405,7 @@ private fun DownloadSettingsSheet(ui: DownloadsUi, onChange: (DownloadSettings) 
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             LIMITS.forEach { mb ->
-                FilterChipBox(byteSize(mb * 1024L * 1024L), selected = ui.settings.limitMb == mb, onClick = {
+                FilterChipBox(byteSize(mb * 1024L * 1024L), selected = ui.settings.limitMb == mb, modifier = Modifier.heightIn(min = 48.dp), onClick = {
                     onChange(ui.settings.copy(limitMb = mb))
                 })
             }
@@ -431,7 +438,14 @@ fun SettingSwitch(title: String, detail: String, checked: Boolean, onChange: (Bo
             checked = checked,
             onCheckedChange = null,
             enabled = enabled,
-            colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary)
+            // Uit is de standaard, dus die moet net zo goed te zien zijn als aan.
+            colors = SwitchDefaults.colors(
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            )
         )
     }
 }

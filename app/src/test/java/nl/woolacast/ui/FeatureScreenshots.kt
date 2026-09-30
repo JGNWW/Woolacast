@@ -160,7 +160,7 @@ class FeatureScreenshots {
         val suffix = if (dark) "-donker" else "-licht"
         var state by mutableStateOf(playing(29 * 60_000L + 8_000L))
         compose.setContent {
-            WoolacastTheme(darkTheme = dark) {
+            Screen(dark = dark) {
                 PlayerScreen(
                     state = state, queue = emptyList(), isSaved = false,
                     onCollapse = {}, onTogglePlay = {}, onSeekTo = {}, onSeekBy = {}, onPrevious = {}, onNext = {},
@@ -179,7 +179,7 @@ class FeatureScreenshots {
         shot("hoofdstukken-lijst$suffix")
         compose.onAllNodesWithText("Live: Stadslicht met band")[1].performClick()
         settle()
-        compose.onAllNodesWithText("Timer")[0].performClick()
+        compose.onAllNodesWithContentDescription("Slaaptimer")[0].performClick()
         settle()
         shot("slaaptimer-hoofdstuk$suffix")
         compose.onAllNodesWithText("Einde hoofdstuk")[0].performClick()
@@ -187,18 +187,16 @@ class FeatureScreenshots {
         compose.onAllNodesWithText("Tekst")[0].performClick()
         settle()
         shot("tekst-meelezen$suffix")
-        if (!dark) {
-            compose.onAllNodesWithContentDescription("Zoek in de tekst")[0].performTextInput("zaal")
-            settle()
-            shot("tekst-zoeken$suffix")
-        }
+        compose.onAllNodesWithContentDescription("Zoek in de tekst")[0].performTextInput("zaal")
+        settle()
+        shot("tekst-zoeken$suffix")
     }
 
     @Test
     fun tekstZonderTijden() {
         val html = TranscriptParser.parse("<p>Welkom bij De Deadline.</p><p>Vandaag spelen we live vanuit Paradiso.</p>", "text/html")
         compose.setContent {
-            WoolacastTheme(darkTheme = false) {
+            Screen(dark = false) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerLowest)) {
                     nl.woolacast.ui.player.TranscriptView(
                         state = playing(60_000L), load = TranscriptLoad.Ready(html),
@@ -222,7 +220,7 @@ class FeatureScreenshots {
         runBlocking {
             store.putDownload(record("deadline-1", DownloadState.DONE, bytes = 58L * 1024 * 1024))
             store.putDownload(record("deadline-2", DownloadState.QUEUED))
-            store.putDownload(record("deadline-4", DownloadState.FAILED).copy(error = "De server gaf 404."))
+            store.putDownload(record("deadline-4", DownloadState.FAILED).copy(error = "Aflevering niet meer te vinden (404)"))
             store.toggleFollow(nl.woolacast.data.local.FollowedShow("deadline", "De Deadline", "Dagblad Noord", "https://test.local/rood.png", "https://test.local/deadline.xml"))
             store.setAutoDownload("deadline", 2)
         }
@@ -233,7 +231,7 @@ class FeatureScreenshots {
             repository = PodcastRepository(noCatalog(), FeedClient(feeds())), store = store, downloads = downloads
         )
         compose.setContent {
-            WoolacastTheme(darkTheme = dark) {
+            Screen(dark = dark) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                     DetailScreen(viewModel = model, playingId = null, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
                 }
@@ -253,8 +251,10 @@ class FeatureScreenshots {
         }
     }
 
-    @Test
-    fun automatischDownloaden() {
+    @Test fun automatischDownloaden() = automatisch(dark = false)
+    @Test fun automatischDownloadenDonker() = automatisch(dark = true)
+
+    private fun automatisch(dark: Boolean) {
         val store = store()
         runBlocking { store.setAutoDownload("deadline", 2) }
         val model = DetailViewModel(
@@ -262,7 +262,7 @@ class FeatureScreenshots {
             repository = PodcastRepository(noCatalog(), FeedClient(feeds())), store = store
         )
         compose.setContent {
-            WoolacastTheme(darkTheme = false) {
+            Screen(dark = dark) {
                 DetailScreen(viewModel = model, playingId = null, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
             }
         }
@@ -271,7 +271,7 @@ class FeatureScreenshots {
         settle()
         compose.onAllNodesWithText("Automatisch downloaden: nieuwste 2")[0].performClick()
         settle()
-        shot("automatisch-downloaden")
+        shot("automatisch-downloaden" + if (dark) "-donker" else "")
     }
 
     /* ---- bibliotheek: gedownload, je shows, importeren ---- */
@@ -279,6 +279,7 @@ class FeatureScreenshots {
     @Test fun bibliotheekLicht() = bibliotheek(dark = false, shows = false)
     @Test fun bibliotheekDonker() = bibliotheek(dark = true, shows = false)
     @Test fun jeShows() = bibliotheek(dark = false, shows = true)
+    @Test fun jeShowsDonker() = bibliotheek(dark = true, shows = true)
 
     private fun bibliotheek(dark: Boolean, shows: Boolean) {
         val suffix = if (dark) "-donker" else "-licht"
@@ -289,7 +290,7 @@ class FeatureScreenshots {
             store.putDownload(record("deadline-1", DownloadState.DONE, bytes = 58L * 1024 * 1024))
             store.putDownload(record("deadline-2", DownloadState.QUEUED, title = "Kaarten die niet kloppen"))
             store.putDownload(record("deadline-3", DownloadState.QUEUED, title = "Het archief in Assen"))
-            store.putDownload(record("deadline-4", DownloadState.FAILED, title = "Een brief uit 1975").copy(error = "De server gaf 404."))
+            store.putDownload(record("deadline-4", DownloadState.FAILED, title = "Een brief uit 1975").copy(error = "Aflevering niet meer te vinden (404)"))
             store.setAutoDownload("koud", 1)
             store.setAutoDownload("nacht", 1)
             store.setDownloadSettings(store.downloadSettings.value.copy(limitMb = 1024))
@@ -302,7 +303,7 @@ class FeatureScreenshots {
             ShowImporter(FeedClient(feeds()), noCatalog(), store))
         val downloadsModel = DownloadsViewModel(store, downloads)
         compose.setContent {
-            WoolacastTheme(darkTheme = dark) {
+            Screen(dark = dark) {
                 LibraryScreen(
                     viewModel = library, countryCode = "nl", playingId = null,
                     onOpenPodcast = { _, _, _ -> }, onSearch = {}, onPlay = {},
@@ -312,14 +313,14 @@ class FeatureScreenshots {
         }
         settle()
         if (shows) {
-            compose.onAllNodesWithContentDescription("Shows importeren of exporteren")[0].performClick()
+            compose.onAllNodesWithContentDescription("Je shows: importeren, feed toevoegen of exporteren")[0].performClick()
             settle()
-            shot("je-shows")
+            shot("je-shows$suffix")
             compose.onAllNodesWithText("Voeg een feed toe")[0].performClick()
             // De cursor knippert; wachten tot alles stilstaat lukt dan nooit.
             compose.mainClock.autoAdvance = false
             repeat(10) { compose.mainClock.advanceTimeBy(100); Thread.sleep(50) }
-            shot("feed-toevoegen")
+            shot("feed-toevoegen$suffix")
             return
         }
         compose.onAllNodesWithText("Gedownload")[0].performScrollTo().performClick()
@@ -330,8 +331,10 @@ class FeatureScreenshots {
         shot("download-instellingen$suffix")
     }
 
-    @Test
-    fun importeren() {
+    @Test fun importeren() = importeren(dark = false)
+    @Test fun importerenDonker() = importeren(dark = true)
+
+    private fun importeren(dark: Boolean) {
         val store = store()
         val file = File.createTempFile("pocketcasts-export", ".opml").apply {
             writeText(
@@ -348,21 +351,19 @@ class FeatureScreenshots {
         val importer = ShowImporter(FeedClient(feeds()), catalog(), store)
         val model = ImportViewModel(Uri.fromFile(file), context.contentResolver, importer, store, "nl", scope)
         compose.setContent {
-            WoolacastTheme(darkTheme = false) {
-                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                    ImportScreen(viewModel = model, onBack = {}, onDone = {})
-                }
+            Screen(dark = dark) {
+                ImportScreen(viewModel = model, onBack = {}, onDone = {})
             }
         }
         settle { model.ui.value is nl.woolacast.ui.library.ImportUi.Done }
-        save("import-bezig")
+        if (!dark) save("import-bezig")
         // Koppelen gaat met een pauze tussen de zoekopdrachten; wacht tot het klaar is.
         repeat(200) {
             if (!importer.linking.value.running && importer.linking.value.total > 0) return@repeat
             Thread.sleep(100)
         }
         settle()
-        save("import-klaar")
+        save("import-klaar" + if (dark) "-donker" else "")
     }
 
     /* ---- nepdata ---- */
@@ -438,6 +439,14 @@ class FeatureScreenshots {
             append("""<enclosure url="https://test.local/$key-${i + 1}.mp3" type="audio/mpeg" length="1"/></item>""")
         }
         append("</channel></rss>")
+    }
+
+    /** Het thema plus een vlak in de achtergrondkleur, zoals de Scaffold van de app dat geeft. */
+    @androidx.compose.runtime.Composable
+    private fun Screen(dark: Boolean, content: @androidx.compose.runtime.Composable () -> Unit) {
+        WoolacastTheme(darkTheme = dark) {
+            androidx.compose.material3.Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background, content = content)
+        }
     }
 
     /* ---- wachten en vastleggen ---- */

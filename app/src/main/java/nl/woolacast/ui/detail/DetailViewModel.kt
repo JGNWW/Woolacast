@@ -250,10 +250,7 @@ class DetailViewModel(
     fun toggleFollow() {
         val podcast = _state.value.podcast ?: return
         viewModelScope.launch {
-            val following = store.follows.value.any { it.id == podcast.id }
             toggleFollowNow(podcast)
-            // Wie ontvolgt, wil ook niet dat de app nog afleveringen binnenhaalt.
-            if (following) store.setAutoDownload(podcast.id, null)
         }
     }
 

@@ -42,6 +42,10 @@ data class Transcript(val lines: List<TranscriptLine>, val timed: Boolean) {
  */
 class TranscriptRepository(private val client: OkHttpClient) {
 
+    private companion object {
+        const val MAX_BYTES = 5L * 1024 * 1024
+    }
+
     private val cache = object : LinkedHashMap<String, Transcript>(8, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Transcript>?) = size > 6
     }
@@ -50,8 +54,12 @@ class TranscriptRepository(private val client: OkHttpClient) {
         synchronized(cache) { cache[ref.url] }?.let { return it }
         val body = withContext(Dispatchers.IO) {
             client.newCall(Request.Builder().url(ref.url).build()).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("De tekst gaf ${response.code}")
-                response.body?.string() ?: throw IOException("Lege tekst")
+                if (!response.isSuccessful) throw IOException("De tekst is niet te vinden bij de maker (${response.code}).")
+                val body = response.body ?: throw IOException("Het tekstbestand is leeg.")
+                // Een transcriptie van drie uur is een paar honderd kilobyte; wat veel groter is, is iets anders.
+                val source = body.source()
+                if (source.request(MAX_BYTES + 1)) throw IOException("Het tekstbestand is te groot om te tonen.")
+                source.buffer.readString(body.contentType()?.charset() ?: Charsets.UTF_8)
             }
         }
         val parsed = withContext(Dispatchers.Default) { TranscriptParser.parse(body, ref.type) }
@@ -173,8 +181,9 @@ object TranscriptParser {
         )
 
     private fun decode(text: String): String =
-        text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
-            .replace("&quot;", "\"").replace("&#39;", "'").replace("&apos;", "'")
+        // &amp; als laatste, anders wordt "&amp;lt;" twee keer ontsleuteld.
+        text.replace("&nbsp;", " ").replace("&lt;", "<").replace("&gt;", ">")
+            .replace("&quot;", "\"").replace("&#39;", "'").replace("&apos;", "'").replace("&amp;", "&")
 
     /** "01:02:03,500" of "02:03.500" in milliseconden. */
     internal fun clock(value: String): Long {

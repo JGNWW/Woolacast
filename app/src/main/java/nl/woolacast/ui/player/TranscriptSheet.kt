@@ -37,7 +37,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
@@ -201,7 +204,7 @@ private fun Lines(
                             )
                         }
                         Text(
-                            highlight(line.text, query, MaterialTheme.colorScheme.tertiaryContainer, isHit),
+                            highlight(line.text, query, colors.highlight, colors.highlightStrong, isHit),
                             fontSize = 17.sp,
                             lineHeight = 25.sp,
                             fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
@@ -231,8 +234,8 @@ private fun Lines(
                         .padding(bottom = 16.dp)
                         .clip(RoundedCornerShape(20.dp))
                         .background(colors.panel)
-                        .clickable { following = true; query = "" }
-                        .heightIn(min = 44.dp)
+                        .clickable(role = Role.Button) { following = true; query = "" }
+                        .heightIn(min = 48.dp)
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -282,7 +285,7 @@ private fun SearchField(
         }
         if (query.trim().length >= 2) {
             Text(
-                if (count == 0) "Geen" else "${index + 1} van $count",
+                if (count == 0) "Geen treffers" else "${index + 1} van $count",
                 style = MaterialTheme.typography.labelLarge,
                 color = muted
             )
@@ -292,8 +295,11 @@ private fun SearchField(
     }
 }
 
-/** Zet elke treffer van [query] in een markeerkleur; de gekozen treffer ook onderstreept. */
-private fun highlight(text: String, query: String, color: androidx.compose.ui.graphics.Color, chosen: Boolean): AnnotatedString {
+/**
+ * Zet elke treffer van [query] in de markeerkleur. De gekozen treffer krijgt de
+ * sterkere kleur en een streep eronder, zodat hij ook binnen de oplichtende zin opvalt.
+ */
+private fun highlight(text: String, query: String, color: Color, strong: Color, chosen: Boolean): AnnotatedString {
     val needle = query.trim()
     if (needle.length < 2) return AnnotatedString(text)
     return buildAnnotatedString {
@@ -304,8 +310,8 @@ private fun highlight(text: String, query: String, color: androidx.compose.ui.gr
             append(text.substring(from, at))
             withStyle(
                 SpanStyle(
-                    background = color,
-                    textDecoration = if (chosen) androidx.compose.ui.text.style.TextDecoration.Underline else null
+                    background = if (chosen) strong else color,
+                    textDecoration = if (chosen) TextDecoration.Underline else null
                 )
             ) { append(text.substring(at, at + needle.length)) }
             from = at + needle.length

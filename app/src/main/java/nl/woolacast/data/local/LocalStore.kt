@@ -166,7 +166,11 @@ private data class StoreData(
     /** Per show hoeveel nieuwe afleveringen de app automatisch klaarzet. */
     val autoDownload: Map<String, Int> = emptyMap(),
     /** Afleveringen die je uitluisterde, de nieuwste achteraan. */
-    val listened: List<String> = emptyList()
+    val listened: List<String> = emptyList(),
+    /** Automatische downloads die wegens ruimte opgeruimd zijn; die komen niet vanzelf terug. */
+    val evicted: List<String> = emptyList(),
+    /** Gewiste downloads die nog speelden: bestandsnaam → aflevering. */
+    val orphans: Map<String, String> = emptyMap()
 )
 
 /**
@@ -215,6 +219,12 @@ class LocalStore(private val file: File) {
     private val _listened = MutableStateFlow<Set<String>>(emptySet())
     val listened: StateFlow<Set<String>> = _listened.asStateFlow()
 
+    private val _evicted = MutableStateFlow<Set<String>>(emptySet())
+    val evicted: StateFlow<Set<String>> = _evicted.asStateFlow()
+
+    private val _orphans = MutableStateFlow<Map<String, String>>(emptyMap())
+    val orphans: StateFlow<Map<String, String>> = _orphans.asStateFlow()
+
     private val _theme = MutableStateFlow("system")
     val theme: StateFlow<String> = _theme.asStateFlow()
 
@@ -244,7 +254,8 @@ class LocalStore(private val file: File) {
     suspend fun toggleFollow(show: FollowedShow) = mutate {
         val existing = it.follows.any { followed -> followed.id == show.id }
         val follows = if (existing) it.follows.filterNot { f -> f.id == show.id } else it.follows + show
-        it.copy(follows = follows)
+        // Wie ontvolgt, wil ook niet dat de app nog afleveringen van die show binnenhaalt.
+        it.copy(follows = follows, autoDownload = if (existing) it.autoDownload - show.id else it.autoDownload)
     }
 
     /** Volgt een rij shows tegelijk; wat je al volgde blijft zoals het was. */
@@ -392,6 +403,14 @@ class LocalStore(private val file: File) {
 
     suspend fun removeDownload(episodeId: String) = mutate { it.copy(downloads = it.downloads - episodeId) }
 
+    suspend fun addEvicted(ids: List<String>) = mutate {
+        it.copy(evicted = (it.evicted - ids.toSet() + ids).takeLast(LISTENED_KEPT))
+    }
+
+    suspend fun addOrphan(fileName: String, episodeId: String) = mutate { it.copy(orphans = it.orphans + (fileName to episodeId)) }
+
+    suspend fun removeOrphan(fileName: String) = mutate { it.copy(orphans = it.orphans - fileName) }
+
     suspend fun setDownloadSettings(settings: DownloadSettings) = mutate { it.copy(downloadSettings = settings) }
 
     /** [count] null of 0 zet automatisch downloaden voor deze show uit. */
@@ -475,6 +494,8 @@ class LocalStore(private val file: File) {
         _downloadSettings.value = data.downloadSettings
         _autoDownload.value = data.autoDownload
         _listened.value = data.listened.toSet()
+        _evicted.value = data.evicted.toSet()
+        _orphans.value = data.orphans
     }
 
     private companion object {

@@ -6,6 +6,9 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import nl.woolacast.data.ChartRepository
 import nl.woolacast.data.Network
@@ -115,6 +118,11 @@ class WoolacastApp : Application() {
             // automatisch downloaden krijgen hun vaste ronde.
             container.downloads.cleanUp()
             runCatching { Downloads.scheduleAuto(this@WoolacastApp, container.store.downloadSettings.value) }
+        }
+        // Een download die gewist werd terwijl hij speelde, gaat weg zodra er iets anders speelt.
+        container.appScope.launch {
+            container.player.state.map { it.episodeId }.distinctUntilChanged().drop(1)
+                .collect { container.downloads.cleanUp() }
         }
         // Meldingen over nieuwe podcasts van gevolgde makers. In een testomgeving
         // zonder WorkManager slaat dit stil over.

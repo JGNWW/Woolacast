@@ -119,7 +119,7 @@ fun LibraryScreen(
         if (uri != null) onImportFile(uri)
     }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/x-opml")) { uri ->
-        if (uri != null) viewModel.export(uri, context.contentResolver) { message ->
+        if (uri != null) viewModel.export(uri, context.contentResolver, countryCode) { message ->
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
@@ -142,7 +142,7 @@ fun LibraryScreen(
     Column(modifier = modifier.fillMaxSize()) {
         MarkBar {
             IconAction(WoolIcons.Search, "Zoeken", onSearch)
-            IconAction(WoolIcons.More, "Shows importeren of exporteren", { showsOpen = true })
+            IconAction(WoolIcons.More, "Je shows: importeren, feed toevoegen of exporteren", { showsOpen = true })
             Box {
                 IconAction(WoolIcons.Filter, "Sorteren", { sortOpen = true })
                 DropdownMenu(expanded = sortOpen, onDismissRequest = { sortOpen = false }) {

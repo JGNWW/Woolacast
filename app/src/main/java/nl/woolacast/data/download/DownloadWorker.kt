@@ -10,9 +10,13 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.woolacast.R
 import nl.woolacast.container
@@ -20,7 +24,6 @@ import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.local.DownloadState
 import nl.woolacast.domain.Catalog
-import okhttp3.Request
 
 /**
  * Haalt één aflevering binnen. Gaat verder waar hij bleef als een eerdere poging
@@ -44,10 +47,28 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
         val target = downloads.file(record)
         val part = File(target.path + Downloads.PART)
         return try {
-            val bytes = fetch(url, part) { done, total ->
-                downloads.report(episodeId, DownloadProgress(done, total))
+            val bytes = coroutineScope {
+                // De melding volgt de voortgang op zijn eigen tempo, los van het schrijven.
+                val percent = AtomicInteger(-1)
+                val ticker = launch {
+                    while (isActive) {
+                        delay(1_000)
+                        percent.get().takeIf { it >= 0 }?.let { runCatching { setForeground(foregroundInfo(null, it)) } }
+                    }
+                }
+                val result = withContext(Dispatchers.IO) {
+                    AudioFetcher(Network.downloadClient).fetch(url, part, isStopped = { isStopped }) { done, total ->
+                        downloads.report(episodeId, DownloadProgress(done, total))
+                        if (total > 0L) percent.set((done * 100 / total).toInt())
+                    }
+                }
+                ticker.cancel()
+                result
             }
-            if (isStopped) return Result.success()
+            if (bytes == null || isStopped) {
+                downloads.report(episodeId, null)
+                return Result.success()
+            }
             if (!part.renameTo(target)) throw IOException("Kon het bestand niet opslaan.")
             downloads.report(episodeId, null)
             if (store.download(episodeId) == null) {
@@ -61,7 +82,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
             downloads.report(episodeId, null)
             if (isStopped) return Result.success()
             if (runAttemptCount < MAX_ATTEMPTS) Result.retry()
-            else fail(episodeId, error.message ?: "De download is mislukt.")
+            else fail(episodeId, reason(error))
         }
     }
 
@@ -70,44 +91,6 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
             it.copy(state = DownloadState.FAILED, error = reason)
         }
         return Result.failure()
-    }
-
-    /** Schrijft naar [part] en geeft het totaal aantal bytes terug. */
-    private suspend fun fetch(url: String, part: File, onProgress: (Long, Long) -> Unit): Long = withContext(Dispatchers.IO) {
-        part.parentFile?.mkdirs()
-        val already = if (part.exists()) part.length() else 0L
-        val request = Request.Builder().url(url)
-            .apply { if (already > 0L) header("Range", "bytes=$already-") }
-            .build()
-        Network.downloadClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("De server gaf ${response.code}.")
-            val body = response.body ?: throw IOException("Leeg antwoord.")
-            val resumed = response.code == 206 && already > 0L
-            val start = if (resumed) already else 0L
-            val total = body.contentLength().takeIf { it > 0L }?.plus(start) ?: 0L
-            var done = start
-            var lastReport = 0L
-            FileOutputStream(part, resumed).use { out ->
-                body.byteStream().use { input ->
-                    val buffer = ByteArray(64 * 1024)
-                    while (true) {
-                        if (isStopped) return@withContext done
-                        val read = input.read(buffer)
-                        if (read == -1) break
-                        out.write(buffer, 0, read)
-                        done += read
-                        if (done - lastReport > 256 * 1024) {
-                            lastReport = done
-                            onProgress(done, total)
-                            if (total > 0L) runCatching { setForeground(foregroundInfo(null, (done * 100 / total).toInt())) }
-                        }
-                    }
-                }
-            }
-            if (total > 0L && done < total) throw IOException("De verbinding viel weg.")
-            if (done < MIN_BYTES) throw IOException("Het bestand is te klein om audio te zijn.")
-            done
-        }
     }
 
     private var title: String? = null
@@ -133,11 +116,26 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
 
     companion object {
         const val KEY_EPISODE = "episode"
+
+        /** Wat er misging, in gewone taal; de melding van OkHttp is Engels en voor ontwikkelaars. */
+        fun reason(error: Throwable): String {
+            val message = error.message.orEmpty()
+            val code = Regex("""\b(\d{3})\b""").find(message)?.groupValues?.get(1)
+            return when {
+                error is java.net.UnknownHostException -> "Geen verbinding, of de website bestaat niet meer"
+                error is java.net.SocketTimeoutException -> "Geen antwoord van de server"
+                code == "404" || code == "410" -> "Aflevering niet meer te vinden ($code)"
+                code == "403" || code == "401" -> "De maker staat downloaden niet toe ($code)"
+                code != null && code.startsWith("5") -> "De server van de maker heeft een storing ($code)"
+                message.contains("te klein") -> "Geen audio gevonden op dit adres"
+                message.contains("opslaan") -> "Niet genoeg ruimte op het toestel"
+                message.contains("viel weg") -> "De verbinding viel weg"
+                else -> "Downloaden lukte niet"
+            }
+        }
         private const val CHANNEL = "downloads"
         private const val NOTIFICATION_BASE = 7000
         private const val MAX_ATTEMPTS = 3
-        /** Minder dan dit is een foutpagina, geen aflevering. */
-        private const val MIN_BYTES = 16 * 1024L
 
         fun ensureChannel(context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java) ?: return
@@ -177,9 +175,11 @@ class AutoDownloadWorker(context: Context, params: WorkerParameters) : Coroutine
             val existing = store.downloads.value.values.filter { it.episode.showId == showId }
             val protected = store.queue.value.map { it.id }.toSet() + store.saved.value.map { it.id } +
                 store.progress.value.keys + listOfNotNull(container.player.state.value.episodeId)
-            val (add, drop) = DownloadPolicy.autoPlan(episodes, count, existing, store.listened.value, protected)
+            // Wat de app eerder wegens ruimtegebrek opruimde, haalt hij niet opnieuw binnen.
+            val skip = store.listened.value + store.evicted.value
+            val (add, drop) = DownloadPolicy.autoPlan(episodes, count, existing, skip, protected)
             drop.forEach { container.downloads.remove(it) }
-            add.forEach { episode ->
+            add.filter { container.downloads.fits(it) }.forEach { episode ->
                 container.downloads.enqueue(
                     episode.copy(artworkUrl = episode.artworkUrl ?: artwork, showTitle = episode.showTitle.ifBlank { show?.title.orEmpty() }),
                     auto = true

@@ -37,14 +37,19 @@ class ChapterRepository(private val client: OkHttpClient) {
     suspend fun chapters(episode: Episode, localFile: File?): List<Chapter> {
         synchronized(cache) { cache[episode.id] }?.let { return it }
         val found = find(episode, localFile)
-        synchronized(cache) { cache[episode.id] = found }
-        return found
+        // Een netwerkfout onthouden we niet: de volgende keer kan het wel lukken.
+        if (found != null) synchronized(cache) { cache[episode.id] = found }
+        return found.orEmpty()
     }
 
-    private suspend fun find(episode: Episode, localFile: File?): List<Chapter> = withContext(Dispatchers.IO) {
+    /** null als het niet te zeggen was (netwerkfout); leeg als er echt geen hoofdstukken zijn. */
+    private suspend fun find(episode: Episode, localFile: File?): List<Chapter>? = withContext(Dispatchers.IO) {
         if (episode.inlineChapters.size >= 2) return@withContext episode.inlineChapters
+        var failed = false
         episode.chaptersUrl?.let { url ->
-            runCatching { ChapterJson.parse(get(url)) }.getOrNull()?.takeIf { it.size >= 2 }
+            runCatching { ChapterJson.parse(get(url)) }
+                .onFailure { failed = true }
+                .getOrNull()?.takeIf { it.size >= 2 }
                 ?.let { return@withContext it }
         }
         val reader: RangeReader? = when {
@@ -52,7 +57,12 @@ class ChapterRepository(private val client: OkHttpClient) {
             episode.audioUrl != null -> HttpRangeReader(client, episode.audioUrl)
             else -> null
         }
-        reader?.use { runCatching { Id3Chapters.read(it) }.getOrNull() }.orEmpty()
+        val fromId3 = reader?.use { runCatching { Id3Chapters.read(it) } }
+        when {
+            fromId3 == null -> if (failed) null else emptyList()
+            fromId3.isFailure -> null
+            else -> fromId3.getOrThrow().takeIf { it.isNotEmpty() } ?: if (failed) null else emptyList()
+        }
     }
 
     private fun get(url: String): String {
@@ -162,7 +172,9 @@ object Id3Chapters {
     private const val MAX_FRAMES = 400
 
     fun read(reader: RangeReader): List<Chapter> {
-        val header = reader.read(0, 10)
+        // Eén venster vanaf het begin: de kop en meestal ook alle hoofdstukken in één verzoek.
+        val window = Window(reader)
+        val header = window.bytes(0, 10) ?: return emptyList()
         if (header.size < 10 || header[0] != 'I'.code.toByte() || header[1] != 'D'.code.toByte() || header[2] != '3'.code.toByte()) {
             return emptyList()
         }
@@ -173,7 +185,6 @@ object Id3Chapters {
         if (flags and 0x80 != 0) return emptyList()
         val tagEnd = 10L + syncsafe(header, 6)
 
-        val window = Window(reader)
         var offset = 10L
         if (flags and 0x40 != 0) {
             val ext = window.bytes(offset, 4) ?: return emptyList()

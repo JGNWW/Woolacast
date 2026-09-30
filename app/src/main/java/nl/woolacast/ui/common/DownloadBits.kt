@@ -100,13 +100,32 @@ fun DownloadButton(
     }
 }
 
+/**
+ * De downloadtoestand klein, voor in de regel onder een titel: dezelfde tekens
+ * als de knop (vinkje, ring, waarschuwing), zodat een pijl alleen "downloaden" betekent.
+ */
+@Composable
+fun DownloadMark(state: DownloadUi, modifier: Modifier = Modifier) {
+    val colors = LocalChartColors.current
+    Box(modifier.size(16.dp).semantics { state.label()?.let { contentDescription = it } }, contentAlignment = Alignment.Center) {
+        when (state) {
+            DownloadUi.None -> Unit
+            DownloadUi.Done -> Icon(WoolIcons.Downloaded, null, tint = colors.rise, modifier = Modifier.size(16.dp))
+            is DownloadUi.Failed -> Icon(WoolIcons.Warning, null, tint = colors.fall, modifier = Modifier.size(16.dp))
+            is DownloadUi.Waiting -> ProgressRing(null, dashed = true, ring = 15.dp, stop = false)
+            is DownloadUi.Running -> ProgressRing(state.fraction, dashed = false, ring = 15.dp, stop = false)
+        }
+    }
+}
+
 /** Een ring van 22 dp met een stopblokje erin; zonder percentage draait hij niet maar is hij gestippeld. */
 @Composable
-private fun ProgressRing(fraction: Float?, dashed: Boolean) {
-    val track = MaterialTheme.colorScheme.outlineVariant
+private fun ProgressRing(fraction: Float?, dashed: Boolean, ring: Dp = 22.dp, stop: Boolean = true) {
+    // Wachten is een stippelring in de tekstkleur; lopen is een vol spoor met de voortgang erover.
+    val track = if (dashed) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.outline
     val accent = MaterialTheme.colorScheme.primary
     val ink = MaterialTheme.colorScheme.onSurface
-    Canvas(Modifier.size(22.dp)) {
+    Canvas(Modifier.size(ring)) {
         val stroke = 2.4.dp.toPx()
         val inset = stroke / 2
         val arcSize = Size(size.width - stroke, size.height - stroke)
@@ -121,6 +140,7 @@ private fun ProgressRing(fraction: Float?, dashed: Boolean) {
                 topLeft = Offset(inset, inset), size = arcSize, style = Stroke(stroke, cap = StrokeCap.Round)
             )
         }
+        if (!stop) return@Canvas
         val square = 6.dp.toPx()
         drawRoundRect(
             color = ink,

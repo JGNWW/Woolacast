@@ -69,6 +69,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import nl.woolacast.domain.Chapter
 import nl.woolacast.ui.common.DownloadUi
 import nl.woolacast.ui.common.label
@@ -365,7 +377,13 @@ fun PlayerScreen(
                             state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
                             else -> "Timer"
                         },
-                        active = sleeping
+                        active = sleeping,
+                        description = when {
+                            state.sleepAtEnd -> "Slaaptimer: einde van de aflevering"
+                            state.sleepAtMs != null -> "Slaaptimer: einde van dit hoofdstuk"
+                            state.sleepRemainingMs != null -> "Slaaptimer: nog ${(state.sleepRemainingMs / 60_000L) + 1} minuten"
+                            else -> "Slaaptimer"
+                        }
                     ) { sheet = Sheet.TIMER }
                     Tool(
                         WoolIcons.Queue,
@@ -395,7 +413,7 @@ fun PlayerScreen(
 
         Sheet.TIMER -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle("Slaaptimer")
-            TimerPicker(state, chapterEnd?.takeIf { chapters.isNotEmpty() && it < state.durationMs }) { onSleep(it); sheet = null }
+            TimerPicker(state, hasChapters = chapters.isNotEmpty()) { onSleep(it); sheet = null }
             Spacer(Modifier.height(24.dp))
         }
 
@@ -477,13 +495,16 @@ internal fun chapterEnd(chapters: List<Chapter>, index: Int, durationMs: Long): 
 @Composable
 private fun ChapterButton(index: Int, count: Int, title: String, remainingMs: Long?, onClick: () -> Unit) {
     val soft = softInk()
+    val spoken = "Hoofdstuk ${index + 1} van $count, $title" +
+        (remainingMs?.let { ", nog ${it / 60_000} minuten ${(it / 1000) % 60} seconden" } ?: "")
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(44.dp)
-            .clip(RoundedCornerShape(22.dp))
-            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(22.dp))
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(24.dp))
             .clickable(onClickLabel = "Hoofdstukken tonen", onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = spoken }
             .padding(start = 14.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -511,8 +532,12 @@ private fun ChapterButton(index: Int, count: Int, title: String, remainingMs: Lo
 
 @Composable
 private fun ChapterList(chapters: List<Chapter>, current: Int?, accent: Color, onPick: (Chapter) -> Unit) {
-    val muted = LocalChartColors.current.muted
-    Column(Modifier.verticalScroll(rememberScrollState())) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val scroll = rememberScrollState()
+    val rowPx = with(LocalDensity.current) { 56.dp.toPx() }
+    // Een lange lijst opent bij het hoofdstuk dat speelt.
+    LaunchedEffect(Unit) { current?.let { scroll.scrollTo(((it - 2).coerceAtLeast(0) * rowPx).toInt()) } }
+    Column(Modifier.verticalScroll(scroll)) {
         chapters.forEachIndexed { index, chapter ->
             val on = index == current
             val past = current != null && index < current
@@ -521,7 +546,8 @@ private fun ChapterList(chapters: List<Chapter>, current: Int?, accent: Color, o
                     .fillMaxWidth()
                     .heightIn(min = 56.dp)
                     .background(if (on) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f) else Color.Transparent)
-                    .clickable(onClickLabel = "Naar dit hoofdstuk") { onPick(chapter) }
+                    .selectable(selected = on, onClick = { onPick(chapter) })
+                    .semantics { if (on) stateDescription = "Speelt nu" }
                     .padding(start = 20.dp, end = 22.dp, top = 8.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -673,11 +699,10 @@ fun ScrubBar(
         if (marks.isNotEmpty()) {
             // Een inkeping in de achtergrondkleur, zodat hij op vulling en spoor even goed te zien is.
             val notch = MaterialTheme.colorScheme.background
-            androidx.compose.foundation.Canvas(Modifier.fillMaxWidth().height(4.dp)) {
+            Canvas(Modifier.fillMaxWidth().height(4.dp)) {
                 val gap = 3.dp.toPx()
                 marks.filter { it in 0.01f..0.99f }.forEach { at ->
-                    drawRect(notch, topLeft = androidx.compose.ui.geometry.Offset(size.width * at - gap / 2, 0f),
-                        size = androidx.compose.ui.geometry.Size(gap, size.height))
+                    drawRect(notch, topLeft = Offset(size.width * at - gap / 2, 0f), size = Size(gap, size.height))
                 }
             }
         }
@@ -752,12 +777,13 @@ private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onCli
 
 /** Gereedschap: omlijnde cirkel met een label eronder; actief = wit vlak, zoals een gekozen chip. */
 @Composable
-private fun Tool(icon: ImageVector, label: String, active: Boolean = false, onClick: () -> Unit) {
+private fun Tool(icon: ImageVector, label: String, active: Boolean = false, description: String? = null, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .width(76.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
+            .then(if (description != null) Modifier.clearAndSetSemantics { contentDescription = description; role = Role.Button } else Modifier)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -797,7 +823,7 @@ private fun SpeedPicker(current: Float, onPick: (Float) -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TimerPicker(state: PlaybackState, chapterEndMs: Long?, onPick: (SleepTimer) -> Unit) {
+private fun TimerPicker(state: PlaybackState, hasChapters: Boolean, onPick: (SleepTimer) -> Unit) {
     val running = state.sleepAtEnd || state.sleepRemainingMs != null || state.sleepAtMs != null
     FlowRow(
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
@@ -808,18 +834,14 @@ private fun TimerPicker(state: PlaybackState, chapterEndMs: Long?, onPick: (Slee
         listOf(15, 30, 45, 60).forEach { minutes ->
             FilterChipBox("$minutes min", selected = false, onClick = { onPick(SleepTimer.After(minutes)) })
         }
-        if (chapterEndMs != null || state.sleepAtMs != null) {
-            FilterChipBox(
-                "Einde hoofdstuk",
-                selected = state.sleepAtMs != null,
-                onClick = { chapterEndMs?.let { onPick(SleepTimer.AtPosition(it)) } }
-            )
+        if (hasChapters) {
+            FilterChipBox("Einde hoofdstuk", selected = state.sleepAtMs != null, onClick = { onPick(SleepTimer.EndOfChapter) })
         }
         FilterChipBox("Einde aflevering", selected = state.sleepAtEnd, onClick = { onPick(SleepTimer.EndOfEpisode) })
     }
     state.sleepAtMs?.let { at ->
         Text(
-            "Stopt op ${clock(at)}, aan het eind van dit hoofdstuk.",
+            "Stopt op ${clock(at)}, aan het eind van dit hoofdstuk. Spring je naar een ander hoofdstuk, dan telt dat einde.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)

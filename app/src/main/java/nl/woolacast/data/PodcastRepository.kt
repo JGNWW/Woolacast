@@ -3,6 +3,7 @@ package nl.woolacast.data
 import nl.woolacast.data.Html
 import nl.woolacast.data.apple.AppleCatalogApi
 import nl.woolacast.data.feed.FeedClient
+import nl.woolacast.data.opml.Opml
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.Podcast
 
@@ -24,6 +25,11 @@ class PodcastRepository(
         feedUrl: String? = null,
         title: String? = null
     ): PodcastDetail {
+        // Een show die alleen op zijn feed bestaat, zoeken we niet op naam op:
+        // dat geeft een andere podcast met dezelfde titel.
+        if (feedUrl.isNullOrBlank() && showId.startsWith(Opml.FEED_PREFIX)) {
+            throw IllegalStateException("Het feed-adres van deze show is niet meer bekend. Volg hem opnieuw via Bibliotheek → Je shows.")
+        }
         val resolvedFeed = feedUrl?.takeIf { it.isNotBlank() }
             ?: lookupFeedUrl(showId, countryCode)
             ?: searchFeedUrl(title, countryCode)

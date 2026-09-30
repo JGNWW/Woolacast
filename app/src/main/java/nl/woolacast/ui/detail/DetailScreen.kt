@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -72,6 +73,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.domain.Catalog
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import nl.woolacast.data.local.DownloadSettings
+import nl.woolacast.ui.common.DownloadMark
+import nl.woolacast.ui.common.byteSize
+import nl.woolacast.ui.library.SettingSwitch
 import nl.woolacast.ui.common.DownloadUi
 import nl.woolacast.ui.common.FilterChipBox
 import nl.woolacast.ui.common.downloadUi
@@ -519,7 +524,7 @@ fun DetailScreen(
     }
 
     if (downloadSheet && podcast != null) {
-        ModalBottomSheet(onDismissRequest = { downloadSheet = false }) {
+        ModalBottomSheet(onDismissRequest = { downloadSheet = false }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             AutoDownloadSheet(
                 title = podcast.title,
                 count = autoDownload[podcast.id],
@@ -531,7 +536,7 @@ fun DetailScreen(
     }
 
     sheetEpisode?.let { episode ->
-        ModalBottomSheet(onDismissRequest = { sheetEpisode = null }) {
+        ModalBottomSheet(onDismissRequest = { sheetEpisode = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             EpisodeSheet(
                 episode = episode,
                 chartRank = state.episodeRanks[episode.id],
@@ -570,12 +575,12 @@ private fun AutoDownloadSheet(
     title: String,
     count: Int?,
     followed: Boolean,
-    settings: nl.woolacast.data.local.DownloadSettings,
+    settings: DownloadSettings,
     onChange: (Int?) -> Unit
 ) {
     Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
         Text("Downloaden", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 6.dp))
-        nl.woolacast.ui.library.SettingSwitch(
+        SettingSwitch(
             title = "Automatisch downloaden",
             detail = if (followed) "Nieuwe afleveringen van $title staan klaar, ook zonder verbinding."
                      else "Nieuwe afleveringen van $title staan klaar. Je gaat de show daarmee ook volgen.",
@@ -590,7 +595,10 @@ private fun AutoDownloadSheet(
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(1, 2, 3, 5).forEach { n ->
-                    FilterChipBox("$n", selected = count == n, onClick = { onChange(n) })
+                    FilterChipBox(
+                        "$n", selected = count == n, onClick = { onChange(n) },
+                        modifier = Modifier.widthIn(min = 48.dp).heightIn(min = 48.dp)
+                    )
                 }
             }
             Text(
@@ -602,7 +610,7 @@ private fun AutoDownloadSheet(
         }
         Text(
             (if (settings.wifiOnly) "Alleen op wifi" else "Ook via mobiele data") +
-                " · ruimte ${nl.woolacast.ui.common.byteSize(settings.limitMb * 1024L * 1024L)}. Dat stel je in bij Bibliotheek → Gedownload.",
+                " · ruimte ${byteSize(settings.limitMb * 1024L * 1024L)}. Dat stel je in bij Bibliotheek → Gedownload.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 14.dp)
@@ -694,12 +702,7 @@ private fun EpisodeRow(
                 if (inQueue) {
                     Icon(WoolIcons.QueueAdded, "In wachtrij", tint = colors.muted, modifier = Modifier.size(14.dp))
                 }
-                when (download) {
-                    DownloadUi.None -> Unit
-                    DownloadUi.Done -> Icon(WoolIcons.Downloaded, "Gedownload", tint = colors.rise, modifier = Modifier.size(15.dp))
-                    is DownloadUi.Failed -> Icon(WoolIcons.Warning, "Download mislukt", tint = colors.fall, modifier = Modifier.size(15.dp))
-                    else -> Icon(WoolIcons.Download, download.label(), tint = colors.muted, modifier = Modifier.size(15.dp))
-                }
+                if (download != DownloadUi.None) DownloadMark(download)
                 if (episode.transcript != null) {
                     TextPill("Tekst", MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurface)
                 }
@@ -797,7 +800,7 @@ private fun EpisodeSheet(
         if (episode.audioUrl != null) {
             when (download) {
                 DownloadUi.None -> ActionRow(WoolIcons.Download, "Downloaden", active = false, onClick = onDownload)
-                DownloadUi.Done -> ActionRow(WoolIcons.Downloaded, "Gedownload · tik om te verwijderen", active = true, onClick = onRemoveDownload)
+                DownloadUi.Done -> ActionRow(WoolIcons.Close, "Download verwijderen", active = false, onClick = onRemoveDownload)
                 is DownloadUi.Failed -> ActionRow(WoolIcons.Warning, "Download mislukt · opnieuw proberen", active = false, onClick = onRetryDownload)
                 else -> ActionRow(WoolIcons.Download, "${download.label()} · tik om te stoppen", active = false, onClick = onRemoveDownload)
             }
@@ -806,8 +809,8 @@ private fun EpisodeSheet(
             Text(
                 listOfNotNull(
                     if (episode.inlineChapters.isNotEmpty() || episode.chaptersUrl != null) "hoofdstukken" else null,
-                    if (episode.transcript != null) "tekst om mee te lezen" else null
-                ).joinToString(" en ", prefix = "Met ", postfix = " van de maker, in de speler."),
+                    if (episode.transcript != null) "meeleestekst" else null
+                ).joinToString(" en ", prefix = "Met ", postfix = " van de maker."),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp)

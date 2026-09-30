@@ -10,6 +10,7 @@ import java.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
@@ -50,7 +51,21 @@ class Downloads(
     val progress: StateFlow<Map<String, DownloadProgress>> = _progress.asStateFlow()
 
     internal fun report(episodeId: String, value: DownloadProgress?) {
-        _progress.value = if (value == null) _progress.value - episodeId else _progress.value + (episodeId to value)
+        // Twee downloads tegelijk melden zich vanaf verschillende threads.
+        _progress.update { if (value == null) it - episodeId else it + (episodeId to value) }
+    }
+
+    /**
+     * Past deze aflevering nog binnen de grens? Voor automatisch downloaden: wat
+     * niet past, haalt de app niet binnen, in plaats van het binnen te halen en
+     * meteen weer op te ruimen. Zonder bekende duur rekenen we met een uur.
+     */
+    fun fits(episode: Episode): Boolean {
+        val estimate = (episode.durationMillis ?: 3_600_000L) / 1000 * ESTIMATED_BYTES_PER_SECOND
+        val pending = store.downloads.value.values.filter { it.state == DownloadState.QUEUED }.sumOf {
+            (it.episode.durationMillis ?: 3_600_000L) / 1000 * ESTIMATED_BYTES_PER_SECOND
+        }
+        return usedBytes() + pending + estimate <= store.downloadSettings.value.limitMb.toLong() * 1024 * 1024
     }
 
     fun file(record: DownloadRecord) = File(dir, record.fileName)
@@ -98,13 +113,20 @@ class Downloads(
         schedule(episodeId)
     }
 
-    /** Stopt een download of wist het bestand. */
+    /**
+     * Stopt een download of wist het bestand. Speelt de aflevering nu vanaf dat
+     * bestand, dan blijft het staan tot hij klaar is; anders valt de bron onder de
+     * speler weg. [cleanUp] ruimt het daarna op.
+     */
     suspend fun remove(episodeId: String) {
         runCatching { WorkManager.getInstance(context).cancelUniqueWork(workName(episodeId)) }
         report(episodeId, null)
         store.download(episodeId)?.let { record ->
-            file(record).delete()
             File(dir, record.fileName + PART).delete()
+            File(dir, record.fileName + PART + AudioFetcher.META).delete()
+            if (episodeId == playingId()) store.addOrphan(record.fileName, episodeId) else file(record).delete()
+            // Een automatische download die weg moest (of die je zelf weghaalde) komt niet vanzelf terug.
+            if (record.auto && record.listenedAt == null) store.addEvicted(listOf(episodeId))
         }
         store.removeDownload(episodeId)
     }
@@ -126,13 +148,16 @@ class Downloads(
      * de wachtrij en wat nu speelt blijven altijd staan.
      */
     suspend fun cleanUp(now: Instant = Instant.now()) {
-        val protected = store.queue.value.map { it.id }.toSet() + store.saved.value.map { it.id } + listOfNotNull(playingId())
-        val doomed = DownloadPolicy.toDelete(
-            records = store.downloads.value.values.toList(),
-            settings = store.downloadSettings.value,
-            protected = protected,
-            now = now
-        )
+        val playing = playingId()
+        // Bestanden die bleven staan omdat ze speelden: nu weg, tenzij ze nog spelen.
+        store.orphans.value.filterValues { it != playing }.forEach { (fileName, _) ->
+            File(dir, fileName).delete()
+            store.removeOrphan(fileName)
+        }
+        // Half beluisterd telt ook als beschermd: dat wil je nog afmaken.
+        val protected = store.queue.value.map { it.id }.toSet() + store.saved.value.map { it.id } +
+            store.progress.value.keys + listOfNotNull(playing)
+        val doomed = DownloadPolicy.toDelete(store.downloads.value.values.toList(), store.downloadSettings.value, protected, now)
         doomed.forEach { remove(it) }
     }
 
@@ -146,6 +171,8 @@ class Downloads(
 
     companion object {
         const val TAG = "download"
+        /** Een schatting voor podcastaudio: 128 kbit/s. */
+        private const val ESTIMATED_BYTES_PER_SECOND = 16_000L
         internal const val PART = ".part"
 
         fun workName(episodeId: String) = "download-$episodeId"

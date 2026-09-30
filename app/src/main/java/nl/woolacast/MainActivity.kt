@@ -41,7 +41,8 @@ class MainActivity : ComponentActivity() {
 
         val appContainer = container
         appContainer.player.connect()
-        takeOpml(intent)
+        // Na het draaien van het scherm of een herstart komt dezelfde intent terug; die is al verwerkt.
+        if (savedInstanceState == null) takeOpml(intent)
 
         setContent {
             val theme by appContainer.store.theme.collectAsStateWithLifecycle()

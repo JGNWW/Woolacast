@@ -138,6 +138,7 @@ fun WoolacastNav(container: AppContainer) {
             container.chapters.chapters(episode, container.downloads.localFile(episode.id))
         }.getOrDefault(emptyList())
     }
+    LaunchedEffect(chapters) { container.player.setChapters(chapters) }
     val loadTranscript: () -> Unit = {
         val ref = playingEpisode?.transcript
         if (ref != null && transcript !is TranscriptLoad.Ready && transcript != TranscriptLoad.Loading) {
@@ -178,7 +179,9 @@ fun WoolacastNav(container: AppContainer) {
         }
     }
 
-    val openPodcast: (String, String?, String) -> Unit = { showId, feedUrl, title ->
+    val openPodcast: (String, String?, String) -> Unit = { showId, given, title ->
+        // Een show die je alleen op zijn feed volgt, is alleen via die feed te vinden.
+        val feedUrl = given ?: container.store.follows.value.firstOrNull { it.id == showId }?.feedUrl
         navController.navigate(
             "${currentTab.route}/podcast/${Uri.encode(showId)}" +
                 "?feed=${Uri.encode(feedUrl.orEmpty())}" +

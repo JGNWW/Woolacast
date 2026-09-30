@@ -19,6 +19,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -62,7 +63,11 @@ fun ShowsSheet(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         SheetAction(
             WoolIcons.FileOut, "Exporteer als OPML",
-            if (followCount == 0) "Je volgt nog niets" else "${followCount - notExportable} shows · ook je back-up",
+            when (val n = followCount - notExportable) {
+                0 -> "Je volgt nog niets met een open feed"
+                1 -> "1 show · ook je back-up"
+                else -> "$n shows · ook je back-up"
+            },
             onExport, enabled = followCount - notExportable > 0
         )
         if (notExportable > 0) {
@@ -98,7 +103,7 @@ private fun SheetAction(icon: ImageVector, title: String, detail: String, onClic
             Text(
                 title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.38f)
             )
             Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -128,6 +133,11 @@ fun AddFeedDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedTextField(
+                    // De rand moet ook zonder focus te zien zijn.
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
                     value = url,
                     onValueChange = { url = it },
                     singleLine = true,
@@ -148,6 +158,7 @@ fun AddFeedDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !busy) { Text("Annuleren") }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
     )
 }

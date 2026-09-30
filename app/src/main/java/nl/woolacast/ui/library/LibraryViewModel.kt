@@ -1,8 +1,14 @@
 package nl.woolacast.ui.library
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +27,7 @@ import nl.woolacast.data.maker.MakerFace
 import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.domain.Maker
 import nl.woolacast.data.local.LocalStore
+import nl.woolacast.data.opml.Opml
 import nl.woolacast.data.opml.ShowImporter
 import nl.woolacast.ui.common.parseDate
 
@@ -366,7 +373,7 @@ class LibraryViewModel(
     }
 
     /** Volgt één feed; bij succes komt de show in [AddFeedState.added] zodat het scherm hem kan openen. */
-    fun addFeed(url: String, countryCode: String, appScope: kotlinx.coroutines.CoroutineScope) {
+    fun addFeed(url: String, countryCode: String, appScope: CoroutineScope) {
         val importer = importer ?: return
         _addFeed.value = AddFeedState(busy = true)
         viewModelScope.launch {
@@ -380,19 +387,16 @@ class LibraryViewModel(
     }
 
     /** Wat mee kan in een export, en hoeveel shows niet (alleen op Spotify, zonder feed). */
-    fun exportCounts(): Pair<Int, Int> {
-        val (feeds, missing) = importer?.exportable() ?: return 0 to 0
-        return feeds.size to missing.size
-    }
+    fun exportCounts(): Pair<Int, Int> = importer?.exportCounts() ?: (0 to 0)
 
     /** Schrijft de OPML naar het gekozen bestand en geeft een zin terug om te tonen. */
-    fun export(uri: android.net.Uri, resolver: android.content.ContentResolver, onDone: (String) -> Unit) {
+    fun export(uri: Uri, resolver: ContentResolver, countryCode: String, onDone: (String) -> Unit) {
         val importer = importer ?: return
         viewModelScope.launch {
-            val (feeds, missing) = importer.exportable()
-            val text = nl.woolacast.data.opml.Opml.write(feeds, java.time.OffsetDateTime.now().toString())
+            val (feeds, missing) = importer.exportable(countryCode)
+            val text = Opml.write(feeds, OffsetDateTime.now().toString())
             val ok = runCatching {
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     resolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: error("geen bestand")
                 }
             }.isSuccess

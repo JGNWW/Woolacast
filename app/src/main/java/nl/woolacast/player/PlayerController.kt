@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import nl.woolacast.domain.Chapter
 import nl.woolacast.domain.Episode
 
 /**
@@ -37,13 +38,24 @@ fun nextSpeed(current: Float): Float {
     return if (index == -1) SPEEDS.first() else SPEEDS[index]
 }
 
+/**
+ * Waar het hoofdstuk van [positionMs] ophoudt: het begin van het volgende, of
+ * het einde van de aflevering. Een halve seconde speling, zodat een sprong naar
+ * het begin van een hoofdstuk niet als het einde van het vorige telt.
+ */
+internal fun chapterStop(chapters: List<Chapter>, positionMs: Long, durationMs: Long): Long? =
+    chapters.firstOrNull { it.startMs > positionMs + 500 }?.startMs ?: durationMs.takeIf { it > 0L }
+
 /** Wanneer de speler zichzelf stilzet. */
 sealed interface SleepTimer {
     data object Off : SleepTimer
     data class After(val minutes: Int) : SleepTimer
     data object EndOfEpisode : SleepTimer
-    /** Stopt zodra de speler hier is: het einde van een hoofdstuk. */
-    data class AtPosition(val positionMs: Long) : SleepTimer
+    /**
+     * Aan het eind van het hoofdstuk waar je bent. Spring je naar een ander
+     * hoofdstuk, dan telt het einde van dat hoofdstuk.
+     */
+    data object EndOfChapter : SleepTimer
 }
 
 data class PlaybackState(
@@ -56,7 +68,7 @@ data class PlaybackState(
     /** Resterende tijd van de slaaptimer; null als er geen loopt. */
     val sleepRemainingMs: Long? = null,
     val sleepAtEnd: Boolean = false,
-    /** Stopt op deze plek in de aflevering (einde van een hoofdstuk); null als dat niet zo is. */
+    /** Stopt op deze plek in de aflevering (einde van het huidige hoofdstuk); null als dat niet zo is. */
     val sleepAtMs: Long? = null,
     /** Waar deze aflevering vandaan kwam, bijv. "#3 in Top afleveringen NL". */
     val chartLabel: String? = null,
@@ -100,6 +112,26 @@ class PlayerController(
     private var ticking = false
 
     private val _state = MutableStateFlow(PlaybackState())
+
+    /** Hoofdstukken van wat nu speelt, voor de slaaptimer "einde hoofdstuk". */
+    private var chapters: List<Chapter> = emptyList()
+
+    fun setChapters(list: List<Chapter>) {
+        chapters = list
+        if (_state.value.sleepAtMs != null) aimAtChapterEnd()
+    }
+
+    /** Legt het stoppunt op het einde van het hoofdstuk waar de speler nu is. */
+    private fun aimAtChapterEnd() {
+        val position = controller?.currentPosition ?: _state.value.positionMs
+        _state.value = _state.value.copy(sleepAtMs = chapterStop(chapters, position, _state.value.durationMs))
+    }
+
+    /** Na elke sprong: het stoppunt hoort bij het hoofdstuk waar je nu bent. */
+    private fun afterSeek() {
+        syncFromPlayer()
+        if (_state.value.sleepAtMs != null) aimAtChapterEnd()
+    }
     val state: StateFlow<PlaybackState> = _state.asStateFlow()
 
     /**
@@ -218,7 +250,7 @@ class PlayerController(
         val player = controller ?: return
         val duration = player.duration.takeIf { it > 0L } ?: return
         player.seekTo((duration * fraction.coerceIn(0f, 1f)).toLong())
-        syncFromPlayer()
+        afterSeek()
     }
 
     /** Naar een vaste plek, bijvoorbeeld het begin van een hoofdstuk of een zin. */
@@ -226,13 +258,13 @@ class PlayerController(
         val player = controller ?: return
         player.seekTo(positionMs.coerceAtLeast(0L))
         if (!player.isPlaying) player.play()
-        syncFromPlayer()
+        afterSeek()
     }
 
     fun seekBy(deltaMs: Long) {
         val player = controller ?: return
         player.seekTo((player.currentPosition + deltaMs).coerceAtLeast(0L))
-        syncFromPlayer()
+        afterSeek()
     }
 
     /** Volgende uit de wachtrij; niets als die leeg is. */
@@ -247,7 +279,7 @@ class PlayerController(
     fun previous() {
         val player = controller ?: return
         player.seekTo(0L)
-        syncFromPlayer()
+        afterSeek()
     }
 
     fun setSpeed(speed: Float) {
@@ -272,9 +304,10 @@ class PlayerController(
                 sleepEndsAt = null
                 _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = true, sleepAtMs = null)
             }
-            is SleepTimer.AtPosition -> {
+            SleepTimer.EndOfChapter -> {
                 sleepEndsAt = null
-                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false, sleepAtMs = timer.positionMs)
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false)
+                aimAtChapterEnd()
             }
         }
     }

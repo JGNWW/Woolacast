@@ -32,6 +32,21 @@ sealed interface ImportOutcome {
     data class Failed(override val feed: OpmlFeed, val reason: String) : ImportOutcome
 }
 
+/**
+ * Een import die loopt of klaar is. Hij hoort bij de app en niet bij het
+ * scherm: wie weggaat en terugkomt, ziet hem gewoon verder lopen.
+ */
+data class ImportSession(
+    /** Welk bestand; zo herkent het scherm zijn eigen import terug. */
+    val key: String,
+    val fileName: String?,
+    val total: Int,
+    val outcomes: List<ImportOutcome> = emptyList(),
+    val done: Boolean = false
+) {
+    val checked: Int get() = outcomes.size
+}
+
 /** Hoe ver het koppelen aan de catalogus is. */
 data class LinkProgress(val done: Int = 0, val total: Int = 0, val running: Boolean = false)
 
@@ -49,6 +64,38 @@ class ShowImporter(
     private val catalog: AppleCatalogApi,
     private val store: LocalStore
 ) {
+
+    private val _session = MutableStateFlow<ImportSession?>(null)
+    val session: StateFlow<ImportSession?> = _session.asStateFlow()
+    private var importJob: Job? = null
+
+    /**
+     * Start een import in [scope], die langer leeft dan het scherm. Elke
+     * show die werkt, volgt meteen: stopt de app halverwege, dan is wat al
+     * gelezen was binnen. Loopt dezelfde import al, dan gebeurt er niets.
+     */
+    fun startImport(scope: CoroutineScope, key: String, fileName: String?, feeds: List<OpmlFeed>, countryCode: String) {
+        if (_session.value?.key == key && (importJob?.isActive == true || _session.value?.done == true)) return
+        _session.value = ImportSession(key, fileName, feeds.size)
+        importJob = scope.launch {
+            import(feeds) { outcome ->
+                _session.value = _session.value?.let { it.copy(outcomes = it.outcomes + outcome) }
+            }
+            _session.value = _session.value?.copy(done = true)
+            startLinking(scope, countryCode)
+        }
+    }
+
+    /** Eén feed uit de import nog eens proberen. */
+    fun retry(scope: CoroutineScope, feed: OpmlFeed, countryCode: String) {
+        scope.launch {
+            val again = import(listOf(feed)).first()
+            _session.value = _session.value?.let { session ->
+                session.copy(outcomes = session.outcomes.map { if (it.feed == feed) again else it })
+            }
+            if (again is ImportOutcome.Followed) startLinking(scope, countryCode)
+        }
+    }
 
     private val _linking = MutableStateFlow(LinkProgress())
     val linking: StateFlow<LinkProgress> = _linking.asStateFlow()
@@ -70,23 +117,23 @@ class ShowImporter(
         }
     }
 
-    /** Leest elke feed (een paar tegelijk) en volgt wat werkt. */
-    suspend fun import(feeds: List<OpmlFeed>, onChecked: (done: Int, total: Int) -> Unit): List<ImportOutcome> = coroutineScope {
+    /**
+     * Leest elke feed (een paar tegelijk) en volgt wat werkt, meteen per show.
+     * [onOutcome] komt voor elke feed zodra die bekend is.
+     */
+    suspend fun import(feeds: List<OpmlFeed>, onOutcome: (ImportOutcome) -> Unit = {}): List<ImportOutcome> = coroutineScope {
         val known = store.follows.value.mapNotNull { show -> show.feedUrl?.let { Opml.key(it) to show } }.toMap()
         val gate = Semaphore(CONCURRENT)
-        var done = 0
-        val outcomes = feeds.map { feed ->
+        feeds.map { feed ->
             async {
                 gate.withPermit {
                     val outcome = known[Opml.key(feed.url)]?.let { ImportOutcome.Known(feed, it.title) } ?: check(feed)
-                    synchronized(this@ShowImporter) { done++ }
-                    onChecked(done, feeds.size)
+                    if (outcome is ImportOutcome.Followed) store.followAll(listOf(outcome.show))
+                    synchronized(this@ShowImporter) { onOutcome(outcome) }
                     outcome
                 }
             }
         }.awaitAll()
-        store.followAll(outcomes.filterIsInstance<ImportOutcome.Followed>().map { it.show })
-        outcomes
     }
 
     /** Eén feed die je zelf invoert. Gooit een fout met een leesbare uitleg als het geen podcastfeed is. */
@@ -147,10 +194,27 @@ class ShowImporter(
         }
     }
 
-    /** Alle gevolgde shows met een feed, en apart wat niet mee kan. */
-    fun exportable(): Pair<List<OpmlFeed>, List<FollowedShow>> {
-        val (with, without) = store.follows.value.partition { !it.feedUrl.isNullOrBlank() }
-        return with.map { OpmlFeed(it.feedUrl!!, it.title) } to without
+    /**
+     * Alle gevolgde shows met een feed, en apart wat niet mee kan. Een Apple-show
+     * waarvan de app de feed nog niet onthield, zoeken we eerst op; pas wat dan
+     * nog geen feed heeft (alleen op Spotify) kan echt niet mee.
+     */
+    suspend fun exportable(countryCode: String): Pair<List<OpmlFeed>, List<FollowedShow>> {
+        val follows = store.follows.value
+        val unknown = follows.filter { it.feedUrl.isNullOrBlank() && it.id.all(Char::isDigit) }
+        val found = if (unknown.isEmpty()) emptyMap() else runCatching {
+            catalog.lookupMany(unknown.joinToString(",") { it.id }, countryCode).results
+                .mapNotNull { r -> r.collectionId?.toString()?.let { id -> r.feedUrl?.let { id to it } } }.toMap()
+        }.getOrDefault(emptyMap())
+        val (with, without) = follows.partition { !it.feedUrl.isNullOrBlank() || it.id in found }
+        return with.map { OpmlFeed(it.feedUrl?.takeIf { url -> url.isNotBlank() } ?: found.getValue(it.id), it.title) } to without
+    }
+
+    /** Snel, zonder opzoeken: hoeveel shows een feed hebben en hoeveel (nog) niet. */
+    fun exportCounts(): Pair<Int, Int> {
+        val follows = store.follows.value
+        val without = follows.count { it.feedUrl.isNullOrBlank() && !it.id.all(Char::isDigit) }
+        return (follows.size - without) to without
     }
 
     private fun reason(error: Throwable): String {
