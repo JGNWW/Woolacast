@@ -187,42 +187,78 @@ def star_solid():
 
 
 # ---- snelheid --------------------------------------------------------------
-# Kale tekst, links in het vak zoals op de voorbeeldmelding. Brede labels
-# ("1,5x") krimpen tot ze passen.
+# Kale tekst, links in het vak zoals op de voorbeeldmelding. De "1" en de "x"
+# zijn nagetekend naar die melding — de "1" met een korte, schuin afgesneden
+# vlag, de "x" als twee zware schuine balken — en de overige tekens komen uit
+# Inter Bold. Wat niet past ("1,5x") krimpt, en alle krimpers even veel, zodat
+# de tekst niet van maat verspringt als je de snelheid rondklikt.
 
-CAP_HEIGHT = 9.85
-BASELINE = 18.05
+CAP_HEIGHT = 10.24
+BASELINE = 18.22
 TEXT_LEFT = 0.0
 MAX_WIDTH = 23.6
 SPEEDS = [("0_8", "0,8x"), ("1_0", "1x"), ("1_2", "1,2x"),
           ("1_5", "1,5x"), ("1_8", "1,8x"), ("2_0", "2x")]
 
+# In kapitaalhoogtes, y omhoog vanaf de basislijn: (contouren, voorloop, breedte).
+DRAWN = {
+    "1": ([[(0.2326, 1.0), (0.4198, 1.0), (0.4198, 0), (0.2326, 0),
+            (0.2326, 0.7567), (0.0791, 0.6477), (0, 0.7689), (0, 0.7953)]],
+          0.056, 0.4198 + 0.112),
+    "x": ([[(0, 0.7503), (0.2198, 0.7503), (0.7429, 0), (0.5231, 0)],
+           [(0.5231, 0.7503), (0.7429, 0.7503), (0.2198, 0), (0, 0)]],
+          0.056, 0.7429 + 0.112),
+}
 
-def text_path(font, text):
-    cmap = font.getBestCmap()
-    glyphs = font.getGlyphSet()
-    hmtx = font["hmtx"]
-    cap = font["OS/2"].sCapHeight
-    names = [cmap[ord(c)] for c in text]
 
-    # Breedte van de inkt, niet van de voortgang: de eerste en laatste letter
-    # tellen vanaf hun eigen rand.
-    advance = sum(hmtx[n][0] for n in names)
-    lsb_first = hmtx[names[0]][1]
-    glyf = font["glyf"]
-    last = glyf[names[-1]]
-    ink = advance - lsb_first - (hmtx[names[-1]][0] - last.xMax)
+class Label:
+    """Een label als rij tekens in kapitaalhoogtes, klaar om te tekenen."""
 
-    scale = CAP_HEIGHT / cap
-    if ink * scale > MAX_WIDTH:
-        scale = MAX_WIDTH / ink
-    x = TEXT_LEFT / scale - lsb_first
-    pen = SVGPathPen(glyphs, ntos=fmt)
-    for n in names:
-        tp = TransformPen(pen, (scale, 0, 0, -scale, x * scale, BASELINE))
-        glyphs[n].draw(tp)
-        x += hmtx[n][0]
-    return pen.getCommands()
+    def __init__(self, font, text):
+        self.font, self.cap = font, font["OS/2"].sCapHeight
+        glyf, hmtx, cmap = font["glyf"], font["hmtx"], font.getBestCmap()
+        self.parts = []  # (teken, x van de oorsprong)
+        x = 0.0
+        left = right = None
+        for c in text:
+            if c in DRAWN:
+                _, lsb, adv = DRAWN[c]
+                ink = (x + lsb, x + lsb + max(px for cont in DRAWN[c][0] for px, _ in cont))
+            else:
+                name = cmap[ord(c)]
+                g = glyf[name]
+                adv = hmtx[name][0] / self.cap
+                ink = (x + g.xMin / self.cap, x + g.xMax / self.cap)
+            self.parts.append((c, x))
+            left = ink[0] if left is None else min(left, ink[0])
+            right = ink[1] if right is None else max(right, ink[1])
+            x += adv
+        self.left, self.width = left, right - left
+
+    def path(self, size):
+        glyphs = self.font.getGlyphSet()
+        cmap = self.font.getBestCmap()
+        pen = SVGPathPen(glyphs, ntos=fmt)
+        out = []
+        for c, x in self.parts:
+            ox = TEXT_LEFT + (x - self.left) * size
+            if c in DRAWN:
+                contours, lsb, _ = DRAWN[c]
+                for cont in contours:
+                    out.append(poly_path([(ox + (lsb + px) * size, BASELINE - py * size)
+                                          for px, py in cont]))
+            else:
+                s = size / self.cap
+                glyphs[cmap[ord(c)]].draw(TransformPen(pen, (s, 0, 0, -s, ox, BASELINE)))
+        return "".join(out) + pen.getCommands()
+
+
+def speed_paths(font):
+    labels = {key: Label(font, text) for key, text in SPEEDS}
+    shrunk = min([MAX_WIDTH / l.width for l in labels.values()
+                  if l.width * CAP_HEIGHT > MAX_WIDTH] or [CAP_HEIGHT])
+    return {key: l.path(CAP_HEIGHT if l.width * CAP_HEIGHT <= MAX_WIDTH else shrunk)
+            for key, l in labels.items()}
 
 
 def main():
@@ -236,8 +272,8 @@ def main():
     write("ic_notif_play", filled(play_path()) + stroked(play_path(), STROKE))
     write("ic_notif_star", filled(star_outline(), even_odd=True))
     write("ic_notif_star_filled", filled(star_solid()))
-    for key, label in SPEEDS:
-        write(f"ic_notif_speed_{key}", filled(text_path(font, label)))
+    for key, path in speed_paths(font).items():
+        write(f"ic_notif_speed_{key}", filled(path))
 
 
 if __name__ == "__main__":
