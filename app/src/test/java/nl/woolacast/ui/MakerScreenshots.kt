@@ -370,7 +370,12 @@ class MakerScreenshots {
             val id = Regex("""c(\d+)""").find(url)?.groupValues?.get(1)?.toIntOrNull()
             val bitmap = when {
                 "logo-" in url -> logo(0xFF1E1B16.toInt(), "LOGO")
-                id != null -> PALETTE[id % PALETTE.size].let { (bg, fg, shape) -> cover(bg, fg, shape) }
+                id != null -> {
+                    // Een volgnummer per testshow (1001 → 0, 1101 → 15, 1201 → 30); kleur en vorm
+                    // lopen daar verschillend doorheen, zodat twee shows van één maker nooit gelijk zijn.
+                    val n = id % 100 - 1 + (id / 100 - 10) * 15
+                    PALETTE[n % PALETTE.size].let { (bg, fg, _) -> cover(bg, fg, (n + n / 10) % 4) }
+                }
                 "rood" in url -> cover(0xFFB5482A.toInt(), 0xFFF4E3CE.toInt(), 0)
                 "blauwgroen" in url -> cover(0xFF14504E.toInt(), 0xFFE9D9B8.toInt(), 1)
                 else -> cover(0xFFDFA83A.toInt(), 0xFF25201A.toInt(), 2)

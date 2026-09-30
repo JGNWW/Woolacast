@@ -17,6 +17,7 @@ import nl.woolacast.data.dataset.DatasetMover
 import nl.woolacast.data.local.FollowedMaker
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.maker.MakerDirectory
+import nl.woolacast.data.maker.MakerFace
 import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.domain.Maker
 import nl.woolacast.data.local.LocalStore
@@ -83,6 +84,7 @@ class LibraryViewModel(
 
     val follows = store.follows
     val makers = store.makers
+    val makerFaces = store.makerFaces
 
     private val _makerStatus = MutableStateFlow<Map<String, MakerStatus>>(emptyMap())
     val makerStatus: StateFlow<Map<String, MakerStatus>> = _makerStatus.asStateFlow()
@@ -232,7 +234,7 @@ class LibraryViewModel(
                             fresh = shows.count { show -> parseDate(show.latestRelease?.take(10))?.let { !it.isBefore(yesterday) } == true },
                             total = shows.size,
                             complete = found.complete,
-                            artworks = shows.take(4).map { it.podcast.artworkUrl }
+                            artworks = MakerFace.of(shows)
                         )
                         val known = followedMaker.knownShowIds.toSet()
                         // De eerste keer is alles wat er staat al bekend: nieuw is wat daarna komt.
@@ -277,6 +279,7 @@ class LibraryViewModel(
         viewModelScope.launch {
             val directory = known ?: makerRepository.directory(countryCode)
             val followedKeys = store.makers.value.map { it.key }.toSet()
+            val makers = mutableMapOf<String, Maker>()
             _suggestions.value = store.follows.value
                 .map { show -> directory.makerOf(show.id, show.publisher) to show }
                 .filter { (maker, _) -> maker.key.isNotEmpty() && maker.key !in followedKeys }
@@ -284,6 +287,7 @@ class LibraryViewModel(
                 .map { (key, pairs) ->
                     val group = pairs.map { it.first }
                     val maker = group.firstOrNull { it.channel != null } ?: group.first()
+                    makers[key] = maker
                     MakerSuggestion(
                         key = key,
                         name = maker.name,
@@ -297,6 +301,14 @@ class LibraryViewModel(
                 }
                 .sortedWith(compareByDescending<MakerSuggestion> { it.followedShows }.thenBy { it.name.lowercase() })
                 .take(5)
+            // Van de shows die je volgt, kennen we vaak maar één hoes; de maker heeft er meer.
+            // Zijn gezicht halen we één keer op, daarna onthoudt de opslag het.
+            val gate = Semaphore(3)
+            _suggestions.value
+                .filter { makerRepository.face(it.key) == null }
+                .mapNotNull { makers[it.key] }
+                .map { maker -> async { gate.withPermit { runCatching { makerRepository.shows(maker, countryCode) } } } }
+                .awaitAll()
         }
     }
 

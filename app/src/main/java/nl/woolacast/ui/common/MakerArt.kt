@@ -61,6 +61,9 @@ private fun Wall(covers: List<String>) {
     val n = covers.size
     // Stap per rij: 1 bij weinig hoezen; 3 bij zes of meer, dan lopen er geen diagonalen van dezelfde hoes.
     val step = if (n >= 6) 3 else 1
+    // De hoes die het meest in beeld staat, midden achter de titel, is de
+    // eerste: daar komt ook de gloed van de pagina vandaan.
+    val first = FOCUS_COL + FOCUS_ROW * step
     Box(Modifier.fillMaxSize().wrapContentSize(Alignment.TopStart, unbounded = true)) {
         Column(
             modifier = Modifier
@@ -74,13 +77,17 @@ private fun Wall(covers: List<String>) {
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     repeat(6) { col ->
-                        WallCover(covers[(col + row * step) % n], 128.dp)
+                        WallCover(covers[Math.floorMod(col + row * step - first, n)], 128.dp)
                     }
                 }
             }
         }
     }
 }
+
+/** De plek in de muur die het meest in beeld staat: tweede rij, derde hoes. */
+private const val FOCUS_ROW = 1
+private const val FOCUS_COL = 2
 
 @Composable
 private fun Duo(covers: List<String>) {

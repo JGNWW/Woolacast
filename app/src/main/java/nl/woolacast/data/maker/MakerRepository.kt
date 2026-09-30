@@ -58,6 +58,19 @@ data class Placement(
     val unmatched: Int
 )
 
+/**
+ * Het gezicht van een maker: de hoezen van zijn eerste vier shows, in de
+ * volgorde van de catalogus. Bij een kanaal is dat Apple's volgorde, van
+ * populair naar minder. Elk scherm toont dit, zodat een maker er overal
+ * hetzelfde uitziet.
+ */
+object MakerFace {
+    const val SIZE = 4
+
+    fun of(shows: List<MakerShow>): List<String> =
+        shows.mapNotNull { it.podcast.artworkUrl }.distinct().take(SIZE)
+}
+
 /** De shows van een maker; [complete] is false als het een zoekopdracht op naam was. */
 data class MakerShows(val shows: List<MakerShow>, val complete: Boolean)
 
@@ -86,7 +99,13 @@ class MakerRepository(
      * Apple, opgehaald in één of twee aanroepen; zonder kanaal een zoekopdracht
      * op naam, en dan is de lijst wat de catalogus erbij vindt.
      */
-    suspend fun shows(maker: Maker, countryCode: String): MakerShows {
+    suspend fun shows(maker: Maker, countryCode: String): MakerShows =
+        findShows(maker, countryCode).also { store.rememberMakerFace(maker.key, MakerFace.of(it.shows)) }
+
+    /** Het gezicht van een maker, als de app zijn shows al eens zag. */
+    fun face(key: String): List<String>? = store.makerFace(key)
+
+    private suspend fun findShows(maker: Maker, countryCode: String): MakerShows {
         val channel = maker.channel
         if (channel != null && channel.showIds.isNotEmpty()) {
             val found = channel.showIds.chunked(LOOKUP_BATCH).flatMap { ids ->
@@ -137,7 +156,7 @@ class MakerRepository(
         val rows = MakerRanking.rank(chart, directory(chart.query.country.code), store.baseline(key))
         // Een lijst uit de cache is niet van vandaag; die leggen we niet opnieuw vast.
         if (chart.cachedAt == null && rows.isNotEmpty()) store.record(key, MakerRanking.snapshot(rows))
-        return rows
+        return rows.map { row -> face(row.maker.key)?.let { row.copy(artworks = it) } ?: row }
     }
 
     private fun titleKey(title: String) = title.lowercase().filter { it.isLetterOrDigit() }

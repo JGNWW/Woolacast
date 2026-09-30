@@ -104,6 +104,12 @@ data class CachedTips(
 private data class StoreData(
     val follows: List<FollowedShow> = emptyList(),
     val makers: List<FollowedMaker> = emptyList(),
+    /**
+     * Per maker de hoezen die zijn gezicht vormen, in de volgorde van zijn
+     * shows. Zo ziet een maker er op elk scherm hetzelfde uit, ook als dat
+     * scherm zelf maar een deel van zijn shows kent.
+     */
+    val makerFaces: Map<String, List<String>> = emptyMap(),
     val snapshots: Map<String, List<DaySnapshot>> = emptyMap(),
     val charts: Map<String, CachedChart> = emptyMap(),
     val queue: List<SavedEpisode> = emptyList(),
@@ -139,6 +145,9 @@ class LocalStore(private val file: File) {
 
     private val _makers = MutableStateFlow<List<FollowedMaker>>(emptyList())
     val makers: StateFlow<List<FollowedMaker>> = _makers.asStateFlow()
+
+    private val _makerFaces = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val makerFaces: StateFlow<Map<String, List<String>>> = _makerFaces.asStateFlow()
 
     private val _queue = MutableStateFlow<List<SavedEpisode>>(emptyList())
     val queue: StateFlow<List<SavedEpisode>> = _queue.asStateFlow()
@@ -213,6 +222,20 @@ class LocalStore(private val file: File) {
             if (maker.key != key) maker
             else maker.copy(foundOn = maker.foundOn + showIds.filterNot { it in maker.foundOn }.associateWith { today })
         })
+    }
+
+    fun makerFace(key: String): List<String>? = _makerFaces.value[key]
+
+    /**
+     * Onthoudt het gezicht van een maker. Het nieuwste staat achteraan; boven
+     * [MAKER_FACES_KEPT] vallen de oudste af, behalve die van makers die je volgt.
+     */
+    suspend fun rememberMakerFace(key: String, covers: List<String>) = mutate { data ->
+        if (covers.isEmpty() || data.makerFaces[key] == covers) return@mutate data
+        val faces = LinkedHashMap(data.makerFaces).apply { remove(key); put(key, covers) }
+        val followed = data.makers.map { it.key }.toSet()
+        faces.keys.filterNot { it in followed }.take((faces.size - MAKER_FACES_KEPT).coerceAtLeast(0)).forEach(faces::remove)
+        data.copy(makerFaces = faces)
     }
 
     /** Onthoudt over welke nieuwe shows al een melding ging. */
@@ -328,6 +351,7 @@ class LocalStore(private val file: File) {
     private fun publish() {
         _follows.value = data.follows
         _makers.value = data.makers
+        _makerFaces.value = data.makerFaces
         _queue.value = data.queue
         _saved.value = data.saved
         _progress.value = data.progress
@@ -339,5 +363,8 @@ class LocalStore(private val file: File) {
 
         /** Zoveel podcasts onthouden we hun tips van; daarna vallen de oudste af. */
         const val SHOW_TIPS_KEPT = 300
+
+        /** Zoveel makers onthouden we hun gezicht van. */
+        const val MAKER_FACES_KEPT = 200
     }
 }
