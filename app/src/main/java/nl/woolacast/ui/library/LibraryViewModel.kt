@@ -296,7 +296,7 @@ class LibraryViewModel(
                         channelId = maker.channel?.id,
                         logoUrl = maker.channel?.logoUrl,
                         color = maker.channel?.color,
-                        artworks = pairs.map { it.second.artworkUrl }
+                        artworks = makerRepository.face(maker) ?: pairs.map { it.second.artworkUrl }
                     )
                 }
                 .sortedWith(compareByDescending<MakerSuggestion> { it.followedShows }.thenBy { it.name.lowercase() })
@@ -305,8 +305,8 @@ class LibraryViewModel(
             // Zijn gezicht halen we één keer op, daarna onthoudt de opslag het.
             val gate = Semaphore(3)
             _suggestions.value
-                .filter { makerRepository.face(it.key) == null }
                 .mapNotNull { makers[it.key] }
+                .filter { makerRepository.face(it) == null }
                 .map { maker -> async { gate.withPermit { runCatching { makerRepository.shows(maker, countryCode) } } } }
                 .awaitAll()
         }

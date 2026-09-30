@@ -102,8 +102,13 @@ class MakerRepository(
     suspend fun shows(maker: Maker, countryCode: String): MakerShows =
         findShows(maker, countryCode).also { store.rememberMakerFace(maker.key, MakerFace.of(it.shows)) }
 
-    /** Het gezicht van een maker, als de app zijn shows al eens zag. */
-    fun face(key: String): List<String>? = store.makerFace(key)
+    /**
+     * Het gezicht van een maker: wat de app zag toen hij zijn shows laadde,
+     * anders wat de verzamelaar van zijn kanaal vastlegde. Null als geen van
+     * beide er is; dan toont een scherm de hoezen die het zelf kent.
+     */
+    fun face(maker: Maker): List<String>? =
+        store.makerFace(maker.key) ?: maker.channel?.covers?.takeIf { it.isNotEmpty() }
 
     private suspend fun findShows(maker: Maker, countryCode: String): MakerShows {
         val channel = maker.channel
@@ -113,6 +118,8 @@ class MakerRepository(
                     .getOrNull()?.results.orEmpty()
                     .mapNotNull { it.toMakerShow() }
             }.distinctBy { it.podcast.id }
+                // Op Apple's volgorde, net als de hoezen van de verzamelaar.
+                .sortedBy { show -> channel.showIds.indexOf(show.podcast.id).takeIf { it >= 0 } ?: Int.MAX_VALUE }
             if (found.isNotEmpty()) return MakerShows(found, complete = true)
         }
         return MakerShows(search.byMaker(maker.name, countryCode), complete = false)
@@ -156,7 +163,7 @@ class MakerRepository(
         val rows = MakerRanking.rank(chart, directory(chart.query.country.code), store.baseline(key))
         // Een lijst uit de cache is niet van vandaag; die leggen we niet opnieuw vast.
         if (chart.cachedAt == null && rows.isNotEmpty()) store.record(key, MakerRanking.snapshot(rows))
-        return rows.map { row -> face(row.maker.key)?.let { row.copy(artworks = it) } ?: row }
+        return rows.map { row -> face(row.maker)?.let { row.copy(artworks = it) } ?: row }
     }
 
     private fun titleKey(title: String) = title.lowercase().filter { it.isLetterOrDigit() }
@@ -180,5 +187,6 @@ internal fun DatasetChannel.toChannel() = Channel(
     showIds = shows,
     newShows = newShows.map {
         ChannelShow(it.id, it.title, it.artworkUrl, it.feedUrl, it.createdDate, it.trackCount)
-    }
+    },
+    covers = covers
 )

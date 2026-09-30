@@ -306,13 +306,15 @@ def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
         return None
     attrs = head["data"][0].get("attributes", {})
 
-    shows = []
+    shows, covers = [], []
     url = f"{base}/view/top-shows?limit=50"
     while url and len(shows) < MAKERS_MAX_SHOWS:
         page = fetch(url, headers=headers)
         if not page:
             break
-        shows += [item["id"] for item in page.get("data", []) if item.get("type") == "podcasts"]
+        items = [item for item in page.get("data", []) if item.get("type") == "podcasts"]
+        shows += [item["id"] for item in items]
+        covers += [art for item in items if (art := _art(item.get("attributes", {})))]
         nxt = page.get("next")
         url = (APPLE_AMP.rsplit("/v1", 1)[0] + nxt + "&limit=50") if nxt else None
 
@@ -341,6 +343,8 @@ def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
         "url": attrs.get("url"),
         "showCount": attrs.get("showCount") or len(shows),
         "shows": list(dict.fromkeys(shows)),
+        # Het gezicht van de maker in de app: de hoezen van zijn eerste vier shows.
+        "covers": list(dict.fromkeys(covers))[:4],
         "newShows": fresh,
         "seen": TODAY,
     }

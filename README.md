@@ -489,8 +489,9 @@ op ` / `, ` | ` en ` & `. Zo telt elke show bij precies één maker.
 **Kanalen komen uit de verzamelaar.** Kanaalgegevens staan alleen achter de
 amp-api met het webtoken, en dat token haalt alleen `collect.py` op. De ronde
 `snapshot` schrijft daarom per land `apple/{land}/makers.json`: de kanalen met
-twee of meer shows in de lijsten, met logo, kleur, alle show-ids en Apple's
-lijst nieuwe shows, plus per show zijn kanaal. Een kanaal dat uit de lijsten
+twee of meer shows in de lijsten, met alle show-ids, de hoezen van de eerste
+vier (zijn gezicht in de app) en Apple's lijst nieuwe shows, plus per show zijn
+kanaal. Een kanaal dat uit de lijsten
 valt, blijft 90 dagen staan, zodat wie hem volgt niets mist. Los te draaien met
 `python3 collect.py makers --countries nl`. Voor NL is dat een minuut en 70
 kanalen.

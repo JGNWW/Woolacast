@@ -129,12 +129,14 @@ class MakerScreenshots {
                 id = "c-kade", name = "Kade Media", color = "14504e", logo = "https://test.local/logo-kade.png",
                 url = "https://podcasts.apple.com/nl/channel/id1", showCount = 7,
                 shows = listOf("1001", "1003", "1005", "1009", "1013", "1102", "1201"),
+                covers = listOf("https://test.local/c1001.png", "https://test.local/c1003.png", "https://test.local/c1005.png", "https://test.local/c1009.png"),
                 newShows = listOf(DatasetChannelShow("1201", "Nachtwerk Extra", "https://test.local/c1201.png", null, daysAgo(3), 2))
             ),
             DatasetChannel(
                 id = "c-noord", name = "Dagblad Noord", color = "2b4c7e", logo = "https://test.local/logo-noord.png",
                 url = "https://podcasts.apple.com/nl/channel/id2", showCount = 4,
                 shows = listOf("1002", "1006", "1015", "1103"),
+                covers = listOf("https://test.local/c1002.png", "https://test.local/c1006.png", "https://test.local/c1015.png", "https://test.local/c1103.png"),
                 newShows = listOf(DatasetChannelShow("1103", "Kort Lontje", "https://test.local/c1103.png", null, daysAgo(2), 3))
             ),
             DatasetChannel(

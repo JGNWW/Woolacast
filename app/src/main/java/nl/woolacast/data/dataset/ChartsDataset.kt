@@ -108,6 +108,8 @@ data class DatasetChannel(
     val url: String? = null,
     val showCount: Int = 0,
     val shows: List<String> = emptyList(),
+    /** De hoezen van zijn eerste vier shows, op Apple's volgorde. */
+    val covers: List<String> = emptyList(),
     val newShows: List<DatasetChannelShow> = emptyList()
 )
 
