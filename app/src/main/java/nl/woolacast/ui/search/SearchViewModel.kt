@@ -15,7 +15,7 @@ import nl.woolacast.domain.Maker
 import nl.woolacast.domain.Makers
 
 /** Een maker in de zoekresultaten, met hoeveel van zijn podcasts erbij zitten. */
-data class MakerHit(val maker: Maker, val found: Int, val firstShowId: String)
+data class MakerHit(val maker: Maker, val found: Int, val firstShowId: String, val artworks: List<String?>)
 
 data class SearchUiState(
     val term: String = "",
@@ -69,7 +69,7 @@ class SearchViewModel(
             .values
             .map { group ->
                 val maker = group.map { it.first }.firstOrNull { it.channel != null } ?: group.first().first
-                MakerHit(maker, group.size, group.first().second.id)
+                MakerHit(maker, group.size, group.first().second.id, group.map { it.second.artworkUrl })
             }
             .filter { it.maker.key.contains(wanted) || it.found >= 2 }
             .sortedWith(compareByDescending<MakerHit> { it.maker.key.contains(wanted) }.thenByDescending { it.found })

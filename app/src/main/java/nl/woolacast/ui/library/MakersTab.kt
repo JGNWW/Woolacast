@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.woolacast.data.local.FollowedMaker
 import nl.woolacast.ui.common.Artwork
-import nl.woolacast.ui.common.MakerLogo
+import nl.woolacast.ui.common.MakerTile
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.OutlinePillButton
 import nl.woolacast.ui.common.PanelCard
@@ -145,7 +145,7 @@ private fun FollowedMakerRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            MakerLogo(maker.name, status?.logoUrl ?: maker.logoUrl, status?.color ?: maker.color, 52.dp)
+            MakerTile(status?.artworks.orEmpty(), 52.dp)
             Column(Modifier.weight(1f)) {
                 Text(maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
@@ -187,7 +187,7 @@ private fun SuggestionRow(suggestion: MakerSuggestion, onOpen: (String) -> Unit,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        MakerLogo(suggestion.name, suggestion.logoUrl, suggestion.color, 52.dp)
+        MakerTile(suggestion.artworks, 52.dp)
         Column(Modifier.weight(1f)) {
             Text(suggestion.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(

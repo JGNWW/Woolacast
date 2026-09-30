@@ -12,7 +12,7 @@ data class MakerRank(
     val count: Int,
     /** Zijn hoogste plek in de lijst. */
     val best: Int,
-    /** De hoezen van zijn drie hoogste shows. */
+    /** De hoezen van zijn vier hoogste shows. */
     val artworks: List<String?>,
     /** Het id van zijn hoogste show, om de podcastpagina te kunnen openen. */
     val bestShowId: String?,
@@ -48,7 +48,7 @@ object MakerRanking {
                     maker = maker,
                     count = entries.size,
                     best = entries.first().rank,
-                    artworks = entries.take(3).map { it.artworkUrl },
+                    artworks = entries.take(4).map { it.artworkUrl },
                     bestShowId = entries.first().showId ?: entries.first().id
                 )
             }

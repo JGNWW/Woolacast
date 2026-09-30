@@ -44,7 +44,7 @@ data class FeedStatus(val latestDate: String?, val newCount: Int)
 enum class LibrarySort(val label: String) { RECENT("Nieuwste eerst"), NAME("Op naam") }
 
 /** Hoe het met een gevolgde maker staat: hoeveel van zijn shows sinds gisteren een nieuwe aflevering hebben. */
-data class MakerStatus(val fresh: Int, val total: Int, val complete: Boolean, val logoUrl: String?, val color: String?)
+data class MakerStatus(val fresh: Int, val total: Int, val complete: Boolean, val artworks: List<String?>)
 
 /** Een nieuwe show van een maker die je volgt. */
 data class MakerNewShow(
@@ -69,7 +69,9 @@ data class MakerSuggestion(
     val totalShows: Int?,
     val channelId: String?,
     val logoUrl: String?,
-    val color: String?
+    val color: String?,
+    /** De hoezen van de shows die je van deze maker volgt. */
+    val artworks: List<String?>
 )
 
 class LibraryViewModel(
@@ -230,8 +232,7 @@ class LibraryViewModel(
                             fresh = shows.count { show -> parseDate(show.latestRelease?.take(10))?.let { !it.isBefore(yesterday) } == true },
                             total = shows.size,
                             complete = found.complete,
-                            logoUrl = channel?.logoUrl ?: followedMaker.logoUrl,
-                            color = channel?.color ?: followedMaker.color
+                            artworks = shows.take(4).map { it.podcast.artworkUrl }
                         )
                         val known = followedMaker.knownShowIds.toSet()
                         // De eerste keer is alles wat er staat al bekend: nieuw is wat daarna komt.
@@ -277,10 +278,11 @@ class LibraryViewModel(
             val directory = known ?: makerRepository.directory(countryCode)
             val followedKeys = store.makers.value.map { it.key }.toSet()
             _suggestions.value = store.follows.value
-                .map { show -> directory.makerOf(show.id, show.publisher) }
-                .filter { it.key.isNotEmpty() && it.key !in followedKeys }
-                .groupBy { it.key }
-                .map { (key, group) ->
+                .map { show -> directory.makerOf(show.id, show.publisher) to show }
+                .filter { (maker, _) -> maker.key.isNotEmpty() && maker.key !in followedKeys }
+                .groupBy { it.first.key }
+                .map { (key, pairs) ->
+                    val group = pairs.map { it.first }
                     val maker = group.firstOrNull { it.channel != null } ?: group.first()
                     MakerSuggestion(
                         key = key,
@@ -289,7 +291,8 @@ class LibraryViewModel(
                         totalShows = maker.channel?.showCount,
                         channelId = maker.channel?.id,
                         logoUrl = maker.channel?.logoUrl,
-                        color = maker.channel?.color
+                        color = maker.channel?.color,
+                        artworks = pairs.map { it.second.artworkUrl }
                     )
                 }
                 .sortedWith(compareByDescending<MakerSuggestion> { it.followedShows }.thenBy { it.name.lowercase() })

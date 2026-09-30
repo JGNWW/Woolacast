@@ -195,7 +195,9 @@ fun CoverBackdrop(
     fade: List<Pair<Float, Float>> = listOf(440f to 0f, 700f to 0.35f, 920f to 0.75f, 1080f to 1f),
     blurTop: Float = 170f,
     showCover: Boolean = true,
-    extendTo: Dp? = null
+    extendTo: Dp? = null,
+    /** In plaats van de hoes zelf, bijvoorbeeld de muur van een maker; zelfde plek en zelfde oplossende rand. */
+    art: (@Composable (Modifier) -> Unit)? = null
 ) {
     val base = MaterialTheme.colorScheme.background
     BoxWithConstraints(modifier.fillMaxSize()) {
@@ -282,27 +284,32 @@ fun CoverBackdrop(
                     )
             )
             // 4. De hoes over de volle breedte; de onderrand lost op in de gloed.
-            if (showCover && url != null) {
-                AsyncImage(
-                    model = url,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(width)
-                        .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
-                        .drawWithContent {
-                            drawContent()
-                            drawRect(
-                                Brush.verticalGradient(
-                                    0f to Color.Black,
-                                    0.55f to Color.Black,
-                                    0.8f to Color.Black.copy(alpha = 0.4f),
-                                    1f to Color.Transparent
-                                ),
-                                blendMode = BlendMode.DstIn
-                            )
-                        }
-                )
+            if (showCover && (url != null || art != null)) {
+                val heroModifier = Modifier
+                    .size(width)
+                    .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+                    .drawWithContent {
+                        drawContent()
+                        drawRect(
+                            Brush.verticalGradient(
+                                0f to Color.Black,
+                                0.55f to Color.Black,
+                                0.8f to Color.Black.copy(alpha = 0.4f),
+                                1f to Color.Transparent
+                            ),
+                            blendMode = BlendMode.DstIn
+                        )
+                    }
+                if (art != null) {
+                    art(heroModifier)
+                } else {
+                    AsyncImage(
+                        model = url,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = heroModifier
+                    )
+                }
                 // 5. Zachte scrim onder de titel, zodat die op elke hoes leesbaar is.
                 Box(
                     Modifier
