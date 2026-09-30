@@ -86,12 +86,12 @@ fun LibraryScreen(
     onSearch: () -> Unit,
     onPlay: (Episode) -> Unit,
     onOpenMaker: (name: String) -> Unit = {},
+    modifier: Modifier = Modifier,
     downloadsViewModel: DownloadsViewModel? = null,
     /** Een gekozen OPML-bestand: het importscherm neemt het over. */
     onImportFile: (Uri) -> Unit = {},
     /** Voor wat langer duurt dan dit scherm: het koppelen van een nieuwe feed aan de catalogus. */
-    appScope: CoroutineScope? = null,
-    modifier: Modifier = Modifier
+    appScope: CoroutineScope? = null
 ) {
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val makers by viewModel.makers.collectAsStateWithLifecycle()

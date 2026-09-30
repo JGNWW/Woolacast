@@ -70,7 +70,7 @@ object TranscriptParser {
     private val sentenceEnd = Regex("""[.!?…]["'”’)]?$""")
 
     fun parse(body: String, type: String): Transcript {
-        val text = body.removePrefix("﻿")
+        val text = body.removePrefix("\uFEFF")
         return when (TranscriptFormats.normalise(type)) {
             "application/json" -> Transcript(merge(json(text)), timed = true)
             "text/vtt" -> Transcript(merge(cues(text, vtt = true)), timed = true)

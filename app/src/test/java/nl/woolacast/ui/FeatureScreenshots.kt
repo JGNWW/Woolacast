@@ -300,7 +300,7 @@ class FeatureScreenshots {
         downloads.report("deadline-2", DownloadProgress(38L * 1024 * 1024, 58L * 1024 * 1024))
         val library = LibraryViewModel(store, dataset(), PodcastRepository(noCatalog(), FeedClient(feeds())), makers(store),
             ShowImporter(FeedClient(feeds()), noCatalog(), store))
-        val downloadsModel = DownloadsViewModel(context, store, downloads)
+        val downloadsModel = DownloadsViewModel(store, downloads)
         compose.setContent {
             WoolacastTheme(darkTheme = dark) {
                 LibraryScreen(

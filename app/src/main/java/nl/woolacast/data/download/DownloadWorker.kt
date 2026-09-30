@@ -140,7 +140,6 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
         private const val MIN_BYTES = 16 * 1024L
 
         fun ensureChannel(context: Context) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
             val manager = context.getSystemService(NotificationManager::class.java) ?: return
             manager.createNotificationChannel(
                 NotificationChannel(CHANNEL, "Downloads", NotificationManager.IMPORTANCE_LOW).apply {

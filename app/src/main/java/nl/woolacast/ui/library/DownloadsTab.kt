@@ -1,6 +1,5 @@
 package nl.woolacast.ui.library
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -93,9 +92,10 @@ data class DownloadsUi(
 }
 
 class DownloadsViewModel(
-    private val context: Context,
     private val store: LocalStore,
-    private val downloads: Downloads
+    private val downloads: Downloads,
+    /** Zet de vaste ronde van automatisch downloaden opnieuw, met de nieuwe netwerkeis. */
+    private val rescheduleAuto: (DownloadSettings) -> Unit = {}
 ) : ViewModel() {
 
     private val wifiWait = MutableStateFlow(downloads.waitingForWifi())
@@ -131,7 +131,7 @@ class DownloadsViewModel(
         store.setDownloadSettings(settings)
         if (before.wifiOnly != settings.wifiOnly) {
             downloads.reschedulePending()
-            runCatching { Downloads.scheduleAuto(context, settings) }
+            runCatching { rescheduleAuto(settings) }
             wifiWait.value = downloads.waitingForWifi()
         }
         if (settings.limitMb < before.limitMb || (settings.deleteListened && !before.deleteListened)) downloads.cleanUp()

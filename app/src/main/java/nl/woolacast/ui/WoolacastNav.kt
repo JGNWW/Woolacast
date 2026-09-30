@@ -305,7 +305,9 @@ fun WoolacastNav(container: AppContainer) {
                     )
                     val downloadsViewModel: DownloadsViewModel = viewModel(
                         factory = viewModelFactory {
-                            initializer { DownloadsViewModel(context.applicationContext, container.store, container.downloads) }
+                            initializer { DownloadsViewModel(container.store, container.downloads) { settings ->
+                                    Downloads.scheduleAuto(context.applicationContext, settings)
+                                } }
                         }
                     )
                     LibraryScreen(
