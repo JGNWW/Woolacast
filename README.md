@@ -473,6 +473,49 @@ Pacific"). Een naam van één woord telt alleen als hij in het artikel binnen
 honderd tekens van het woord "podcast" staat — zo overleeft "Serial" wel, maar
 sneuvelt een rubriekskop als "Deutschland".
 
+## Makers
+
+Alle podcasts van één maker, op drie plekken: de makerpagina, de lijst per
+maker op Hitlijsten, en het tabblad Makers in de Bibliotheek. De ontwerpen en
+het onderzoek staan in `design/kanalen/`.
+
+**Wie is de maker.** Apple kent voor ongeveer een derde van de lijst een
+*kanaal*, met logo en kleur: van de Nederlandse Top 200 hangen 67 shows aan
+25 kanalen. De rest heeft alleen een makersnaam, en die is rommelig ("NPO
+Luister / BNNVARA", "Dag en Nacht | Podimo"). Eén regel maakt er één maker van:
+het kanaal als Apple er een kent, anders het eerste deel van de naam, gesplitst
+op ` / `, ` | ` en ` & `. Zo telt elke show bij precies één maker.
+
+**Kanalen komen uit de verzamelaar.** Kanaalgegevens staan alleen achter de
+amp-api met het webtoken, en dat token haalt alleen `collect.py` op. De ronde
+`snapshot` schrijft daarom per land `apple/{land}/makers.json`: de kanalen met
+twee of meer shows in de lijsten, met logo, kleur, alle show-ids en Apple's
+lijst nieuwe shows, plus per show zijn kanaal. Een kanaal dat uit de lijsten
+valt, blijft 90 dagen staan, zodat wie hem volgt niets mist. Los te draaien met
+`python3 collect.py makers --countries nl`. Voor NL is dat een minuut en 70
+kanalen.
+
+**Makerpagina.** Sorteren op *Populair* (de plek in de lijst die je op
+Hitlijsten kiest, altijd over alle categorieën), *Recent* (nieuwste aflevering)
+en *A–Z*. Met een kanaal zijn het alle shows van Apple, in één of twee
+opzoekingen. Zonder kanaal is het wat een zoekopdracht op naam vindt, en dan
+zegt de pagina "gevonden in de Apple-catalogus". Bij Spotify als bron koppelt de
+app op titel; wat niet te koppelen is, staat eronder.
+
+**Per maker op Hitlijsten.** Dezelfde ranglijst, geteld per maker, met makers
+met twee of meer podcasts. Bij gelijke stand gaat de hoogste plek voor. De pijl
+is de verandering sinds gisteren, uit een eigen momentopname van de
+makersranglijst (`MAKERS|…` in de opslag); de eerste dag is er geen pijl.
+
+**Makers volgen.** Per maker zie je bij hoeveel podcasts er sinds gisteren een
+nieuwe aflevering is, zonder dat er een feed open hoeft. Een nieuwe podcast van
+een gevolgde maker staat bovenaan tot je hem opent. Met een kanaal is dat
+Apple's lijst nieuwe shows. Zonder kanaal geldt het alleen voor een show die er
+bij het volgen nog niet was, hooguit drie afleveringen heeft en jonger is dan
+twee weken. Alleen kanalen geven ook een melding: `MakerCheckWorker` kijkt twee
+keer per dag in `makers.json`. Zonder kanaal is "nieuw" niet zeker genoeg voor
+een melding.
+
 ## Stijgers en dalers
 
 Er bestaat geen publieke bron voor "gisteren". De app bewaart daarom zelf per
