@@ -42,7 +42,7 @@ export const M = {
   licht: { name: 'Lichtkogel', mark: 'LK', channel: false }
 };
 
-// In donker klemmen we de kanaalkleur omhoog tot 3:1 tegen de achtergrond (P5),
+// In donker klemmen we de kanaalkleur omhoog tot 3,2:1 tegen de achtergrond (P5),
 // door hem naar het donkere ink te mengen. Zo verdwijnt een zwart logo niet.
 const lum = (h) => {
   const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
@@ -53,7 +53,7 @@ export const liftForDark = (h) => {
   const bg = lum('#0E0F11');
   for (let t = 0; t <= 1; t += .02) {
     const c = mix(h, '#EDEEF0', t);
-    if ((lum(c) + .05) / (bg + .05) >= 3) return c;
+    if ((lum(c) + .05) / (bg + .05) >= 3.2) return c;
   }
   return h;
 };
@@ -283,21 +283,26 @@ screens.Makers = { title: '2 · Makers in de hitlijst', body: `
 
 /* ---- 3. Makers: Apple tegenover Spotify ---- */
 // Gekoppeld per show (Spotify-show → Apple-show → Apple-maker), dus één identiteit per maker.
-// [maker, plek bij Apple, plek bij Spotify]; null = minder dan 2 shows in die lijst.
+// [maker, plek bij Apple, plek bij Spotify]; > 10 = zone "Plek 11+" met de echte plek,
+// null = minder dan 2 shows in die lijst.
 const pairs = [
   [M.kade, 1, 2], [M.noord, 2, 1], [M.hemel, 3, 7], [M.oost, 4, 5], [M.concept, 5, 3],
-  [M.podium, 6, null], [M.kelder, 7, 4], [M.noordoost, 8, null], [M.stad, 9, 8], [M.vrij, 10, 9],
-  [M.zuid, null, 6], [M.licht, null, 10]
+  [M.podium, 6, 15], [M.kelder, 7, 4], [M.noordoost, 8, null], [M.stad, 9, 8], [M.vrij, 10, 9],
+  [M.zuid, null, 6], [M.licht, 14, 10]
 ];
 const SEL = M.hemel;
 const cut = (t, n) => t.length > n ? t.slice(0, n - 1) + '…' : t;
 const slope = () => {
-  const W = 350, top = 36, step = 44, n = 11; // rij 11 = "minder dan 2 shows"
-  const y = (r) => top + ((r ?? n) - 1) * step;
+  const W = 350, top = 36, step = 44, head = 24;
+  const sep11 = top + 9 * step + step / 2;         // lijn boven de zone "Plek 11+"
+  const y11 = sep11 + head + step / 2;
+  const sepLow = y11 + step / 2;                    // lijn boven "Minder dan 2 shows"
+  const yLow = sepLow + head + step / 2;
+  const y = (r) => r == null ? yLow : r > 10 ? y11 : top + (r - 1) * step;
   const xl = 150, xr = 200;
   const lines = pairs.map(([m, a, s]) => {
     const on = m === SEL;
-    return `<line x1="${xl}" y1="${y(a)}" x2="${xr}" y2="${y(s)}" stroke="${on ? 'var(--pri)' : 'var(--ink3)'}" stroke-width="${on ? 3 : 1.5}" ${a == null || s == null ? 'stroke-dasharray="4 4"' : ''} stroke-linecap="round"></line>`;
+    return `<line x1="${xl}" y1="${y(a)}" x2="${xr}" y2="${y(s)}" stroke="${on ? 'var(--pri)' : 'var(--ink3)'}" stroke-width="${on ? 3 : 1.5}" ${a == null || s == null || a > 10 || s > 10 ? 'stroke-dasharray="4 4"' : ''} stroke-linecap="round"></line>`;
   });
   const dots = pairs.flatMap(([m, a, s]) => {
     const on = m === SEL, f = on ? 'var(--pri)' : 'var(--ink2)';
@@ -309,13 +314,16 @@ const slope = () => {
     return `<text x="${x}" y="${y(r) + 4.5}" text-anchor="${side === 'l' ? 'end' : 'start'}" font-size="12.5" font-weight="${on ? 700 : 500}" fill="${on ? 'var(--ink)' : 'var(--ink2)'}"><tspan font-weight="700" fill="var(--ink)">${r}</tspan>  ${cut(m.name, 17)}</text>`;
   };
   const labels = pairs.flatMap(([m, a, s]) => [lab(m, a, 'l'), lab(m, s, 'r')]);
-  const H = y(n) + 18;
+  const zone = (sy, t) => `<line x1="0" y1="${sy}" x2="${W}" y2="${sy}" stroke="var(--line)" stroke-width="1"></line>
+    <text x="0" y="${sy + 16}" font-size="11" font-weight="700" letter-spacing="1.2" fill="var(--ink2)">${t}</text>`;
+  const H = yLow + 18;
   return `<svg class="slope" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">
     <text x="${xl}" y="14" text-anchor="end" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">APPLE</text>
     <text x="${xr}" y="14" text-anchor="start" font-size="11" font-weight="700" letter-spacing="1.3" fill="var(--ink2)">SPOTIFY</text>
-    <line x1="0" y1="${y(n) - step / 2}" x2="${W}" y2="${y(n) - step / 2}" stroke="var(--line)" stroke-width="1"></line>
-    <text x="${xl - 12}" y="${y(n) + 4.5}" text-anchor="end" font-size="12.5" fill="var(--ink2)">Minder dan 2 shows</text>
-    <text x="${xr + 12}" y="${y(n) + 4.5}" text-anchor="start" font-size="12.5" fill="var(--ink2)">Minder dan 2 shows</text>
+    ${zone(sep11, 'PLEK 11+')}
+    ${zone(sepLow, 'MINDER DAN 2 SHOWS')}
+    <text x="${xl - 12}" y="${yLow + 4.5}" text-anchor="end" font-size="12.5" fill="var(--ink2)">Zuidkust Audio</text>
+    <text x="${xr + 12}" y="${yLow + 4.5}" text-anchor="start" font-size="12.5" fill="var(--ink2)">Omroep Noordoost…</text>
     ${lines.join('')}${dots.join('')}${labels.join('')}
   </svg>`;
 };
@@ -333,7 +341,8 @@ screens.Vergelijk = { title: '3 · Makers: Apple tegenover Spotify', body: `
         <span class="chev">${ICON.chevR()}</span>
       </div>
     </div>
-    <div class="pad" style="padding-top:8px">${slope()}</div>
+    <div class="pad tnote" style="min-height:28px">Tik op een naam om te vergelijken.</div>
+    <div class="pad" style="padding-top:4px">${slope()}</div>
     <div class="pad row" style="height:48px;gap:6px;font-size:13px;font-weight:600">Toon alle 31 makers <span class="chev">${ICON.chevR(16)}</span></div>
     <div class="pad tnote">4 Spotify-shows zijn niet aan Apple te koppelen en tellen niet mee.</div>
   </div>
@@ -370,9 +379,9 @@ screens.Volgen = { title: '4 · Makers volgen', body: `
 
 /* ---- 5. Tips per medium ---- */
 const tipRows = [
-  ['Halve Zolen', 'a9', 'Twee broers bellen elke week een schoenmaker, en het wordt steeds beter'],
-  ['Lange Adem', 'a5', 'De beste sportpodcast van dit najaar gaat over verliezen'],
-  ['Ondergronds', 'a4', 'Deze true crime is rustig en precies, zonder sensatie']
+  ['Halve Zolen', 'a9', 'Twee broers bellen elke week een schoenmaker, en het wordt steeds beter', '27 sep'],
+  ['Lange Adem', 'a5', 'De beste sportpodcast van dit najaar gaat over verliezen', '19 sep'],
+  ['Ondergronds', 'a4', 'Deze true crime is rustig en precies, zonder sensatie', '12 sep']
 ];
 screens.Tips = { title: '5 · Tips per medium', body: `
 <div class="ph col">
@@ -383,7 +392,7 @@ screens.Tips = { title: '5 · Tips per medium', body: `
   </div>
   <div class="body">
     <div class="pad row" style="gap:8px;overflow:hidden;padding-top:4px">
-      <div class="fchip" style="gap:6px">${FLAG}NL</div>
+      <div class="fchip on" style="gap:6px">${FLAG}NL</div>
       ${['Alle', 'Dagblad Noord', 'Weekblad Zuid', 'Radio 7'].map(t => `<div class="fchip ${t === 'Dagblad Noord' ? 'on' : ''}">${t}</div>`).join('')}
     </div>
     <div class="pad row" style="justify-content:space-between;padding-top:10px">
@@ -403,7 +412,8 @@ screens.Tips = { title: '5 · Tips per medium', body: `
       <div class="tip" style="padding-top:8px">
         <div class="art ${t[1]}" style="width:56px;height:56px;border-radius:12px"></div>
         <div class="ebody">
-          <div class="t1">${t[0]}</div>
+          <div class="src" style="font-weight:500">${t[3]}</div>
+          <div class="t1" style="margin-top:3px">${t[0]}</div>
           <div class="hl">${t[2]}</div>
           <div class="rd">Lees het artikel ${ICON.chevR(13)}</div>
         </div>

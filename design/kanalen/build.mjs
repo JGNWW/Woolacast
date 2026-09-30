@@ -113,8 +113,8 @@ dd{margin:0;color:var(--p-ink2)}
 .srcs a{color:var(--p-accent)}
 .note-p{font-size:13.5px;color:var(--p-ink2);margin-top:14px}
 @media (max-width:880px){
-  .concept{grid-template-columns:1fr;gap:24px}
-  .shots{flex-wrap:wrap}
+  .concept{grid-template-columns:minmax(0,1fr);gap:24px}
+  .shots{flex-wrap:wrap;min-width:0}
   .shot{width:min(300px,100%)}
   dl{grid-template-columns:1fr;gap:2px}
   dd{margin-bottom:10px}

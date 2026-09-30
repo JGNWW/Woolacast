@@ -1,4 +1,4 @@
-# Kanalen — vijf concepten (versie 3)
+# Kanalen — vijf concepten (versie 4, alle vijf goedgekeurd)
 
 ## Uitgangspunten (A1–A10 uit ronde 1)
 
@@ -19,7 +19,7 @@
   segment na splitsen op ` / `, ` | ` en ` & ` ("NPO Luister / BNNVARA" wordt
   "NPO Luister"). Daarna hoofdletters en leestekens gelijktrekken. Voor Spotify
   (`showPublisher`) geldt dezelfde regel. Elke show telt bij precies één maker.
-- **Maker zonder kanaal.** Neutraal monogram (`--surf3` met `--ink2`), geen
+- **Maker zonder kanaal.** Neutraal monogram (`--surf3` met `--ink`), geen
   gloed en geen deelknop. Te zien in 1 (donker), 2, 3 en 4.
 - **Vorm.**
   - Makerlogo's zijn overal **rond**; hoezen blijven afgeronde vierkanten.
@@ -39,9 +39,11 @@
 - **Typografie.** 26 / 14,5 / 12,5, met 11 voor labels. Chips (13) en tabbladen
   (15) volgen hun bestaande component.
 - **Donker.** Met de tokens van Beeldgloed. De kanaalkleur wordt in donker
-  omhoog geklemd tot hij ≥3:1 haalt tegen `#0E0F11`: hij wordt naar `#EDEEF0`
+  omhoog geklemd tot hij ≥3,2:1 haalt (marge voor anti-aliasing) tegen `#0E0F11`: hij wordt naar `#EDEEF0`
   gemengd (`liftForDark`), en de gloed gebruikt die geklemde kleur. Zie het
-  scherm *Donker kanaallogo*, met Podium (`#1E1B16`).
+  scherm *Donker kanaallogo*, met Podium (`#1E1B16`). Echte Apple-logo's zijn
+  afbeeldingen: die staan op een schijf in de geklemde kleur, zodat ook een zwart
+  beeldmerk op transparante achtergrond zichtbaar blijft.
 - **Monogram** van makers zonder kanaal: `--ink` op `--surf3`, ook op 44–48px.
 
 ## 1 · De makerpagina
@@ -94,8 +96,10 @@ Trending en Nieuw hebben geen makersweergave.
     `shows.history.json` van de verzamelaar, zoals hij elders de `moves` uit de
     dataset haalt.
   - Een maker die gisteren niet in de makerslijst stond, krijgt "NIEUW".
-- **Ingang naar 3.** Onder de lijst staat "Vergelijk met Spotify", of "met Apple"
-  als Spotify de bron is. Heeft het land geen lijst bij de andere bron, dan
+- **Ingang naar 3.** In het menu van de `SmallChip` (Per show / Per maker /
+  Vergelijk met Spotify) en onder de lijst. "met Apple" als Spotify de bron is.
+- **Per show.** In die weergave toont de toelichtingsregel wat hij nu op dit
+  tabblad toont. "2+ shows · t.o.v. gisteren" hoort alleen bij *Per maker*. Heeft het land geen lijst bij de andere bron, dan
   ontbreekt die regel.
 - De aandeelbalk is geschrapt. Tik op een rij opent de makerpagina (1).
 
@@ -110,8 +114,21 @@ niveau van makers.
   Apple-show (dezelfde opzoeking als op de podcastpagina), en daarvan de maker
   van Apple (kanaal of genormaliseerde `artistName`). "Dag en Nacht | Podimo" bij
   Apple en "Podimo" bij Spotify worden zo nooit twee halve makers. Spotify-shows
-  die niet te koppelen zijn, tellen niet mee. Hun aantal staat onder de grafiek.
-- **Onderste rij: "Minder dan 2 shows".** Een maker staat in beide kolommen
+  die niet te koppelen zijn, vallen onder hun genormaliseerde `showPublisher`, en
+  worden alleen bij een exacte naamsovereenkomst samengevoegd met een Apple-maker.
+  Zo verdwijnen Spotify-exclusives niet uit de telling. Het aantal van zulke
+  shows staat onder de grafiek.
+- **Twee zones onderaan.**
+  - **"Plek 11+"**: de maker staat in de ene top 10, maar in de andere lijst op
+    plek 11 of lager. Zijn lijn eindigt gestippeld in die zone, en het label aan
+    die kant toont de echte plek ("15 Podium Audio").
+  - **"Minder dan 2 shows"**: zoals hieronder.
+  - In **beide** zones krijgt elke maker een eigen rij van 44px, ook als dat
+    labels onder elkaar zet. Binnen "Plek 11+" staat de volgorde op plek,
+    binnen "Minder dan 2 shows" op naam. Ook de labels in die onderste zone zijn
+    tikbaar (≥44px), met een TalkBack-tekst als "Zuidkust Audio: Apple minder
+    dan 2 shows; Spotify plek 6".
+- **Onderste zone: "Minder dan 2 shows".** Een maker staat in beide kolommen
   zodra hij in één lijst 2+ shows heeft. Heeft hij in de andere lijst 0 of 1,
   dan eindigt zijn lijn gestippeld in die onderste rij. Dat is waar, want
   "niet in de lijst" zou het niet zijn.
@@ -123,6 +140,7 @@ niveau van makers.
     "Omroep Noordoost…". De volledige naam staat in de kaart en in de
     TalkBack-tekst.
 - **Selectie en toegankelijkheid.**
+  - Een regel "Tik op een naam om te vergelijken" maakt de interactie vindbaar.
   - De kaart bovenaan geeft de gekozen maker met plek en aantal shows per bron,
     en opent de makerpagina.
   - De grafiek zelf is `aria-hidden`. Elke maker is een eigen knooppunt:
@@ -165,6 +183,14 @@ model is dat van Apple, maar dan licht: je volgt een maker, niet al zijn shows.
   - Er wordt geen RSS ververst. Tik opent de makerpagina op *Recent*.
 - **Van podcasts die je volgt.** Makers van shows die je al volgt, met een
   knop *Volg*. Dat is de Apple-regel.
+- **Uitval voorkomen.** De verzamelaar houdt eenmaal geziene kanalen 90 dagen
+  in `makers.json`, ook als ze uit alle lijsten vallen. Daarna valt de app voor
+  dat kanaal terug op de regels voor makers zonder kanaal, en zegt dat op de
+  makerpagina.
+- **"Sinds gisteren"** geldt voor kanalen. Rijen van makers zonder kanaal zeggen
+  "gevonden vandaag".
+- **Chevrons.** De rijen in de kaart krijgen een chevron. De bestaande
+  chart-alerts krijgen die ook, zodat de twee gelijk blijven.
 - **Lege toestand.** "Nog geen makers gevolgd", met direct daaronder de
   suggesties uit "Van podcasts die je volgt".
 - **Ontdubbelen.** Afleveringen blijven onder *Gevolgd*. *Makers* toont alleen
@@ -189,7 +215,8 @@ de verversknop, en de chiprij met eerst het land, dan Alle, dan de media. Als er
      "Tipt ook podcasts →".
 3. **`TipRow` blijft `TipRow`**, met één parameter: de regel met het medium
    verdwijnt als er op dat medium gefilterd is, omdat hij dan elke rij hetzelfde
-   zou zeggen. De kop van het artikel staat zonder aanhalingstekens, met
+   zou zeggen. De datum blijft staan, als eigen regel boven de titel ("27 sep").
+   De landchip is aan (`--priC`), zoals in de code. De kop van het artikel staat zonder aanhalingstekens, met
    "Lees het artikel" en de afspeelknop.
 
 Zo is "bron" ook: wie je vertrouwt. Er komt geen apart kanaalscherm naast Tips.
