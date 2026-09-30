@@ -25,6 +25,13 @@ class MakersTest {
     }
 
     @Test
+    fun `een en-teken als HTML-teken telt als en-teken`() {
+        // Spotify geeft "Sam &amp; Rijk"; de verzamelaar en Apple zeggen "Sam & Rijk".
+        assertEquals("Sam", Makers.name("Sam &amp; Rijk"))
+        assertEquals(Makers.keyOf("Sam & Rijk"), Makers.keyOf("Sam &amp; Rijk"))
+    }
+
+    @Test
     fun `de sleutel negeert hoofdletters en leestekens`() {
         assertEquals(Makers.key("De Volkskrant"), Makers.key("de volkskrant."))
         assertEquals("npoluister", Makers.keyOf("NPO Luister / AVROTROS"))

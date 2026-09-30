@@ -13,7 +13,8 @@ object Makers {
 
     /** Het eerste deel van een makersnaam: "NPO Luister / BNNVARA" wordt "NPO Luister". */
     fun name(publisher: String): String =
-        publisher.split(separators).firstOrNull { it.isNotBlank() }?.trim() ?: publisher.trim()
+        // Spotify geeft soms nog HTML-tekens mee: "Sam &amp; Rijk".
+        publisher.replace("&amp;", "&").split(separators).firstOrNull { it.isNotBlank() }?.trim() ?: publisher.trim()
 
     /** Sleutel om op te vergelijken: kleine letters, alleen letters en cijfers. */
     fun key(name: String): String = name.lowercase().filter { it.isLetterOrDigit() }

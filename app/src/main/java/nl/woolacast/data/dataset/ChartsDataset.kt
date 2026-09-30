@@ -107,6 +107,7 @@ data class DatasetChannel(
     val logo: String? = null,
     val url: String? = null,
     val showCount: Int = 0,
+    /** Eerst de shows van het kanaal, dan wat zoeken op naam er nog bij vond. */
     val shows: List<String> = emptyList(),
     /** De hoezen van zijn eerste vier shows, op Apple's volgorde. */
     val covers: List<String> = emptyList(),
@@ -123,11 +124,24 @@ data class DatasetChannelShow(
     val trackCount: Int? = null
 )
 
+/**
+ * Een maker zonder kanaal met twee of meer shows in de lijsten, met wat de
+ * verzamelaar in de catalogus onder zijn naam vond.
+ */
+@Serializable
+data class DatasetMaker(
+    val key: String = "",
+    val name: String = "",
+    val shows: List<String> = emptyList(),
+    val covers: List<String> = emptyList()
+)
+
 @Serializable
 data class DatasetMakers(
     val country: String = "",
     val updated: String? = null,
     val channels: List<DatasetChannel> = emptyList(),
+    val makers: List<DatasetMaker> = emptyList(),
     /** Per Apple-show-id het kanaal waar hij bij hoort. */
     val showChannel: Map<String, String> = emptyMap()
 )

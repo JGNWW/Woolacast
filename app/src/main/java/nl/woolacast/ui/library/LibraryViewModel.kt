@@ -296,7 +296,7 @@ class LibraryViewModel(
                         channelId = maker.channel?.id,
                         logoUrl = maker.channel?.logoUrl,
                         color = maker.channel?.color,
-                        artworks = makerRepository.face(maker) ?: pairs.map { it.second.artworkUrl }
+                        artworks = makerRepository.face(maker, directory) ?: pairs.map { it.second.artworkUrl }
                     )
                 }
                 .sortedWith(compareByDescending<MakerSuggestion> { it.followedShows }.thenBy { it.name.lowercase() })
@@ -306,7 +306,7 @@ class LibraryViewModel(
             val gate = Semaphore(3)
             _suggestions.value
                 .mapNotNull { makers[it.key] }
-                .filter { makerRepository.face(it) == null }
+                .filter { makerRepository.face(it, directory) == null }
                 .map { maker -> async { gate.withPermit { runCatching { makerRepository.shows(maker, countryCode) } } } }
                 .awaitAll()
         }

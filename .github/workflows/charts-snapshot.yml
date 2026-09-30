@@ -32,7 +32,8 @@ concurrency:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    # Makers zoeken op naam kost tot zo'n twintig minuten extra (360 zoekopdrachten, drie seconden ertussen).
+    timeout-minutes: 95
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

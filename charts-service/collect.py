@@ -23,6 +23,7 @@ Gebruik:
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import pathlib
 import re
@@ -31,6 +32,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
@@ -266,6 +268,34 @@ def write_new_shows(root: pathlib.Path, country: str, limit: int) -> int:
 MAKERS_KEEP_DAYS = 90
 MAKERS_MAX_SHOWS = 400
 
+# Zoeken op naam, naast het kanaal. Apple hangt lang niet elke show aan een
+# kanaal: van NPO Luister stonden er 217 in het kanaal en vond zoeken er 290
+# bij, waaronder Vroeg! en Pauw & De Wit. Zoeken is streng begrensd: Apple
+# noemt zo'n twintig per minuut, en geeft een 403 na een handvol snelle
+# aanroepen. Dus een pauze tussen elke zoekopdracht, één budget per ronde dat
+# over de landen verdeeld wordt (achttien landen × drie seconden telt op), en
+# elke maker eens per week opnieuw. De app zoekt zelf nog op naam voor wat er
+# sindsdien bij kwam.
+APPLE_SEARCH = "https://itunes.apple.com/search"
+MAKERS_SEARCH_DAYS = 7
+MAKERS_SEARCH_TOTAL = 360
+MAKERS_SEARCH_PAUSE = 3.0
+MAKERS_SEARCH_TERMS = 30
+# Meer dan dit geeft Apple niet terug, wat je ook vraagt: wie het haalt, is afgekapt.
+APPLE_SEARCH_CAP = 100
+
+# Dezelfde regel als Makers in de app: "NPO Luister / BNNVARA" is maker "NPO Luister".
+_MAKER_SEPARATORS = re.compile(r"\s+[/|&]\s+|\s+[/|]|[/|]\s+")
+
+
+def maker_parts(publisher: str) -> list[str]:
+    """"NPO Luister / BNNVARA" → ["NPO Luister", "BNNVARA"]."""
+    return [p.strip() for p in _MAKER_SEPARATORS.split(html.unescape(publisher or "")) if p.strip()]
+
+
+def maker_key(name: str) -> str:
+    return "".join(c for c in name.lower() if c.isalnum())
+
 
 def _amp_headers() -> dict | None:
     token = apple_token()
@@ -280,14 +310,21 @@ def _art(attrs: dict, key: str = "artwork", size: int = 600) -> str | None:
         if url else None
 
 
-def apple_channels_of(country: str, show_ids: list[str], headers: dict) -> dict[str, str]:
-    """Per show het Apple-kanaal waar hij bij hoort, honderd shows per aanroep."""
+def apple_channels_of(country: str, show_ids: list[str], headers: dict,
+                      about: dict | None = None) -> dict[str, str]:
+    """
+    Per show het Apple-kanaal waar hij bij hoort, honderd shows per aanroep.
+    In [about] komt per show de makersnaam en de hoes, voor de makers zonder kanaal.
+    """
     found = {}
     for start in range(0, len(show_ids), 100):
         batch = ",".join(show_ids[start:start + 100])
         page = fetch(f"{APPLE_AMP}/catalog/{country}/podcasts?ids={batch}&include=channel",
                      headers=headers)
         for item in (page or {}).get("data", []):
+            if about is not None:
+                attrs = item.get("attributes", {})
+                about[item["id"]] = (attrs.get("artistName", ""), _art(attrs))
             channel = (item.get("relationships", {}).get("channel", {}).get("data") or [])
             if channel:
                 found[item["id"]] = channel[0]["id"]
@@ -306,7 +343,7 @@ def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
         return None
     attrs = head["data"][0].get("attributes", {})
 
-    shows, covers = [], []
+    shows, covers, names = [], [], Counter()
     url = f"{base}/view/top-shows?limit=50"
     while url and len(shows) < MAKERS_MAX_SHOWS:
         page = fetch(url, headers=headers)
@@ -315,6 +352,8 @@ def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
         items = [item for item in page.get("data", []) if item.get("type") == "podcasts"]
         shows += [item["id"] for item in items]
         covers += [art for item in items if (art := _art(item.get("attributes", {})))]
+        names.update(parts[0] for item in items
+                     if (parts := maker_parts(item.get("attributes", {}).get("artistName", ""))))
         nxt = page.get("next")
         url = (APPLE_AMP.rsplit("/v1", 1)[0] + nxt + "&limit=50") if nxt else None
 
@@ -345,17 +384,90 @@ def apple_channel(country: str, channel_id: str, headers: dict) -> dict | None:
         "shows": list(dict.fromkeys(shows)),
         # Het gezicht van de maker in de app: de hoezen van zijn eerste vier shows.
         "covers": list(dict.fromkeys(covers))[:4],
+        # Onder welke naam zijn shows in de catalogus staan: daarop zoeken we.
+        "publisher": names.most_common(1)[0][0] if names else attrs.get("name", ""),
         "newShows": fresh,
         "seen": TODAY,
     }
 
 
-def write_makers(root: pathlib.Path, country: str) -> int:
+class MakerSearch:
     """
-    apple/{land}/makers.json: de Apple-kanalen van de shows die vandaag in een
-    Apple-lijst van dit land staan, plus per show zijn kanaal. De app gebruikt
-    het voor het logo en de kleur van een maker, voor de volledige lijst van
-    zijn shows, en om te merken dat een gevolgde maker iets nieuws begint.
+    Zoekopdrachten in de catalogus, met een pauze ertussen en een budget per
+    ronde. Op is op: dan geeft hij None, en die maker komt de volgende ronde.
+    """
+
+    def __init__(self, country: str, budget: int):
+        self.country, self.left, self.last, self.used = country, budget, 0.0, 0
+
+    def __call__(self, term: str) -> list[dict] | None:
+        if self.left <= 0:
+            return None
+        self.left -= 1
+        self.used += 1
+        query = urllib.parse.urlencode({"term": term, "country": self.country, "media": "podcast",
+                                        "entity": "podcast", "limit": 200})
+        for attempt in range(3):
+            time.sleep(max(0.0, self.last + MAKERS_SEARCH_PAUSE - time.time()))
+            page = fetch(f"{APPLE_SEARCH}?{query}", tries=1)
+            self.last = time.time()
+            if page is not None:
+                return page.get("results", [])
+            # Een 403 is Apple die op de rem trapt; even wachten helpt.
+            time.sleep(20 * (attempt + 1))
+        return None
+
+
+def search_maker(name: str, keys: set[str], search: MakerSearch) -> dict[str, str | None] | None:
+    """
+    Alle shows die de catalogus onder deze maker kent: id → hoes, op de volgorde
+    van de zoekresultaten. Een zoekopdracht geeft er hooguit honderd; zit hij
+    daaraan, dan zoeken we verder op naam plus het tweede deel van de namen die
+    we tegenkwamen ("NPO Luister BNNVARA", "NPO Luister VPRO", …). None als het
+    budget op raakte: dan is de lijst niet af.
+    """
+    found: dict[str, str | None] = {}
+    terms, done = [name], set()
+    while terms and len(done) < MAKERS_SEARCH_TERMS:
+        term = terms.pop(0)
+        if maker_key(term) in done:
+            continue
+        done.add(maker_key(term))
+        results = search(term)
+        if results is None:
+            return None
+        subs = []
+        for result in results:
+            parts = maker_parts(result.get("artistName", ""))
+            if not parts or maker_key(parts[0]) not in keys or not result.get("collectionId"):
+                continue
+            found.setdefault(str(result["collectionId"]),
+                             result.get("artworkUrl600") or result.get("artworkUrl100"))
+            subs += parts[1:]
+        if len(results) >= APPLE_SEARCH_CAP and term == name:
+            terms += [f"{name} {sub}" for sub in dict.fromkeys(subs)]
+    return found
+
+
+def _due(entry: dict | None) -> bool:
+    """Of een maker weer gezocht moet worden: nooit gedaan, of te lang geleden."""
+    searched = (entry or {}).get("searched")
+    if not searched:
+        return True
+    return searched <= (datetime.now(timezone.utc) - timedelta(days=MAKERS_SEARCH_DAYS)).strftime("%Y-%m-%d")
+
+
+def write_makers(root: pathlib.Path, country: str, budget: int = MAKERS_SEARCH_TOTAL) -> int:
+    """
+    apple/{land}/makers.json, met twee soorten makers:
+    - channels: de Apple-kanalen van de shows die vandaag in een Apple-lijst van
+      dit land staan. Met hoezen, de lijst nieuwe shows, en alle shows: die van
+      het kanaal plus wat zoeken op naam erbij vindt.
+    - makers: makers zonder kanaal met twee of meer shows in de lijsten, met
+      wat zoeken op naam vindt.
+    Plus per show zijn kanaal. De app gebruikt het voor de volledige lijst van
+    een maker, zijn gezicht, en om te merken dat een gevolgde maker iets nieuws
+    begint.
     """
     headers = _amp_headers()
     if not headers:
@@ -371,8 +483,10 @@ def write_makers(root: pathlib.Path, country: str) -> int:
     target = root / "apple" / country / "makers.json"
     before = json.loads(target.read_text()) if target.exists() else {}
     kept = {c["id"]: c for c in before.get("channels", [])}
+    kept_makers = {m["key"]: m for m in before.get("makers", [])}
 
-    show_channel = apple_channels_of(country, ids, headers)
+    about: dict[str, tuple[str, str | None]] = {}
+    show_channel = apple_channels_of(country, ids, headers, about)
     # Alleen kanalen met twee of meer shows in de lijsten: een kanaal met één
     # show is meestal een betaalde variant van die show, geen maker om te volgen.
     # Wat eerder al bekend was, blijft erbij (zie hieronder).
@@ -394,16 +508,84 @@ def write_makers(root: pathlib.Path, country: str) -> int:
         if channel_id not in channels and channel.get("seen", "") >= cutoff:
             channels[channel_id] = channel
 
+    # Makers zonder kanaal: gegroepeerd op dezelfde sleutel als in de app.
+    channel_keys = {maker_key(c["name"]) for c in channels.values()} | \
+                   {maker_key(c.get("publisher", "")) for c in channels.values()}
+    loose: dict[str, dict] = {}
+    for show_id, (publisher, art) in about.items():
+        parts = maker_parts(publisher)
+        key = maker_key(parts[0]) if parts else ""
+        if not key or show_id in show_channel or key in channel_keys:
+            continue
+        maker = loose.setdefault(key, {"key": key, "name": parts[0], "charted": {}})
+        maker["charted"][show_id] = art
+    makers = {}
+    for key, maker in loose.items():
+        if len(maker["charted"]) >= 2:
+            makers[key] = {"key": key, "name": maker["name"], "charted": maker["charted"], "seen": TODAY}
+    for key, maker in kept_makers.items():
+        if key not in makers and key not in channel_keys and maker.get("seen", "") >= cutoff:
+            makers[key] = maker
+
+    # Zoeken op naam. Wie nog nooit of het langst geleden gezocht is, gaat voor;
+    # wie niet aan de beurt is of buiten het budget valt, houdt wat hij had.
+    search = MakerSearch(country, budget)
+    queue = [("channel", c) for c in channels.values()] + [("maker", m) for m in makers.values()]
+    before_of = lambda kind, e: (kept.get(e["id"]) if kind == "channel" else kept_makers.get(e["key"])) or {}
+    queue.sort(key=lambda item: before_of(*item).get("searched") or "")
+    for kind, entry in queue:
+        previous = before_of(kind, entry)
+        # Wat de vorige ronde vond: bij een kanaal de shows buiten het kanaal.
+        had = [s for s in previous.get("shows", []) if s not in set(previous.get("channelShows", []))]
+        entry["searched"], entry["found"] = previous.get("searched"), dict.fromkeys(had)
+        if kind == "maker" and previous.get("covers"):
+            entry.setdefault("covers", previous["covers"])
+        if not _due(previous):
+            continue
+        name = entry.get("publisher") or entry["name"]
+        found = search_maker(name, {maker_key(entry["name"]), maker_key(name)}, search)
+        if found is not None:
+            entry["searched"], entry["found"] = TODAY, found
+
+    # Eerst wat Apple zelf aan kanalen hangt; pas daarna wat zoeken erbij vond,
+    # en een show die al ergens bij hoort, gaat nergens anders heen.
     for channel in channels.values():
-        for show_id in channel.get("shows", []):
+        channel["channelShows"] = channel.get("channelShows") or channel["shows"]
+        channel["channelShowCount"] = channel.get("channelShowCount") or \
+            max(channel["showCount"], len(channel["channelShows"]))
+        for show_id in channel["channelShows"]:
             show_channel.setdefault(show_id, channel["id"])
+    for channel in channels.values():
+        extra = [s for s in channel.pop("found", {}) if s not in show_channel]
+        channel["shows"] = channel["channelShows"] + extra
+        channel["showCount"] = channel["channelShowCount"] + len(extra)
+        for show_id in extra:
+            show_channel[show_id] = channel["id"]
+
+    out_makers = []
+    for maker in makers.values():
+        found = maker.pop("found", {}) or {}
+        charted = maker.pop("charted", None) or {s: None for s in maker.get("shows", [])}
+        # Wat in de lijsten staat, hoort erbij, ook als zoeken het niet vond.
+        arts = {**{s: a for s, a in charted.items()}, **{s: a for s, a in found.items() if a}}
+        shows = [s for s in list(found) + list(charted) if s not in show_channel]
+        shows = list(dict.fromkeys(shows))
+        if len(shows) < 2:
+            continue
+        maker["shows"] = shows
+        maker["covers"] = list(dict.fromkeys(a for s in shows if (a := arts.get(s))))[:4] or maker.get("covers", [])
+        out_makers.append(maker)
 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps({
         "country": country, "updated": NOW,
         "channels": sorted(channels.values(), key=lambda c: c["name"].lower()),
+        "makers": sorted(out_makers, key=lambda m: m["name"].lower()),
         "showChannel": show_channel,
     }, ensure_ascii=False, separators=(",", ":")))
+    print(f"  apple   {country}       makers     {search.used} zoekopdrachten, "
+          f"{sum(len(c['shows']) - len(c['channelShows']) for c in channels.values())} shows erbij "
+          f"bij kanalen, {len(out_makers)} makers zonder kanaal", flush=True)
     return len(channels)
 
 
@@ -2288,7 +2470,8 @@ def run_snapshot(countries: list[str], limit: int, root: pathlib.Path) -> None:
         print(f"  apple   {country}    26 new        {got:3}", flush=True)
 
         # Na de lijsten: de kanalen van wie er vandaag in staat.
-        print(f"  apple   {country}       makers     {write_makers(root, country):3}", flush=True)
+        budget = max(20, MAKERS_SEARCH_TOTAL // len(countries))
+        print(f"  apple   {country}       makers     {write_makers(root, country, budget):3}", flush=True)
 
         if collected:
             write_movers(root, country, collected)

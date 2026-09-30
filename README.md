@@ -489,12 +489,22 @@ op ` / `, ` | ` en ` & `. Zo telt elke show bij precies één maker.
 **Kanalen komen uit de verzamelaar.** Kanaalgegevens staan alleen achter de
 amp-api met het webtoken, en dat token haalt alleen `collect.py` op. De ronde
 `snapshot` schrijft daarom per land `apple/{land}/makers.json`: de kanalen met
-twee of meer shows in de lijsten, met alle show-ids, de hoezen van de eerste
-vier (zijn gezicht in de app) en Apple's lijst nieuwe shows, plus per show zijn
-kanaal. Een kanaal dat uit de lijsten
-valt, blijft 90 dagen staan, zodat wie hem volgt niets mist. Los te draaien met
-`python3 collect.py makers --countries nl`. Voor NL is dat een minuut en 70
-kanalen.
+twee of meer shows in de lijsten, met de hoezen van de eerste vier (zijn gezicht
+in de app) en Apple's lijst nieuwe shows, plus per show zijn kanaal. Een kanaal
+dat uit de lijsten valt, blijft 90 dagen staan, zodat wie hem volgt niets mist.
+Los te draaien met `python3 collect.py makers --countries nl`.
+
+**Een kanaal is niet alles.** Apple hangt lang niet elke show aan een kanaal.
+Van NPO Luister stonden er 217 in het kanaal, en vond zoeken op naam er 290 bij,
+waaronder *Vroeg!* en *Pauw & De Wit*. De verzamelaar zoekt daarom per maker
+ook op naam. Eén zoekopdracht geeft hooguit honderd resultaten; zit hij daaraan,
+dan zoekt hij verder op naam plus het tweede deel van de gevonden namen ("NPO
+Luister BNNVARA", "NPO Luister VPRO", …). Wat dezelfde makerssleutel heeft,
+komt achter de shows van het kanaal (`channelShows` is wat Apple zelf aan het
+kanaal hangt). Makers zonder kanaal met twee of meer shows in de lijsten krijgen
+zo ook een eigen lijst (`makers`). Zoeken is streng begrensd, dus: drie
+seconden tussen elke zoekopdracht, 160 per ronde, en elke maker om de drie
+dagen opnieuw.
 
 **Het gezicht van een maker.** Kanaallogo's zijn er maar voor een derde van de
 makers, dus de app gebruikt ze niet. Een maker krijgt het gezicht van zijn
@@ -509,10 +519,11 @@ groot en twee klein, twee als twee helften, één als die hoes.
 
 **Makerpagina.** Sorteren op *Populair* (de plek in de lijst die je op
 Hitlijsten kiest, altijd over alle categorieën), *Recent* (nieuwste aflevering)
-en *A–Z*. Met een kanaal zijn het alle shows van Apple, in één of twee
-opzoekingen. Zonder kanaal is het wat een zoekopdracht op naam vindt, en dan
-zegt de pagina "N podcasts gevonden". Bij Spotify als bron koppelt de
-app op titel; wat niet te koppelen is, staat eronder.
+en *A–Z*. Met een kanaal is het de lijst van de verzamelaar, in een paar
+opzoekingen. Zonder kanaal is het wat de verzamelaar vond plus een zoekopdracht
+op naam vanuit de app, en dan zegt de pagina "N podcasts gevonden". Bij
+Spotify als bron koppelt de app op titel; wat niet te koppelen is, staat
+eronder.
 
 **Per maker op Hitlijsten.** Dezelfde ranglijst, geteld per maker, met makers
 met twee of meer podcasts. Bij gelijke stand gaat de hoogste plek voor. De pijl
