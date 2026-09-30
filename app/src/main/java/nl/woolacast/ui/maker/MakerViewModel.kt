@@ -49,7 +49,10 @@ class MakerViewModel(
     private val publisher: String,
     private val countryCode: String,
     private val fromShowId: String?,
-    initialSource: SourceId
+    initialSource: SourceId,
+    /** De show waar je vandaan kwam; alleen vanaf een podcastpagina, niet vanuit een lijst. */
+    highlightId: String? = null,
+    initialSort: MakerSort = MakerSort.POPULAR
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -57,7 +60,8 @@ class MakerViewModel(
             maker = Maker(Makers.keyOf(publisher), Makers.name(publisher)),
             countryCode = countryCode,
             source = initialSource,
-            currentId = fromShowId
+            sort = initialSort,
+            currentId = highlightId
         )
     )
     val state: StateFlow<MakerUiState> = _state.asStateFlow()

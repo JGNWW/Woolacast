@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -26,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -45,17 +49,17 @@ import nl.woolacast.data.maker.Placement
 import nl.woolacast.domain.MakerShow
 import nl.woolacast.domain.SourceId
 import nl.woolacast.ui.common.Artwork
-import nl.woolacast.ui.common.ButtonKind
 import nl.woolacast.ui.common.FilterChipBox
 import nl.woolacast.ui.common.Flag
-import nl.woolacast.ui.common.IconAction
+import nl.woolacast.ui.common.OutlineCircleButton
+import nl.woolacast.ui.common.OutlinePillButton
+import nl.woolacast.ui.common.softInk
 import nl.woolacast.ui.common.MakerGlow
 import nl.woolacast.ui.common.MakerLogo
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.SectionLabel
 import nl.woolacast.ui.common.TextPill
 import nl.woolacast.ui.common.TitleBar
-import nl.woolacast.ui.common.WoolButton
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
@@ -77,25 +81,39 @@ fun MakerScreen(
     val context = LocalContext.current
     val channel = state.maker.channel
 
+    val listState = rememberLazyListState()
+    // Voorbij de kop staat de naam in de balk, zoals de titel op de podcastpagina.
+    val titleShown by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+    val share: (() -> Unit)? = channel?.url?.let { url ->
+        {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, state.maker.name)
+                putExtra(Intent.EXTRA_TEXT, "${state.maker.name}\n$url")
+            }
+            context.startActivity(Intent.createChooser(intent, "Maker delen"))
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         MakerGlow(channel?.color)
         Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-            TitleBar(null, onBack) {
-                // Delen kan alleen als er een pagina is om naar te wijzen: het kanaal bij Apple.
-                channel?.url?.let { url ->
-                    IconAction(WoolIcons.Share, "Maker delen", {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, state.maker.name)
-                            putExtra(Intent.EXTRA_TEXT, "${state.maker.name}\n$url")
-                        }
-                        context.startActivity(Intent.createChooser(intent, "Maker delen"))
-                    })
-                }
+            Box {
+                TitleBar(null, onBack)
+                Text(
+                    state.maker.name,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.5.sp, fontWeight = FontWeight.Bold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 60.dp, end = 20.dp)
+                        .graphicsLayer { alpha = if (titleShown) 1f else 0f }
+                )
             }
 
-            LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
-                item { MakerHeader(state, following, viewModel::toggleFollow) }
+            LazyColumn(state = listState, contentPadding = PaddingValues(bottom = 24.dp)) {
+                item { MakerHeader(state, following, viewModel::toggleFollow, share) }
 
                 when {
                     state.loading -> item {
@@ -141,16 +159,17 @@ fun MakerScreen(
 }
 
 @Composable
-private fun MakerHeader(state: MakerUiState, following: Boolean, onToggleFollow: () -> Unit) {
+private fun MakerHeader(state: MakerUiState, following: Boolean, onToggleFollow: () -> Unit, onShare: (() -> Unit)?) {
     val channel = state.maker.channel
+    val soft = softInk()
     Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             MakerLogo(state.maker.name, channel?.logoUrl, channel?.color, 64.dp)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     "MAKER",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp, letterSpacing = 0.96.sp),
+                    color = soft
                 )
                 Text(
                     state.maker.name,
@@ -159,15 +178,20 @@ private fun MakerHeader(state: MakerUiState, following: Boolean, onToggleFollow:
                     overflow = TextOverflow.Ellipsis
                 )
                 countLine(state)?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = soft)
                 }
             }
         }
         Spacer(Modifier.height(14.dp))
-        if (following) {
-            WoolButton("Volgt", onToggleFollow, kind = ButtonKind.OUTLINE, icon = WoolIcons.Check)
-        } else {
-            WoolButton("Volg maker", onToggleFollow, icon = WoolIcons.Plus, enabled = !state.loading)
+        // Dezelfde knoppen als op de podcastpagina: volgen als pil, delen als rondje ernaast.
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            OutlinePillButton(
+                text = if (following) "Gevolgd" else "Volg maker",
+                icon = if (following) WoolIcons.Check else WoolIcons.Plus,
+                onClick = onToggleFollow,
+                selected = following
+            )
+            if (onShare != null) OutlineCircleButton(WoolIcons.Share, "Maker delen", onShare)
         }
     }
 }
@@ -193,26 +217,23 @@ private fun PlacementLine(state: MakerUiState, onSource: (SourceId) -> Unit) {
             modifier = Modifier
                 .heightIn(min = 44.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clickable { open = true }
+                .clickable(onClickLabel = "Andere bron kiezen", role = Role.DropdownList) { open = true }
+                .semantics(mergeDescendants = true) {}
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text("Plek in", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                state.source.label.substringBefore(' '),
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
-            )
+            val dim = MaterialTheme.colorScheme.onSurfaceVariant
+            val strong = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
+            Text("Plek in", style = MaterialTheme.typography.bodySmall, color = dim)
+            Text(state.source.label.substringBefore(' '), style = strong)
             if (country.isNotEmpty()) {
-                Text("·", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("·", style = MaterialTheme.typography.bodySmall, color = dim)
                 Flag(country)
-                Text(country.uppercase(), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold))
+                Text(country.uppercase(), style = strong)
             }
-            Text(
-                "· Top ${state.placement?.listSize ?: 200}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text("·", style = MaterialTheme.typography.bodySmall, color = dim)
+            Text("Top ${state.placement?.listSize ?: 200}", style = MaterialTheme.typography.bodySmall, color = dim)
             Icon(WoolIcons.ChevronDown, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(15.dp))
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
@@ -309,7 +330,8 @@ private fun ShowRow(
                     listOfNotNull(
                         "Deze podcast".takeIf { podcast.id == state.currentId },
                         relativeDay(show.latestRelease?.take(10))?.let { "Nieuwe afl. $it" },
-                        podcast.genre
+                        // Bij de show waar je vandaan komt is het genre bekend; zo past de regel.
+                        podcast.genre.takeIf { podcast.id != state.currentId }
                     ).joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

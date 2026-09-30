@@ -193,12 +193,14 @@ class MakerScreenshots {
 
     @Test fun makerKanaal() = makerpagina("maker-kanaal", "Kade Media", "1001", dark = false, follow = false)
     @Test fun makerKanaalDonker() = makerpagina("maker-kanaal-donker", "Podium Audio", "1008", dark = true, follow = true)
-    @Test fun makerZonderKanaal() = makerpagina("maker-zonder-kanaal", "Radio Oost", "1004", dark = false, follow = false)
+    @Test fun makerKanaalKleurDonker() = makerpagina("maker-kanaal-kleur-donker", "Kade Media", "1001", dark = true, follow = false)
+    @Test fun makerZonderKanaal() = makerpagina("maker-zonder-kanaal", "Radio Oost", "1004", dark = false, follow = false, highlight = true)
     @Test fun makerZonderKanaalDonker() = makerpagina("maker-zonder-kanaal-donker", "Radio Oost", "1004", dark = true, follow = true)
 
-    private fun makerpagina(name: String, publisher: String, from: String?, dark: Boolean, follow: Boolean) {
+    private fun makerpagina(name: String, publisher: String, from: String?, dark: Boolean, follow: Boolean, highlight: Boolean = false) {
         val store = seededStore()
-        val model = MakerViewModel(repository(store), store, publisher, "nl", from, SourceId.APPLE)
+        // Alleen vanaf een podcastpagina krijgt de show waar je vandaan komt een merkteken.
+        val model = MakerViewModel(repository(store), store, publisher, "nl", from, SourceId.APPLE, highlightId = from.takeIf { highlight })
         compose.setContent {
             WoolacastTheme(darkTheme = dark) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

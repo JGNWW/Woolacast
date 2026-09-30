@@ -1,6 +1,19 @@
 package nl.woolacast.ui.charts
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import nl.woolacast.domain.Movement
+import nl.woolacast.ui.common.NoticePanel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,12 +73,13 @@ internal fun ViewLine(
     var open by remember { mutableStateOf(false) }
     val muted = LocalChartColors.current.muted
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 2.dp),
+        // Even hoog in beide weergaven, zodat de lijst niet verspringt bij het wisselen.
+        modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(top = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                if (byMaker) "${MakerRanking.MIN_SHOWS}+ shows · t.o.v. gisteren" else "Top $listSize",
+                if (byMaker) "${MakerRanking.MIN_SHOWS}+ podcasts · sinds gisteren" else "Top $listSize",
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -93,21 +107,23 @@ internal fun ViewLine(
 /** De lijst per maker: dezelfde rij als per show, maar met een rond logo en zijn hoesjes. */
 internal fun LazyListScope.makerRows(
     rows: List<MakerRank>?,
-    onOpenMaker: (name: String, fromShowId: String?) -> Unit
+    onOpenMaker: (name: String, fromShowId: String?) -> Unit,
+    onPerShow: () -> Unit
 ) {
     when {
         rows == null -> item(key = "makers-loading") {
-            Box(Modifier.fillMaxWidth().padding(top = 40.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillParentMaxHeight(0.7f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
 
         rows.isEmpty() -> item(key = "makers-empty") {
-            Text(
-                "Geen maker heeft twee of meer shows in deze lijst.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 24.dp)
+            NoticePanel(
+                title = "Geen makers met ${MakerRanking.MIN_SHOWS}+ podcasts",
+                message = "In deze lijst heeft geen maker twee of meer podcasts. Per show zie je de hele lijst.",
+                actionLabel = "Toon per show",
+                onAction = onPerShow,
+                outerPadding = PaddingValues(vertical = 28.dp)
             )
         }
 
@@ -122,7 +138,11 @@ internal fun LazyListScope.makerRows(
 private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
     val channel = row.maker.channel
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).height(60.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .height(60.dp)
+            .semantics(mergeDescendants = true) { contentDescription = spoken(row) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -137,7 +157,7 @@ private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                "${row.count} shows · hoogste #${row.best}",
+                "${row.count} podcasts · hoogste #${row.best}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -149,17 +169,51 @@ private fun MakerChartRow(row: MakerRank, onClick: () -> Unit) {
     }
 }
 
-/** Drie hoesjes die over elkaar schuiven, elk met een rand in de achtergrondkleur. */
+/** Wat TalkBack voorleest: de plek, de maker, en de beweging in woorden. */
+private fun spoken(row: MakerRank): String {
+    val move = when (val m = row.movement) {
+        is Movement.Up -> m.places?.let { if (it == 1) "1 plek gestegen" else "$it plekken gestegen" } ?: "gestegen"
+        is Movement.Down -> m.places?.let { if (it == 1) "1 plek gedaald" else "$it plekken gedaald" } ?: "gedaald"
+        Movement.New -> "nieuw"
+        Movement.Flat -> "gelijk gebleven"
+        Movement.Unknown -> null
+    }
+    return listOfNotNull("Plek ${row.rank}", row.maker.name, "${row.count} podcasts", "hoogste plek ${row.best}", move)
+        .joinToString(", ")
+}
+
+/**
+ * Drie hoesjes die over elkaar schuiven. Tussen twee hoesjes zit een
+ * uitsparing in plaats van een rand, zodat de gloed eronder gewoon doorloopt.
+ * Het vak is altijd drie hoesjes breed: dan beginnen ze in elke rij op dezelfde plek.
+ */
 @Composable
 private fun CoverStack(urls: List<String?>) {
-    val ring = MaterialTheme.colorScheme.background
-    Box(Modifier.width((26 + 20 * (urls.size - 1).coerceAtLeast(0)).dp).height(26.dp)) {
+    val gap = 2.dp
+    Box(
+        Modifier
+            .width(46.dp)
+            .height(22.dp)
+            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
+    ) {
         urls.forEachIndexed { index, url ->
             Artwork(
-                url, 26.dp, corner = 6.dp, elevation = 0.dp,
+                url, 22.dp, corner = 5.dp, elevation = 0.dp,
                 modifier = Modifier
-                    .offset(x = (20 * index).dp)
-                    .border(2.dp, ring, RoundedCornerShape(6.dp))
+                    .offset(x = (12 * index).dp)
+                    .drawWithContent {
+                        if (index > 0) {
+                            val g = gap.toPx()
+                            drawRoundRect(
+                                color = Color.Black,
+                                topLeft = Offset(-g, -g),
+                                size = Size(size.width + 2 * g, size.height + 2 * g),
+                                cornerRadius = CornerRadius((5.dp + gap).toPx()),
+                                blendMode = BlendMode.Clear
+                            )
+                        }
+                        drawContent()
+                    }
             )
         }
     }
@@ -175,9 +229,10 @@ internal fun CountingSheet(onDismiss: () -> Unit) {
         containerColor = MaterialTheme.colorScheme.background,
         shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
     ) {
-        Column(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 32.dp)) {
+        Column(Modifier.padding(bottom = 32.dp)) {
+            // Dezelfde kop als "Lijst instellen".
             Row(
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp).padding(start = 20.dp, end = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -185,16 +240,16 @@ internal fun CountingSheet(onDismiss: () -> Unit) {
                 IconAction(WoolIcons.Close, "Sluiten", onDismiss)
             }
             listOf(
-                "Elke show telt bij één maker. Kent Apple de show als deel van een kanaal, dan is dat kanaal de maker. Anders het eerste deel van de makersnaam: \"NPO Luister / BNNVARA\" telt bij NPO Luister.",
-                "Alleen makers met twee of meer shows in deze lijst staan erin.",
-                "Hebben twee makers evenveel shows, dan gaat de maker met de hoogste plek voor.",
+                "Elke podcast telt bij één maker. Kent Apple de podcast als deel van een kanaal, dan is dat kanaal de maker. Anders het eerste deel van de makersnaam: \"NPO Luister / BNNVARA\" telt bij NPO Luister.",
+                "Alleen makers met twee of meer podcasts in deze lijst staan erin.",
+                "Hebben twee makers evenveel podcasts, dan gaat de maker met de hoogste plek voor.",
                 "De pijl is de verandering in de plek van de maker sinds gisteren, zoals in de rest van de app. De eerste dag is er nog geen pijl."
             ).forEach { line ->
                 Text(
                     line,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 10.dp)
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp)
                 )
             }
         }

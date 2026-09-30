@@ -54,6 +54,8 @@ import nl.woolacast.ui.common.IconAction
 import nl.woolacast.ui.common.MarkBar
 import nl.woolacast.ui.common.NoticePanel
 import nl.woolacast.ui.common.PageTitle
+import nl.woolacast.ui.common.PanelCard
+import nl.woolacast.ui.common.PanelRow
 import nl.woolacast.ui.common.PlayCircle
 import nl.woolacast.ui.common.TextPill
 import nl.woolacast.ui.common.UnderlineTabs
@@ -83,6 +85,7 @@ fun LibraryScreen(
     val makerStatus by viewModel.makerStatus.collectAsStateWithLifecycle()
     val newShows by viewModel.newShows.collectAsStateWithLifecycle()
     val suggestions by viewModel.suggestions.collectAsStateWithLifecycle()
+    val makersRefreshing by viewModel.makersRefreshing.collectAsStateWithLifecycle()
     val queue by viewModel.queue.collectAsStateWithLifecycle()
     val saved by viewModel.saved.collectAsStateWithLifecycle()
     val alerts by viewModel.alerts.collectAsStateWithLifecycle()
@@ -152,7 +155,7 @@ fun LibraryScreen(
                 )
             }
             LibraryTab.MAKERS -> PullToRefreshBox(
-                isRefreshing = false,
+                isRefreshing = makersRefreshing,
                 onRefresh = { viewModel.refreshMakers(countryCode, force = true) },
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -231,6 +234,7 @@ private fun FollowedTab(
                         .clip(RoundedCornerShape(13.dp))
                         .combinedClickable(
                             onClick = { onOpenPodcast(show.id, show.feedUrl, show.title) },
+                            onLongClickLabel = "Niet meer volgen",
                             onLongClick = { menuFor = show }
                         )
                 ) {
@@ -286,61 +290,18 @@ private fun FollowedTab(
 @Composable
 private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?, String) -> Unit) {
     val colors = LocalChartColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 4.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(colors.panel)
-            .padding(start = 15.dp, end = 15.dp, top = 15.dp, bottom = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(bottom = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(9.dp)
-        ) {
-            Icon(WoolIcons.Bell, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
-            Text(
-                "Chart-alerts",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = colors.onPanel
-            )
-            Spacer(Modifier.weight(1f))
-            Text("Sinds gisteren", fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanelMuted)
-        }
+    PanelCard("Chart-alerts", "Sinds gisteren", Modifier.padding(bottom = 4.dp)) {
         alerts.forEach { alert ->
-            HorizontalDivider(color = colors.onPanel.copy(alpha = 0.13f))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenPodcast(alert.showId, alert.feedUrl, alert.title) }
-                    .height(52.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(11.dp)
+            PanelRow(
+                artworkUrl = alert.artworkUrl,
+                title = alert.title,
+                subtitle = when {
+                    alert.reachedTop -> "Bereikte #1 · ${alert.source} ${alert.country}"
+                    alert.isNew -> "Nieuw binnen op #${alert.rank} · ${alert.source} ${alert.country}"
+                    else -> "Nu #${alert.rank} · ${alert.source} ${alert.country}"
+                },
+                onClick = { onOpenPodcast(alert.showId, alert.feedUrl, alert.title) }
             ) {
-                Artwork(alert.artworkUrl, 36.dp, corner = 9.dp, elevation = 0.dp)
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        alert.title,
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = colors.onPanel,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        when {
-                            alert.reachedTop -> "Bereikte #1 · ${alert.source} ${alert.country}"
-                            alert.isNew -> "Nieuw binnen op #${alert.rank} · ${alert.source} ${alert.country}"
-                            else -> "Nu #${alert.rank} · ${alert.source} ${alert.country}"
-                        },
-                        fontSize = 11.5.sp,
-                        color = colors.onPanelMuted,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
                 if (alert.reachedTop) {
                     TextPill("TOP", MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), MaterialTheme.colorScheme.primary)
                 } else {

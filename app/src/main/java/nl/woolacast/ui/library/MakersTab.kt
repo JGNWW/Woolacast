@@ -38,11 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.woolacast.data.local.FollowedMaker
 import nl.woolacast.ui.common.Artwork
-import nl.woolacast.ui.common.ButtonKind
 import nl.woolacast.ui.common.MakerLogo
 import nl.woolacast.ui.common.NoticePanel
+import nl.woolacast.ui.common.OutlinePillButton
+import nl.woolacast.ui.common.PanelCard
+import nl.woolacast.ui.common.PanelRow
 import nl.woolacast.ui.common.SectionLabel
-import nl.woolacast.ui.common.WoolButton
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.theme.LocalChartColors
 
@@ -66,6 +67,7 @@ internal fun MakersTab(
         if (makers.isEmpty()) {
             item {
                 NoticePanel(
+                    outerPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 4.dp),
                     title = "Nog geen makers gevolgd",
                     message = "Tik op de naam van de maker op een podcastpagina en kies Volg maker. " +
                         "Je ziet hier dan wanneer hij een nieuwe podcast begint."
@@ -94,59 +96,27 @@ internal fun MakersTab(
     }
 }
 
-/** Dezelfde kaart als de chart-alerts: donker paneel, bel, rijen van 52 dp. */
+/**
+ * Dezelfde kaart als de chart-alerts. Rechts staat "Nog niet bekeken" en niet
+ * "Sinds gisteren": een nieuwe podcast blijft staan tot je hem opent, ook als
+ * hij al een paar dagen oud is.
+ */
 @Composable
 private fun NewShowsCard(shows: List<MakerNewShow>, onOpen: (MakerNewShow) -> Unit) {
-    val colors = LocalChartColors.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(colors.panel)
-            .padding(start = 15.dp, end = 15.dp, top = 15.dp, bottom = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(bottom = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(9.dp)
-        ) {
-            Icon(WoolIcons.Bell, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
-            Text("Nieuw van je makers", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onPanel)
-            Spacer(Modifier.weight(1f))
-            Text("Nog niet bekeken", fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanelMuted)
-        }
+    PanelCard("Nieuw van je makers", "Nog niet bekeken") {
         shows.forEach { show ->
-            HorizontalDivider(color = colors.onPanel.copy(alpha = 0.13f))
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable { onOpen(show) }.height(52.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(11.dp)
-            ) {
-                Artwork(show.artworkUrl, 36.dp, corner = 9.dp, elevation = 0.dp)
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        show.title,
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = colors.onPanel,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        listOfNotNull(
-                            "Nieuwe podcast",
-                            show.makerName,
-                            // Van een kanaal zegt Apple zelf dat hij nieuw is; anders vonden wij hem net.
-                            if (show.viaChannel) show.episodes?.let { if (it == 1) "1 afl." else "$it afl." }
-                            else "gevonden vandaag"
-                        ).joinToString(" · "),
-                        fontSize = 11.5.sp,
-                        color = colors.onPanelMuted,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
+            PanelRow(
+                artworkUrl = show.artworkUrl,
+                title = show.title,
+                subtitle = listOfNotNull(
+                    "Nieuwe podcast",
+                    show.makerName,
+                    // Van een kanaal zegt Apple zelf dat hij nieuw is; anders vonden wij hem net.
+                    if (show.viaChannel) show.episodes?.let { if (it == 1) "1 afl." else "$it afl." }
+                    else "gevonden vandaag"
+                ).joinToString(" · "),
+                onClick = { onOpen(show) }
+            )
         }
     }
 }
@@ -164,13 +134,17 @@ private fun FollowedMakerRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .combinedClickable(onClick = { onOpen(maker.name) }, onLongClick = { menu = true })
+                .combinedClickable(
+                    onClick = { onOpen(maker.name) },
+                    onLongClickLabel = "Niet meer volgen",
+                    onLongClick = { menu = true }
+                )
                 .padding(horizontal = 20.dp)
                 .height(72.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            MakerLogo(maker.name, status?.logoUrl ?: maker.logoUrl, status?.color ?: maker.color, 48.dp)
+            MakerLogo(maker.name, status?.logoUrl ?: maker.logoUrl, status?.color ?: maker.color, 52.dp)
             Column(Modifier.weight(1f)) {
                 Text(maker.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
@@ -190,13 +164,15 @@ private fun FollowedMakerRow(
     HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
 }
 
-/** "2 van 31 shows nieuw sinds gisteren"; zonder kanaal zeggen we dat het de gevonden shows zijn. */
+/**
+ * Hoeveel van zijn podcasts sinds gisteren een nieuwe aflevering hebben. Zonder
+ * kanaal zeggen we dat het de gevonden podcasts zijn: meer kent de catalogus niet.
+ */
 private fun statusLine(status: MakerStatus?): String = when {
     status == null -> "Bijwerken…"
-    status.fresh == 0 && status.complete -> "Niets nieuws sinds gisteren"
-    status.fresh == 0 -> "Niets nieuws in de ${status.total} gevonden shows"
-    status.complete -> "${status.fresh} van ${status.total} shows nieuw sinds gisteren"
-    else -> "${status.fresh} van ${status.total} gevonden nieuw sinds gisteren"
+    status.fresh == 0 -> "Geen nieuwe afl. sinds gisteren"
+    status.complete -> "Nieuwe afl. bij ${status.fresh} van ${status.total} podcasts"
+    else -> "Nieuwe afl. bij ${status.fresh} van ${status.total} gevonden podcasts"
 }
 
 @Composable
@@ -210,14 +186,14 @@ private fun SuggestionRow(suggestion: MakerSuggestion, onOpen: (String) -> Unit,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        MakerLogo(suggestion.name, suggestion.logoUrl, suggestion.color, 48.dp)
+        MakerLogo(suggestion.name, suggestion.logoUrl, suggestion.color, 52.dp)
         Column(Modifier.weight(1f)) {
             Text(suggestion.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 when {
-                    suggestion.totalShows != null -> "Je volgt ${suggestion.followedShows} van hun ${suggestion.totalShows} podcasts"
-                    suggestion.followedShows == 1 -> "Je volgt 1 podcast van deze maker"
-                    else -> "Je volgt ${suggestion.followedShows} podcasts van deze maker"
+                    suggestion.totalShows != null -> "Je volgt ${suggestion.followedShows} van de ${suggestion.totalShows} podcasts"
+                    suggestion.followedShows == 1 -> "Je volgt 1 podcast"
+                    else -> "Je volgt ${suggestion.followedShows} podcasts"
                 },
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.5.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -225,7 +201,8 @@ private fun SuggestionRow(suggestion: MakerSuggestion, onOpen: (String) -> Unit,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        WoolButton("Volg", { onFollow(suggestion) }, kind = ButtonKind.OUTLINE)
+        // Dezelfde volgknop als op de podcast- en makerpagina.
+        OutlinePillButton("Volg", WoolIcons.Plus, { onFollow(suggestion) })
     }
     HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
 }

@@ -3,7 +3,6 @@ package nl.woolacast.ui.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -14,9 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -24,7 +22,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import nl.woolacast.ui.theme.CoverColors
+import nl.woolacast.ui.theme.CoverSeed
 import nl.woolacast.ui.theme.DisplayFamily
+import nl.woolacast.ui.theme.Ink
+import nl.woolacast.ui.theme.argbToOklch
+import nl.woolacast.ui.theme.coverColors
 
 /** Of het scherm nu donker is; het kader van de app beslist, niet het toestel. */
 @Composable
@@ -81,7 +84,7 @@ fun MakerLogo(
     val background = MaterialTheme.colorScheme.background
     // Een logo dat bijna de kleur van de achtergrond heeft, krijgt een duidelijke rand.
     val faint = makerColor(color)?.let { contrast(it, background) < 3f } == true
-    val ring = MaterialTheme.colorScheme.onSurface.copy(alpha = if (dark && faint) 0.35f else if (dark) 0.16f else 0.10f)
+    val ring = MaterialTheme.colorScheme.onSurface.copy(alpha = if (dark && faint) 0.40f else if (dark) 0.16f else 0.10f)
     val disc = screenMakerColor(color)
     Box(
         modifier = modifier
@@ -100,7 +103,12 @@ fun MakerLogo(
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = (size.value * 0.34f).sp,
                 letterSpacing = 0.4.sp,
-                color = if (disc != null) Color.White else MaterialTheme.colorScheme.onSurface,
+                // Op een kanaalkleur de inkt die het meeste contrast geeft, zoals onAccent.
+                color = when {
+                    disc == null -> MaterialTheme.colorScheme.onSurface
+                    contrast(Color.White, disc) >= contrast(Ink, disc) -> Color.White
+                    else -> Ink
+                },
                 maxLines = 1
             )
         }
@@ -118,23 +126,31 @@ fun monogram(name: String): String {
 }
 
 /**
- * De gloed van een maker bovenaan zijn pagina: 8% van de kanaalkleur (16% in
- * donker), tot boven in de statusbalk en naadloos naar de achtergrond. Zonder
- * kanaal is er geen gloed.
+ * De Beeldgloed-kleuren van een kanaal: dezelfde rollen als bij een hoes, maar
+ * uit de kanaalkleur in plaats van uit de pixels. Zwart, wit en grijs hebben
+ * geen tint; dan geeft Beeldgloed zijn neutrale gloed, net als bij een grijze hoes.
  */
 @Composable
-fun BoxScope.MakerGlow(color: String?, height: Dp = 330.dp) {
-    // Zwart, wit en grijs zijn geen merkkleur maar de achtergrond van een logo: geen gloed.
-    val raw = makerColor(color) ?: return
-    if (maxOf(raw.red, raw.green, raw.blue) - minOf(raw.red, raw.green, raw.blue) < 0.12f) return
-    val tint = screenMakerColor(color) ?: return
-    val base = MaterialTheme.colorScheme.background
-    val top = tint.copy(alpha = if (isDarkSurface()) 0.16f else 0.08f).compositeOver(base)
-    Box(
-        Modifier
-            .align(Alignment.TopCenter)
-            .fillMaxWidth()
-            .height(height)
-            .background(Brush.verticalGradient(0f to top, 0.45f to top, 1f to base))
+fun makerCoverColors(hex: String?): CoverColors {
+    val seed = makerColor(hex)?.let { color ->
+        val lch = argbToOklch(color.toArgb())
+        if (lch[1] < 0.03f) null else CoverSeed(hue = lch[2], chroma = lch[1])
+    }
+    return coverColors(seed, isDarkSurface())
+}
+
+/**
+ * De gloed van een maker bovenaan zijn pagina: dezelfde laag als op
+ * Hitlijsten, tot boven in de statusbalk. Zonder kanaal geen gloed.
+ */
+@Composable
+fun MakerGlow(color: String?) {
+    if (color == null) return
+    CoverBackdrop(
+        url = null,
+        colors = makerCoverColors(color),
+        showCover = false,
+        glowTo = 560f, blurTop = 120f, blurTo = 500f,
+        fade = listOf(260f to 0f, 560f to 1f)
     )
 }

@@ -90,6 +90,9 @@ class LibraryViewModel(
     val suggestions: StateFlow<List<MakerSuggestion>> = _suggestions.asStateFlow()
 
     private var makersLoadedFor: Pair<String, Set<String>>? = null
+
+    private val _makersRefreshing = MutableStateFlow(false)
+    val makersRefreshing: StateFlow<Boolean> = _makersRefreshing.asStateFlow()
     val queue = store.queue
     val saved = store.saved
 
@@ -207,6 +210,7 @@ class LibraryViewModel(
         makersLoadedFor = signature
 
         viewModelScope.launch {
+            _makersRefreshing.value = true
             val directory = makerRepository.directory(countryCode)
             val yesterday = LocalDate.now().minusDays(1)
             val recent = LocalDate.now().minusDays(NEW_SHOW_DAYS)
@@ -258,6 +262,7 @@ class LibraryViewModel(
             }.awaitAll().filterNotNull()
             _makerStatus.value = results.associate { it.first to it.second }
             _newShows.value = results.flatMap { it.third }
+            _makersRefreshing.value = false
             loadSuggestions(countryCode, directory)
         }
     }

@@ -70,6 +70,7 @@ import nl.woolacast.ui.discover.DiscoverViewModel
 import nl.woolacast.ui.library.LibraryScreen
 import nl.woolacast.ui.library.LibraryViewModel
 import nl.woolacast.ui.maker.MakerScreen
+import nl.woolacast.ui.maker.MakerSort
 import nl.woolacast.ui.maker.MakerViewModel
 import nl.woolacast.ui.player.PlayerScreen
 import nl.woolacast.ui.search.SearchScreen
@@ -149,10 +150,10 @@ fun WoolacastNav(container: AppContainer) {
         )
     }
     val openSearch = { navController.navigate("${currentTab.route}/search") }
-    val openMaker: (String, String?) -> Unit = { name, fromShowId ->
+    val openMaker: (String, String?, MakerSort) -> Unit = { name, fromShowId, sort ->
         navController.navigate(
             "${currentTab.route}/maker/${Uri.encode(name)}?country=$chartsCountry" +
-                "&from=${Uri.encode(fromShowId.orEmpty())}"
+                "&from=${Uri.encode(fromShowId.orEmpty())}&sort=${sort.name}"
         )
     }
     val openPlayer = { navController.navigate(PLAYER_ROUTE) { launchSingleTop = true } }
@@ -211,7 +212,7 @@ fun WoolacastNav(container: AppContainer) {
                         onSearch = openSearch,
                         onAlerts = { selectTab(Tab.LIBRARY) },
                         onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) },
-                        onOpenMaker = { name, fromShowId -> openMaker(name, fromShowId) }
+                        onOpenMaker = { name, fromShowId -> openMaker(name, fromShowId, MakerSort.POPULAR) }
                     )
                 }
                 tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
@@ -265,7 +266,8 @@ fun WoolacastNav(container: AppContainer) {
                         onOpenPodcast = openPodcast,
                         onSearch = openSearch,
                         onPlay = { episode -> playAndOpen(episode, null) },
-                        onOpenMaker = { name -> openMaker(name, null) }
+                        // Wie een maker volgt, wil zien wat er nieuw is: open op Recent.
+                        onOpenMaker = { name -> openMaker(name, null, MakerSort.RECENT) }
                     )
                 }
                 tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
@@ -424,7 +426,7 @@ private fun NavGraphBuilder.tabScreens(
             onOpenMaker = { maker ->
                 navController.navigate(
                     "$prefix/maker/${Uri.encode(maker)}?country=$countryCode" +
-                        "&from=${Uri.encode(showId)}"
+                        "&from=${Uri.encode(showId)}&mark=true"
                 )
             },
             onBack = { navController.popBackStack() },
@@ -432,7 +434,7 @@ private fun NavGraphBuilder.tabScreens(
         )
     }
 
-    composable("$prefix/maker/{publisher}?country={country}&from={from}") { entry ->
+    composable("$prefix/maker/{publisher}?country={country}&from={from}&mark={mark}&sort={sort}") { entry ->
         val publisher = entry.arguments?.getString("publisher").orEmpty()
         val countryCode = entry.arguments?.getString("country") ?: chartsCountry
         val makerViewModel: MakerViewModel = viewModel(
@@ -446,7 +448,11 @@ private fun NavGraphBuilder.tabScreens(
                         countryCode = countryCode,
                         fromShowId = entry.arguments?.getString("from")?.takeIf { it.isNotBlank() },
                         // "Populair" gaat over de bron die op Hitlijsten gekozen is.
-                        initialSource = chartsSource
+                        initialSource = chartsSource,
+                        highlightId = entry.arguments?.getString("from")
+                            ?.takeIf { it.isNotBlank() && entry.arguments?.getString("mark") == "true" },
+                        initialSort = runCatching { MakerSort.valueOf(entry.arguments?.getString("sort").orEmpty()) }
+                            .getOrDefault(MakerSort.POPULAR)
                     )
                 }
             }

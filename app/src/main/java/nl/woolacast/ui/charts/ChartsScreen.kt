@@ -236,7 +236,7 @@ fun ChartsScreen(
                             }
                         }
                         if (chart.query.level == ChartLevel.SHOWS && state.byMaker) {
-                            makerRows(state.makers, onOpenMaker)
+                            makerRows(state.makers, onOpenMaker, onPerShow = { viewModel.setByMaker(false) })
                         } else {
                             chartRows(chart, state.resolvingId, onOpenPodcast, viewModel::play)
                         }

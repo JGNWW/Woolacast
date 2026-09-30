@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -591,11 +592,12 @@ fun NoticePanel(
     message: String,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    outerPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 28.dp)
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 28.dp)
+            .padding(outerPadding)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
@@ -612,5 +614,59 @@ fun NoticePanel(
         if (actionLabel != null && onAction != null) {
             WoolButton(actionLabel, onAction, kind = ButtonKind.TONAL, modifier = Modifier.padding(top = 4.dp))
         }
+    }
+}
+
+/**
+ * Het donkere paneel met een bel (.alerts): chart-alerts en nieuwe podcasts van
+ * makers. Kop met titel en rechts een tijdsaanduiding, daaronder rijen van 52 dp.
+ */
+@Composable
+fun PanelCard(title: String, trailing: String, modifier: Modifier = Modifier, rows: @Composable () -> Unit) {
+    val colors = LocalChartColors.current
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.panel)
+            .padding(start = 15.dp, end = 15.dp, top = 15.dp, bottom = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(bottom = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
+        ) {
+            Icon(WoolIcons.Bell, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(19.dp))
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onPanel)
+            Spacer(Modifier.weight(1f))
+            Text(trailing, fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanelMuted)
+        }
+        rows()
+    }
+}
+
+/** Eén rij in een [PanelCard]: hoesje, titel, regel eronder, iets rechts en een chevron. */
+@Composable
+fun PanelRow(
+    artworkUrl: String?,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    val colors = LocalChartColors.current
+    HorizontalDivider(color = colors.onPanel.copy(alpha = 0.13f))
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).height(52.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(11.dp)
+    ) {
+        Artwork(artworkUrl, 36.dp, corner = 9.dp, elevation = 0.dp)
+        Column(Modifier.weight(1f)) {
+            Text(title, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = colors.onPanel, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, fontSize = 11.5.sp, color = colors.onPanelMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        trailing?.invoke()
+        Icon(WoolIcons.ChevronRight, null, tint = colors.onPanelMuted, modifier = Modifier.size(16.dp))
     }
 }
