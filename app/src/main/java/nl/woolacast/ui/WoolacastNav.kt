@@ -366,14 +366,19 @@ private fun NavGraphBuilder.tabScreens(
         val searchViewModel: SearchViewModel = viewModel(
             key = "search-$chartsCountry",
             factory = viewModelFactory {
-                initializer { SearchViewModel(container.searchRepository, chartsCountry) }
+                initializer { SearchViewModel(container.searchRepository, chartsCountry, container.makerRepository) }
             }
         )
         SearchScreen(
             viewModel = searchViewModel,
             onBack = { navController.popBackStack() },
             onOpenPodcast = openPodcast,
-            onPlay = { episode -> playAndOpen(episode, null) }
+            onPlay = { episode -> playAndOpen(episode, null) },
+            onOpenMaker = { name, fromShowId ->
+                navController.navigate(
+                    "$prefix/maker/${Uri.encode(name)}?country=$chartsCountry&from=${Uri.encode(fromShowId)}"
+                )
+            }
         )
     }
 

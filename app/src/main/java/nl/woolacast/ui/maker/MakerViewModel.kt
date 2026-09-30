@@ -111,7 +111,8 @@ class MakerViewModel(
                     channelId = channel?.id,
                     logoUrl = channel?.logoUrl,
                     color = channel?.color,
-                    knownShowIds = state.shows.map { it.podcast.id }
+                    knownShowIds = state.shows.map { it.podcast.id },
+                    country = countryCode
                 )
             )
         }

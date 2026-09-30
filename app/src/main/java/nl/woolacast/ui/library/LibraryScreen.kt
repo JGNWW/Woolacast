@@ -166,7 +166,7 @@ fun LibraryScreen(
                         viewModel.seen(show)
                         onOpenPodcast(show.showId, show.feedUrl, show.title)
                     },
-                    onFollow = viewModel::followSuggestion,
+                    onFollow = { viewModel.followSuggestion(it, countryCode) },
                     onUnfollow = viewModel::unfollowMaker
                 )
             }

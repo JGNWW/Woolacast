@@ -288,7 +288,7 @@ class LibraryViewModel(
         }
     }
 
-    fun followSuggestion(suggestion: MakerSuggestion) {
+    fun followSuggestion(suggestion: MakerSuggestion, countryCode: String) {
         viewModelScope.launch {
             store.toggleMaker(
                 FollowedMaker(
@@ -296,7 +296,8 @@ class LibraryViewModel(
                     name = suggestion.name,
                     channelId = suggestion.channelId,
                     logoUrl = suggestion.logoUrl,
-                    color = suggestion.color
+                    color = suggestion.color,
+                    country = countryCode
                 )
             )
         }

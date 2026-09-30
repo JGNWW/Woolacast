@@ -39,7 +39,11 @@ data class FollowedMaker(
     val logoUrl: String? = null,
     val color: String? = null,
     val followedOn: String = "",
-    val knownShowIds: List<String> = emptyList()
+    val knownShowIds: List<String> = emptyList(),
+    /** Het land waar je hem volgde: daar kijkt de dagelijkse controle. */
+    val country: String = "nl",
+    /** Nieuwe shows waar al een melding over ging; die komt geen tweede keer. */
+    val notifiedShowIds: List<String> = emptyList()
 )
 
 @Serializable
@@ -148,8 +152,16 @@ class LocalStore(private val file: File) {
 
     suspend fun setTheme(mode: String) = mutate { it.copy(theme = mode) }
 
+    private var loaded = false
+
+    /** Laadt het bestand als dat nog niet gebeurd is; voor werk buiten de app om. */
+    suspend fun ensureLoaded() {
+        if (!loaded) load()
+    }
+
     suspend fun load() = withContext(Dispatchers.IO) {
         mutex.withLock {
+            loaded = true
             data = runCatching {
                 if (file.exists()) json.decodeFromString(StoreData.serializer(), file.readText()) else StoreData()
             }.getOrElse { StoreData() }
@@ -189,6 +201,13 @@ class LocalStore(private val file: File) {
         if (data.makers.none { it.key == key }) return@mutate data
         data.copy(makers = data.makers.map {
             if (it.key == key) it.copy(knownShowIds = (it.knownShowIds + showIds).distinct()) else it
+        })
+    }
+
+    /** Onthoudt over welke nieuwe shows al een melding ging. */
+    suspend fun markMakerNotified(key: String, showIds: Collection<String>) = mutate { data ->
+        data.copy(makers = data.makers.map {
+            if (it.key == key) it.copy(notifiedShowIds = (it.notifiedShowIds + showIds).distinct()) else it
         })
     }
 

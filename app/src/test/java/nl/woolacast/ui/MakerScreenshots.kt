@@ -60,6 +60,8 @@ import nl.woolacast.ui.library.LibraryScreen
 import nl.woolacast.ui.library.LibraryViewModel
 import nl.woolacast.ui.maker.MakerScreen
 import nl.woolacast.ui.maker.MakerViewModel
+import nl.woolacast.ui.search.SearchScreen
+import nl.woolacast.ui.search.SearchViewModel
 import nl.woolacast.ui.theme.WoolacastTheme
 import okhttp3.OkHttpClient
 import org.junit.Assume.assumeTrue
@@ -234,6 +236,29 @@ class MakerScreenshots {
         settle { if (followMakers) model.makerStatus.value.isNotEmpty() else model.suggestions.value.isNotEmpty() }
         settle()
         save(name)
+    }
+
+    @Test
+    fun zoeken() {
+        val store = seededStore()
+        val catalog = catalog()
+        val model = SearchViewModel(SearchRepository(catalog), "nl", repository(store))
+        compose.setContent {
+            WoolacastTheme(darkTheme = false) {
+                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    SearchScreen(viewModel = model, onBack = {}, onOpenPodcast = { _, _, _ -> }, onPlay = {})
+                }
+            }
+        }
+        model.onTermChanged("Kade")
+        // Het zoeken wacht tot het typen stilvalt; in de test laten we die tijd verstrijken.
+        repeat(10) {
+            org.robolectric.shadows.ShadowLooper.idleMainLooper(100, java.util.concurrent.TimeUnit.MILLISECONDS)
+            Thread.sleep(50)
+        }
+        settle { model.state.value.searched }
+        settle()
+        save("zoeken-maker")
     }
 
     /* ---- nepdata ---- */

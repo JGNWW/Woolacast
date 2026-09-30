@@ -5,6 +5,9 @@ name: Hitlijsten vastleggen (goedkoop)
 # te draaien: stijgers en de tracker kunnen niet met terugwerkende kracht — wie
 # gisteren niet heeft vastgelegd, heeft gisteren niet.
 #
+# Per land komt er een ronde langs Apple's kanalen bij (makers.json): een
+# minuut of wat, want alleen kanalen met twee of meer shows in de lijsten.
+#
 # Dit draait elke ochtend. Zonder die dagelijkse gang is er maar één meetpunt
 # en blijft de tracker leeg: een verloop van één dag is geen verloop.
 on:
@@ -29,7 +32,7 @@ concurrency:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
