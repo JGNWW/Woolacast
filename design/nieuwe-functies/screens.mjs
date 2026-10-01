@@ -623,3 +623,6 @@ screens.PerShow = { title: '12 · Podcastpagina → Instellingen voor deze show'
       <div class="btn btn-o" style="margin:0 0 20px">Alles terug naar algemeen</div>
     </div>`, 208)}
 </div>` };
+
+// Bouwstenen voor ../nieuwe-functies-2/screens.mjs.
+export { chrome, appbar, titlebar, tabs, label, toggle, mv, playerHead, sheet, UP, DOWN, FLAG, R15, F30, PREV, NEXT, PAUSE };
