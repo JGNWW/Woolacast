@@ -87,6 +87,7 @@ export const CSS = CSS0 + `
 .epn{width:30px;font-family:'Bricolage Grotesque','Instrument Sans',sans-serif;font-size:18px;font-weight:800;color:var(--ink2);text-align:center;flex:none;font-variant-numeric:tabular-nums}
 .epn.on{color:var(--pri)}
 .srow.tall{align-items:flex-start;padding:12px 0}.srow.tall .sw,.srow.tall .valchip{margin-top:6px}
+mark.hit{background:#F6D9A8;color:var(--ink);border-radius:3px;padding:0 1px}
 .setgrp{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);padding:16px 0 4px}
 .sumgrid{display:grid;grid-template-columns:1fr auto;gap:0 12px;font-size:13.5px}
 .sumgrid span{padding:9px 0;border-bottom:1px solid var(--line2)}
@@ -350,6 +351,58 @@ screens.Serial = { title: '9 · Podcastpagina van een verhaal in delen', body: `
     ${serialEps.map(e => `
     <div class="erow2"><span class="epn ${e[3] === 'on' ? 'on' : ''}">${e[0]}</span><div class="ebody"><div class="t1">${e[1]}</div><div class="t2">${e[2]}${e[3] === 'done' ? ' · beluisterd' : e[3] === 'on' ? ' · nog 31 min' : ''}</div></div>${e[3] === 'done' ? `<span style="color:var(--up)">${ICON.done(20)}</span>` : `<div class="pbtn" style="margin:0">${K.play}</div>`}</div>`).join('')}
     <div class="note" style="color:var(--ink2);font-size:11.5px;padding-top:8px">Oudste eerst, omdat de maker de show als serie markeert. Om te zetten bij Instellingen voor deze show.</div>
+  </div>
+  ${chrome('library')}
+</div>` };
+
+/* ---- 11. Spoelknoppen en koptelefoon ---- */
+const seek = (n, fwd, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${fwd
+  ? '<path d="M12.5 5.5L17 9l-4.5 3.5"></path><path d="M17 9h-6.5a5.5 5.5 0 100 11H16"></path>'
+  : '<path d="M11.5 5.5L7 9l4.5 3.5"></path><path d="M7 9h6.5a5.5 5.5 0 110 11H8"></path>'}<text x="${fwd ? 8 : 9.5}" y="19.6" font-size="7.4" font-family="Instrument Sans, system-ui" font-weight="700" stroke="none" fill="currentColor">${n}</text></svg>`;
+screens.Seek = { title: '11 · Instellingen → Afspelen', body: `
+<div class="ph col">
+  <div class="sa"></div>
+  ${titlebar('Afspelen')}
+  <div class="body pad">
+    <div class="setgrp" style="padding-top:2px">Terugspoelen</div>
+    <div class="seg"><span>5 s</span><span class="on">10 s</span><span>15 s</span><span>30 s</span></div>
+    <div class="setgrp">Vooruitspoelen</div>
+    <div class="seg"><span>10</span><span>15</span><span>30</span><span class="on">45</span><span>60</span></div>
+    <div class="row" style="justify-content:center;gap:28px;margin-top:14px;padding:12px;border-radius:16px;background:var(--surf2)">
+      <div class="col" style="align-items:center;gap:2px"><div class="tbtn" style="height:44px">${seek(10, false)}</div><b style="font-size:13px;font-variant-numeric:tabular-nums">−10 s</b></div><div class="pbig" style="width:56px;height:56px">${PAUSE(26)}</div><div class="col" style="align-items:center;gap:2px"><div class="tbtn" style="height:44px">${seek(45, true)}</div><b style="font-size:13px;font-variant-numeric:tabular-nums">+45 s</b></div>
+    </div>
+    <div class="note" style="color:var(--ink2);font-size:12px;padding-top:6px">Zo in de speler, de melding, op het vergrendelscherm en in de auto.</div>
+    <div class="setgrp">Koptelefoon: dubbel en driedubbel tikken</div>
+    <div class="col" style="gap:8px">
+      <div class="opt on"><span class="rb"></span><div><b>Spoelen</b><span class="s">Dubbel: 45 s vooruit · driedubbel: 10 s terug</span></div></div>
+      <div class="opt"><span class="rb"></span><div><b>Volgende in de wachtrij</b><span class="s">Dubbel: volgende · driedubbel: begin van de aflevering</span></div></div>
+    </div>
+    <div class="note" style="color:var(--ink2);font-size:12px;padding-top:8px">Geldt alleen voor de koptelefoon. De knoppen in de auto blijven spoelen.</div>
+  </div>
+  <div class="gest"><i></i></div>
+</div>` };
+
+/* ---- 13. Zoeken in één show ---- */
+const hits = [
+  ['14 mrt 2026', 'Sanne Kuipers over de nieuwe zaal', 'Gast: <mark>Sanne Kuipers</mark>, directeur van het poppodium, over het tweede balkon…', '62 min'],
+  ['2 nov 2025', 'Wie betaalt de cultuur?', '…met wethouder Ali Demir en <mark>Sanne Kuipers</mark> van de nieuwe zaal over subsidie…', '48 min'],
+  ['9 jun 2024', 'Live vanaf het dak', 'Een avond op het dak met muziek van Stadslicht. <mark>Kuipers</mark> belt in vanuit Lissabon…', '71 min']
+];
+screens.ShowSearch = { title: '13 · Podcastpagina → zoeken in deze show', body: `
+<div class="ph col">
+  <div class="sa"></div>
+  ${titlebar('De Deadline', ['share', 'more'])}
+  <div class="body pad">
+    <div class="tsearch" style="margin-top:2px">${K.search}<span>kuipers</span><span class="cnt">12 van 300</span><span class="ibtn" style="width:36px;height:36px">${ICON.close}</span></div>
+    <div class="tnote">Gezocht in titels en shownotes van de <b>300 afleveringen in de feed</b></div>
+    ${hits.map(h => `
+    <div style="padding:12px 0;border-bottom:1px solid var(--line2)">
+      <div class="t2" style="font-size:11.5px">${h[0]} · ${h[3]}</div>
+      <div class="t1" style="font-size:14.5px;margin-top:3px;white-space:normal">${h[1].replace('Sanne Kuipers', '<mark class="hit">Sanne Kuipers</mark>')}</div>
+      <div class="t2" style="font-size:12.5px;line-height:1.45;margin-top:4px;white-space:normal">${h[2].replace(/<mark>/g, '<mark class="hit">')}</div>
+    </div>`).join('')}
+    <div class="tlink" style="justify-content:center;color:var(--ink2)">Nog 9 ${K.chevS}</div>
+    <div class="note" style="color:var(--ink2);font-size:11.5px;text-align:center">Niet wat je zoekt? <span style="color:var(--pri);font-weight:700">Zoek "kuipers" in heel Toadcast</span></div>
   </div>
   ${chrome('library')}
 </div>` };

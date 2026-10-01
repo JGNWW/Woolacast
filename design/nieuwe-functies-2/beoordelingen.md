@@ -9,12 +9,17 @@ Meetlat: `../nieuwe-functies/onderzoek.md`, plus de aanvulling
   goedgekeurd?
 - Voegt het iets toe, in verhouding tot de moeite?
 
+**Stand na drie rondes:** 10 goedgekeurd (1, 2, 3, 4, 5, 7, 8, 9, 11, 13), waarvan
+2 en 7 in kleinere vorm. 3 afgekeurd (6, 10, 12).
+
+**Voorgestelde bouwvolgorde:** 1, 3, 11, 13, 4, 9, 5, 8, 2, 7.
+
 ## Ronde 1
 
 Uitslag: **8 goedgekeurd** (1, 2, 3, 4, 5, 7, 8, 9), waarvan 2 en 7 in kleinere
 vorm. **2 afgekeurd** (6, 10).
 
-Voorgestelde volgorde: 1, 3, 4, 9, 5, 8, 2, 7. Met ronde 2 erbij: 1, 3, 11, 4, 9, 5, 8, 2, 7.
+Volgorde na ronde 1: 1, 3, 4, 9, 5, 8, 2, 7. De volgorde bovenaan telt.
 
 Geldt voor alle goedgekeurde ideeën:
 
@@ -389,3 +394,53 @@ er dus één het.
   of een categorie die Spotify in dat land kent);
 - de uitleg neutraal is ("Apple en Spotify tellen anders"), zonder beweringen over
   video of volgers.
+
+## Ronde 3
+
+Uitslag: **13 goedgekeurd**. Het vervangt het afgekeurde idee 12.
+
+### 13. Zoeken in de afleveringen van één show — GOEDGEKEURD
+
+**Waarom:**
+
+- Luisteraars gebruiken en missen dit aantoonbaar.
+  - Apple heeft een zoekveld onder "Alle afleveringen".
+  - Spotify bouwde "Find in this show" na een lang verzoek in de Community.
+  - Overcast zoekt ook in de shownotes; gebruikers noemen dat in recensies een
+    topfunctie.
+  - Pocket Casts zoekt in titels en shownotes.
+  - Castbox heeft een vergrootglas op de kanaalpagina.
+  - AntennaPod zoekt binnen een podcast in titels en omschrijvingen.
+  - YouTube zoekt binnen een kanaal. Podcast Addict heeft per show een filter op
+    trefwoorden.
+- Het bestaat nog niet in Toadcast. De podcastpagina toont 20 afleveringen met
+  "Toon meer afleveringen" (`EPISODES_AT_FIRST`), zonder zoeken. Het zoekscherm
+  vraagt de iTunes-catalogus (`SearchRepository`), niet één feed.
+- Goedkoop en volledig lokaal. `PodcastRepository.fromFeed` houdt alle afleveringen
+  uit de feed vast, mét omschrijving, en `Html.toPlainText` bestaat.
+- Het helpt juist de shows uit de hitlijsten. Daar staan veel lange, dagelijkse of
+  wekelijkse shows met honderden afleveringen.
+- **Eén bewering klopt niet.** "Sorteren nieuwste of oudste eerst blijft werken":
+  de podcastpagina heeft geen sorteerknop. Die volgorde komt pas met idee 9
+  (seriële shows en volgorde per show).
+
+**Voorwaarden:**
+
+- Zoek in **alle** afleveringen uit de feed, niet alleen in de 20 die zichtbaar zijn.
+  Toon de treffers in de volgorde die de pagina heeft. Bouw voor dit idee geen
+  eigen sorteerknop; volg idee 9.
+- Maak de doorzoekbare tekst één keer klaar, buiten de hoofdthread: HTML naar platte
+  tekst, kleine letters, accenten weg (`java.text.Normalizer`). Niet bij elke
+  toetsaanslag honderden shownotes door `HtmlCompat` halen. Filter na een korte
+  pauze in het typen.
+- Een treffer die alleen in de shownotes zit, krijgt een regel tekst rond het
+  gevonden woord onder de titel. Anders zie je niet waarom de aflevering erbij
+  staat.
+- Zeg altijd waarin gezocht is: "12 van de 300 afleveringen in de feed". Kwam de
+  lijst niet uit de feed maar uit Apple's catalogus (de terugval
+  `lookupDetail`, hooguit 50), zeg dat dan. Waarschuw alleen voor een ingekort
+  archief als daar een teken van is: Apple telt meer afleveringen dan de feed, of
+  de laagste `itunes:episode` is groter dan 1 (idee 9 leest die).
+- Geen treffers: zeg dat, met een knop om in heel Toadcast te zoeken (het
+  bestaande zoekscherm, met dezelfde zoekterm).
+

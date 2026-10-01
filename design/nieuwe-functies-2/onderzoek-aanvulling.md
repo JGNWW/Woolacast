@@ -34,6 +34,7 @@ De kolom TC (Toadcast nu) komt uit de code onder `app/src/main/java/nl/woolacast
 | Spoelstappen zelf instellen (ronde 2) | ✓¹⁸ | ✗ | ✓ | ? | ? | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗¹⁹ |
 | Koptelefoon: volgende/vorige als spoelen, instelbaar (ronde 2) | ? | ? | ✓ | ? | ? | ? | ✓ | ✓ | ? | ? | ✓ | ✗²⁰ |
 | Apple- en Spotify-lijst naast elkaar (ronde 2) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ~²¹ |
+| Zoeken in de afleveringen van één show (ronde 3) | ~²² | ✓ | ✓ | ? | ? | ✓ | ✓ | ✓ | ~²³ | ? | ✓ | ✗²⁴ |
 
 De rijen over hitlijsten volgen uit het eerste onderzoek: geen van de tien toont
 beweging door de tijd, dus ook geen kaart of uitleg daarvan. Een vergelijking van
@@ -85,6 +86,27 @@ Voetnoten:
     waarschijnlijk niets. Niet getest op een toestel.
 21. Per show staan Apple en Spotify al naast elkaar: op de podcastpagina
     (`SourceColumnsHeader`) en in de chart-tracker. Niet per lijst.
+22. Zoeken binnen een kanaal in de YouTube-app. Binnen een podcastafspeellijst of in
+    YouTube Music: niet vastgesteld.
+23. Per show een filter op trefwoorden in de titel (in- en uitsluiten). Een zoekveld
+    op de showpagina: niet vastgesteld.
+24. De podcastpagina toont 20 afleveringen met "Toon meer afleveringen", zonder
+    zoeken (`DetailScreen`, `EPISODES_AT_FIRST`). Het zoekscherm zoekt in de
+    iTunes-catalogus (`SearchRepository`).
+
+Ronde 3, zoeken binnen één show:
+
+- **Apple:** een zoekveld bovenaan "See All Episodes", met suggesties tijdens het
+  typen.
+- **Spotify:** "Find in this show" op de showpagina, op mobiel (niet op desktop en
+  web). Het stond lang als idee in de Community voordat het kwam.
+- **Overcast:** een vergrootglas op de afleveringenpagina, dat ook in de shownotes
+  zoekt. Gebruikers noemen het een topfunctie.
+- **Pocket Casts:** zoekt in titels en shownotes van de show, op mobiel en web.
+- **Castbox:** een vergrootglas op de kanaalpagina (Android), via "meer" op iOS.
+- **AntennaPod:** zoekt binnen een podcast in titels en omschrijvingen, alleen bij
+  gevolgde shows. Een zoekopdracht geeft hooguit 300 resultaten.
+- **Podbean, Amazon Music, iHeartRadio:** niet vastgesteld.
 
 Ronde 2, de andere apps:
 
@@ -230,6 +252,16 @@ Ronde 2, de andere apps:
   - [How do the podcast charts work? (Podnews, mei 2025)](https://podnews.net/article/how-the-podcast-charts-are-calculated)
   - [Podfollow Charts: Apple en Spotify](https://podfollow.com/charts)
   - [Podstatus: concurrenten en overlap](https://podstatus.com/features/competitors)
+- Ronde 3, zoeken binnen één show:
+  - [Apple: afleveringen van een show zoeken (Apple Support)](https://support.apple.com/guide/iphone/find-podcasts-iph19bb8e705/ios)
+  - [Spotify: "Search for Episodes Within a Podcast Show" (Implemented Ideas)](https://community.spotify.com/t5/Implemented-Ideas/Search-Search-for-Episodes-Within-a-Podcast-Show/idi-p/5024515)
+  - [Overcast: zoeken binnen één podcast (MPU Talk)](https://talk.macpowerusers.com/t/overcast-searching-for-specific-episodes/6998)
+  - [Pocket Casts: Podcast Page](https://support.pocketcasts.com/knowledge-base/podcast-page/)
+  - [Castbox: een aflevering zoeken](https://sites.google.com/castbox.fm/castbox-help-center/listeners/content-subscriptions/1-how-can-i-findsearch-for-an-episode)
+  - [AntennaPod: zoeken naar afleveringen (forum)](https://forum.antennapod.org/t/search-for-specific-episodes/2159)
+  - [AntennaPod: zoeklimiet van 300 (forum)](https://forum.antennapod.org/t/episode-search-limit-of-300-is-insufficient/8519)
+  - [Podcast Addict: filter per podcast (FAQ)](https://podcastaddict.com/faq/370)
+  - [YouTube: zoeken binnen een kanaal (Labnol)](https://www.labnol.org/internet/youtube-mobile-search/29637)
 - Android:
   - [Media3: CastPlayer maken](https://developer.android.com/media/media3/cast/create-castplayer)
   - [Auto Backup voor apps](https://developer.android.com/identity/data/autobackup)
