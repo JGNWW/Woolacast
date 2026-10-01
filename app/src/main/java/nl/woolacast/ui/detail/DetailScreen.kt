@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -70,6 +71,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nl.woolacast.domain.Catalog
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import nl.woolacast.data.local.DownloadSettings
+import nl.woolacast.ui.common.DownloadMark
+import nl.woolacast.ui.common.byteSize
+import nl.woolacast.ui.library.SettingSwitch
+import nl.woolacast.ui.common.DownloadUi
+import nl.woolacast.ui.common.FilterChipBox
+import nl.woolacast.ui.common.downloadUi
+import nl.woolacast.ui.common.label
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.SourceId
 import nl.woolacast.ui.common.Artwork
@@ -112,6 +123,12 @@ fun DetailScreen(
     val progress by viewModel.progress.collectAsStateWithLifecycle()
     val queued by viewModel.queued.collectAsStateWithLifecycle()
     val stored by viewModel.stored.collectAsStateWithLifecycle()
+    val downloadRecords by viewModel.downloadRecords.collectAsStateWithLifecycle()
+    val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
+    val autoDownload by viewModel.autoDownload.collectAsStateWithLifecycle()
+    val downloadSettings by viewModel.downloadSettings.collectAsStateWithLifecycle()
+    var downloadSheet by remember { mutableStateOf(false) }
+    fun downloadState(id: String) = downloadUi(downloadRecords[id], downloadProgress[id], viewModel.waitingForWifi())
     var tab by remember { mutableStateOf(DetailTab.EPISODES) }
     var menuOpen by remember { mutableStateOf(false) }
     var descriptionOpen by remember { mutableStateOf(false) }
@@ -352,6 +369,7 @@ fun DetailScreen(
                                 playing = playingId == episode.id,
                                 accent = cover.accent,
                                 inQueue = queued.any { it.id == episode.id },
+                                download = downloadState(episode.id),
                                 onOpen = { sheetEpisode = episode },
                                 onPlay = { onPlay(episode, labelFor(episode)) }
                             )
@@ -492,6 +510,10 @@ fun DetailScreen(
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     DropdownMenuItem(text = { Text("Podcast delen") }, onClick = { menuOpen = false; share() })
                     DropdownMenuItem(text = { Text("Vernieuwen") }, onClick = { menuOpen = false; viewModel.refresh() })
+                    DropdownMenuItem(
+                        text = { Text(autoDownload[podcast?.id]?.let { "Automatisch downloaden: nieuwste $it" } ?: "Automatisch downloaden…") },
+                        onClick = { menuOpen = false; downloadSheet = true }
+                    )
                     if (state.positions.isNotEmpty()) {
                         DropdownMenuItem(text = { Text("Chart-tracker") }, onClick = { menuOpen = false; onOpenTracker() })
                     }
@@ -501,8 +523,20 @@ fun DetailScreen(
     }
     }
 
+    if (downloadSheet && podcast != null) {
+        ModalBottomSheet(onDismissRequest = { downloadSheet = false }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
+            AutoDownloadSheet(
+                title = podcast.title,
+                count = autoDownload[podcast.id],
+                followed = isFollowed,
+                settings = downloadSettings,
+                onChange = viewModel::setAutoDownload
+            )
+        }
+    }
+
     sheetEpisode?.let { episode ->
-        ModalBottomSheet(onDismissRequest = { sheetEpisode = null }) {
+        ModalBottomSheet(onDismissRequest = { sheetEpisode = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             EpisodeSheet(
                 episode = episode,
                 chartRank = state.episodeRanks[episode.id],
@@ -514,6 +548,10 @@ fun DetailScreen(
                 onPlayNext = { viewModel.playNext(episode); sheetEpisode = null },
                 onQueue = { viewModel.toggleQueue(episode) },
                 onSave = { viewModel.toggleSaved(episode) },
+                download = downloadState(episode.id),
+                onDownload = { viewModel.download(episode) },
+                onRemoveDownload = { viewModel.removeDownload(episode.id) },
+                onRetryDownload = { viewModel.retryDownload(episode.id) },
                 onShare = {
                     val url = episode.link ?: episode.audioUrl
                     if (url != null) {
@@ -530,6 +568,56 @@ fun DetailScreen(
     }
 }
 
+/** Automatisch downloaden voor één show: aan of uit, en hoeveel. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AutoDownloadSheet(
+    title: String,
+    count: Int?,
+    followed: Boolean,
+    settings: DownloadSettings,
+    onChange: (Int?) -> Unit
+) {
+    Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+        Text("Downloaden", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 6.dp))
+        SettingSwitch(
+            title = "Automatisch downloaden",
+            detail = if (followed) "Nieuwe afleveringen van $title staan klaar, ook zonder verbinding."
+                     else "Nieuwe afleveringen van $title staan klaar. Je gaat de show daarmee ook volgen.",
+            checked = count != null,
+            onChange = { on -> onChange(if (on) (count ?: 1) else null) }
+        )
+        if (count != null) {
+            Text(
+                "Hoeveel van de nieuwste",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(1, 2, 3, 5).forEach { n ->
+                    FilterChipBox(
+                        "$n", selected = count == n, onClick = { onChange(n) },
+                        modifier = Modifier.widthIn(min = 48.dp).heightIn(min = 48.dp)
+                    )
+                }
+            }
+            Text(
+                "Oudere automatische downloads van deze show ruimt de app op, behalve wat je bewaarde, in de wachtrij zette of al begon.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 10.dp)
+            )
+        }
+        Text(
+            (if (settings.wifiOnly) "Alleen op wifi" else "Ook via mobiele data") +
+                " · ruimte ${byteSize(settings.limitMb * 1024L * 1024L)}. Dat stel je in bij Bibliotheek → Gedownload.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 14.dp)
+        )
+    }
+}
+
 private enum class DetailTab(val label: String) {
     EPISODES("Afleveringen"), CHARTS("Noteringen"), ABOUT("Over")
 }
@@ -543,6 +631,7 @@ private fun EpisodeRow(
     playing: Boolean,
     accent: Color,
     inQueue: Boolean,
+    download: DownloadUi,
     onOpen: () -> Unit,
     onPlay: () -> Unit
 ) {
@@ -613,6 +702,10 @@ private fun EpisodeRow(
                 if (inQueue) {
                     Icon(WoolIcons.QueueAdded, "In wachtrij", tint = colors.muted, modifier = Modifier.size(14.dp))
                 }
+                if (download != DownloadUi.None) DownloadMark(download)
+                if (episode.transcript != null) {
+                    TextPill("Tekst", MaterialTheme.colorScheme.surfaceContainerHigh, MaterialTheme.colorScheme.onSurface)
+                }
             }
         }
         // Een ring in de hoeskleur; wat al speelt toont pauze.
@@ -647,7 +740,11 @@ private fun EpisodeSheet(
     onPlayNext: () -> Unit,
     onQueue: () -> Unit,
     onSave: () -> Unit,
-    onShare: () -> Unit
+    onShare: () -> Unit,
+    download: DownloadUi = DownloadUi.None,
+    onDownload: () -> Unit = {},
+    onRemoveDownload: () -> Unit = {},
+    onRetryDownload: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -700,6 +797,25 @@ private fun EpisodeSheet(
             active = isSaved,
             onClick = onSave
         )
+        if (episode.audioUrl != null) {
+            when (download) {
+                DownloadUi.None -> ActionRow(WoolIcons.Download, "Downloaden", active = false, onClick = onDownload)
+                DownloadUi.Done -> ActionRow(WoolIcons.Close, "Download verwijderen", active = false, onClick = onRemoveDownload)
+                is DownloadUi.Failed -> ActionRow(WoolIcons.Warning, "Download mislukt · opnieuw proberen", active = false, onClick = onRetryDownload)
+                else -> ActionRow(WoolIcons.Download, "${download.label()} · tik om te stoppen", active = false, onClick = onRemoveDownload)
+            }
+        }
+        if (episode.transcript != null || episode.inlineChapters.isNotEmpty() || episode.chaptersUrl != null) {
+            Text(
+                listOfNotNull(
+                    if (episode.inlineChapters.isNotEmpty() || episode.chaptersUrl != null) "hoofdstukken" else null,
+                    if (episode.transcript != null) "meeleestekst" else null
+                ).joinToString(" en ", prefix = "Met ", postfix = " van de maker."),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
 
         episode.description?.takeIf { it.isNotBlank() }?.let { description ->
             Spacer(Modifier.height(18.dp))

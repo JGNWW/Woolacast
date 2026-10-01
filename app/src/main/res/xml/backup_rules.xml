@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android tot en met 11. Gedownloade afleveringen niet in de back-up: boven
+     25 MB slaat Android de hele back-up over, ook die van wat je volgt. -->
+<full-backup-content>
+    <exclude domain="file" path="downloads/" />
+</full-backup-content>

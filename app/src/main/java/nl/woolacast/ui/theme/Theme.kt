@@ -27,7 +27,10 @@ data class ChartColors(
     val onFallContainer: Color,
     /** Bronkleuren in grafieken; getoetst op kleurenblindheid tegen beide achtergronden. */
     val seriesApple: Color,
-    val seriesSpotify: Color
+    val seriesSpotify: Color,
+    /** Markeerstift voor zoektreffers in een tekst, en een sterkere voor de gekozen treffer. */
+    val highlight: Color,
+    val highlightStrong: Color
 )
 
 val LightChartColors = ChartColors(
@@ -35,7 +38,8 @@ val LightChartColors = ChartColors(
     panel = Ink, onPanel = Color(0xFFF6EFE5), onPanelMuted = Color(0xFFB3A695),
     riseContainer = Color(0xFFDCF0E4), onRiseContainer = Color(0xFF0B6E3E),
     fallContainer = Color(0xFFF7DED8), onFallContainer = Color(0xFF8E2C1B),
-    seriesApple = Color(0xFFC4542B), seriesSpotify = Color(0xFF0E8A4E)
+    seriesApple = Color(0xFFC4542B), seriesSpotify = Color(0xFF0E8A4E),
+    highlight = Color(0xFFF6D9A8), highlightStrong = Color(0xFFE9B45C)
 )
 
 val DarkChartColors = ChartColors(
@@ -43,7 +47,8 @@ val DarkChartColors = ChartColors(
     panel = NightSurface3, onPanel = NightInk, onPanelMuted = NightInk2,
     riseContainer = Color(0xFF1B3528), onRiseContainer = Color(0xFF7FD9A4),
     fallContainer = Color(0xFF3A1D25), onFallContainer = Color(0xFFFFA3B4),
-    seriesApple = Color(0xFFDE7047), seriesSpotify = Color(0xFF35A05F)
+    seriesApple = Color(0xFFDE7047), seriesSpotify = Color(0xFF35A05F),
+    highlight = Color(0xFF4A3A1C), highlightStrong = Color(0xFF7A5A1E)
 )
 
 val LocalChartColors = staticCompositionLocalOf { LightChartColors }
@@ -55,6 +60,14 @@ private val LightScheme = lightColorScheme(
     onPrimaryContainer = OnEmberContainer,
     secondary = Ink,
     onSecondary = PaperSurface,
+    // Rollen die Material-onderdelen (schakelaar, voortgangsbalk, markering) zelf
+    // gebruiken. Niet ingevuld vallen ze terug op Materials paars en roze.
+    secondaryContainer = PaperSurface3,
+    onSecondaryContainer = Ink,
+    tertiary = Ink2,
+    onTertiary = PaperSurface,
+    tertiaryContainer = Color(0xFFF6D9A8),
+    onTertiaryContainer = Ink,
     background = PaperBg,
     onBackground = Ink,
     surface = PaperBg,
@@ -65,6 +78,7 @@ private val LightScheme = lightColorScheme(
     surfaceContainerLow = PaperBg,
     surfaceContainer = PaperSurface2,
     surfaceContainerHigh = PaperSurface3,
+    surfaceContainerHighest = Color(0xFFDDD2C1),
     outline = PaperLine,
     outlineVariant = PaperLine2,
     error = FallLight
@@ -77,6 +91,12 @@ private val DarkScheme = darkColorScheme(
     onPrimaryContainer = OnEmberContainerDark,
     secondary = NightInk,
     onSecondary = NightBg,
+    secondaryContainer = NightSurface3,
+    onSecondaryContainer = NightInk,
+    tertiary = NightInk2,
+    onTertiary = NightBg,
+    tertiaryContainer = Color(0xFF4A3A1C),
+    onTertiaryContainer = NightInk,
     background = NightBg,
     onBackground = NightInk,
     surface = NightBg,

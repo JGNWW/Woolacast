@@ -68,6 +68,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
+import nl.woolacast.domain.Chapter
+import nl.woolacast.ui.common.DownloadUi
+import nl.woolacast.ui.common.label
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.player.SKIP_BACK_MS
@@ -108,7 +124,17 @@ fun PlayerScreen(
     onRemoveQueued: (String) -> Unit,
     onOpenPodcast: () -> Unit,
     onDismissError: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Hoofdstukken van deze aflevering; leeg als de maker er geen meegeeft. */
+    chapters: List<Chapter> = emptyList(),
+    onSeekToMs: (Long) -> Unit = {},
+    /** Heeft de maker een transcriptie meegeleverd? Dan is er een knop Tekst. */
+    hasTranscript: Boolean = false,
+    transcript: TranscriptLoad = TranscriptLoad.Idle,
+    onOpenTranscript: () -> Unit = {},
+    download: DownloadUi = DownloadUi.None,
+    onDownload: () -> Unit = {},
+    onRemoveDownload: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val colors = LocalChartColors.current
@@ -134,7 +160,10 @@ fun PlayerScreen(
 
     val cover = rememberCoverColors(state.artworkUrl)
     val soft = softInk()
-    val sleeping = state.sleepAtEnd || state.sleepRemainingMs != null
+    val sleeping = state.sleepAtEnd || state.sleepRemainingMs != null || state.sleepAtMs != null
+    val chapterIndex = currentChapter(chapters, positionMs)
+    val chapterEnd = chapterIndex?.let { chapterEnd(chapters, it, state.durationMs) }
+    val openText = { onOpenTranscript(); sheet = Sheet.TEXT }
 
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -171,6 +200,18 @@ fun PlayerScreen(
                             text = { Text("Aflevering delen") },
                             onClick = { menuOpen = false; share() }
                         )
+                        if (hasTranscript) {
+                            DropdownMenuItem(text = { Text("Tekst meelezen") }, onClick = { menuOpen = false; openText() })
+                        }
+                        when (download) {
+                            DownloadUi.None -> DropdownMenuItem(text = { Text("Downloaden") }, onClick = { menuOpen = false; onDownload() })
+                            DownloadUi.Done -> DropdownMenuItem(text = { Text("Download verwijderen") }, onClick = { menuOpen = false; onRemoveDownload() })
+                            is DownloadUi.Failed -> DropdownMenuItem(text = { Text("Opnieuw downloaden") }, onClick = { menuOpen = false; onDownload() })
+                            else -> DropdownMenuItem(
+                                text = { Text("Download stoppen (${download.label()?.lowercase()})") },
+                                onClick = { menuOpen = false; onRemoveDownload() }
+                            )
+                        }
                     }
                 }
             }
@@ -266,12 +307,24 @@ fun PlayerScreen(
                     }
                 }
 
+                if (chapterIndex != null) {
+                    Spacer(Modifier.height(12.dp))
+                    ChapterButton(
+                        index = chapterIndex,
+                        count = chapters.size,
+                        title = chapters[chapterIndex].title,
+                        remainingMs = chapterEnd?.let { (it - positionMs).coerceAtLeast(0L) },
+                        onClick = { sheet = Sheet.CHAPTERS }
+                    )
+                }
+
                 Spacer(Modifier.height(18.dp))
                 ScrubBar(
                     progress = progress,
                     buffering = state.isBuffering,
                     enabled = state.durationMs > 0L,
                     accent = cover.accent,
+                    marks = if (state.durationMs > 0L) chapters.drop(1).map { it.startMs.toFloat() / state.durationMs } else emptyList(),
                     onScrub = { scrubbing = it },
                     onScrubEnd = { value ->
                         onSeekTo(value)
@@ -320,16 +373,25 @@ fun PlayerScreen(
                         WoolIcons.Timer,
                         when {
                             state.sleepAtEnd -> "Einde afl."
+                            state.sleepAtMs != null -> "Einde hfst."
                             state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
                             else -> "Timer"
                         },
-                        active = sleeping
+                        active = sleeping,
+                        description = when {
+                            state.sleepAtEnd -> "Slaaptimer: einde van de aflevering"
+                            state.sleepAtMs != null -> "Slaaptimer: einde van dit hoofdstuk"
+                            state.sleepRemainingMs != null -> "Slaaptimer: nog ${(state.sleepRemainingMs / 60_000L) + 1} minuten"
+                            else -> "Slaaptimer"
+                        }
                     ) { sheet = Sheet.TIMER }
                     Tool(
                         WoolIcons.Queue,
                         if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}"
                     ) { sheet = Sheet.QUEUE }
-                    Tool(WoolIcons.Share, "Delen", onClick = share)
+                    // Met tekst neemt Tekst de plek van Delen in; delen staat ook in het menu.
+                    if (hasTranscript) Tool(WoolIcons.Transcript, "Tekst", onClick = openText)
+                    else Tool(WoolIcons.Share, "Delen", onClick = share)
                 }
             }
 
@@ -351,7 +413,7 @@ fun PlayerScreen(
 
         Sheet.TIMER -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle("Slaaptimer")
-            TimerPicker(state) { onSleep(it); sheet = null }
+            TimerPicker(state, hasChapters = chapters.isNotEmpty()) { onSleep(it); sheet = null }
             Spacer(Modifier.height(24.dp))
         }
 
@@ -384,7 +446,134 @@ fun PlayerScreen(
             Spacer(Modifier.height(24.dp))
         }
 
+        Sheet.CHAPTERS -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
+            SheetTitle("Hoofdstukken")
+            ChapterList(
+                chapters = chapters,
+                current = chapterIndex,
+                accent = cover.accent,
+                onPick = { onSeekToMs(it.startMs); sheet = null }
+            )
+            Spacer(Modifier.height(24.dp))
+        }
+
+        Sheet.TEXT -> ModalBottomSheet(
+            onDismissRequest = { sheet = null },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ) {
+            TranscriptView(
+                state = state,
+                load = transcript,
+                onSeekToMs = onSeekToMs,
+                onTogglePlay = onTogglePlay,
+                onSeekBy = onSeekBy,
+                onRetry = onOpenTranscript,
+                onClose = { sheet = null }
+            )
+        }
+
         null -> Unit
+    }
+}
+
+/** Het hoofdstuk waar [positionMs] in valt, of null zonder hoofdstukken. */
+internal fun currentChapter(chapters: List<Chapter>, positionMs: Long): Int? {
+    if (chapters.isEmpty()) return null
+    val index = chapters.indexOfLast { it.startMs <= positionMs }
+    return index.coerceAtLeast(0)
+}
+
+/** Waar hoofdstuk [index] ophoudt: het begin van het volgende, of het einde van de aflevering. */
+internal fun chapterEnd(chapters: List<Chapter>, index: Int, durationMs: Long): Long? =
+    chapters.getOrNull(index + 1)?.startMs ?: durationMs.takeIf { it > 0L }
+
+/**
+ * Het huidige hoofdstuk boven de balk, als knop: "3/5 · titel", en rechts hoe
+ * lang het nog duurt. Tikken opent de lijst.
+ */
+@Composable
+private fun ChapterButton(index: Int, count: Int, title: String, remainingMs: Long?, onClick: () -> Unit) {
+    val soft = softInk()
+    val spoken = "Hoofdstuk ${index + 1} van $count, $title" +
+        (remainingMs?.let { ", nog ${it / 60_000} minuten ${(it / 1000) % 60} seconden" } ?: "")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(24.dp))
+            .clickable(onClickLabel = "Hoofdstukken tonen", onClick = onClick)
+            .semantics(mergeDescendants = true) { contentDescription = spoken }
+            .padding(start = 14.dp, end = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(WoolIcons.Chapters, null, modifier = Modifier.size(16.dp))
+        Text(
+            "${index + 1}/$count",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = soft
+        )
+        Text(
+            title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f)
+        )
+        if (remainingMs != null) {
+            Text("nog ${clock(remainingMs)}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = soft)
+        }
+    }
+}
+
+@Composable
+private fun ChapterList(chapters: List<Chapter>, current: Int?, accent: Color, onPick: (Chapter) -> Unit) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val scroll = rememberScrollState()
+    val rowPx = with(LocalDensity.current) { 56.dp.toPx() }
+    // Een lange lijst opent bij het hoofdstuk dat speelt.
+    LaunchedEffect(Unit) { current?.let { scroll.scrollTo(((it - 2).coerceAtLeast(0) * rowPx).toInt()) } }
+    Column(Modifier.verticalScroll(scroll)) {
+        chapters.forEachIndexed { index, chapter ->
+            val on = index == current
+            val past = current != null && index < current
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .background(if (on) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f) else Color.Transparent)
+                    .selectable(selected = on, onClick = { onPick(chapter) })
+                    .semantics { if (on) stateDescription = "Speelt nu" }
+                    .padding(start = 20.dp, end = 22.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Text(
+                    clock(chapter.startMs),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (on) accent else muted,
+                    modifier = Modifier.width(52.dp)
+                )
+                Text(
+                    chapter.title,
+                    fontSize = 15.5.sp,
+                    fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
+                    color = when {
+                        on -> MaterialTheme.colorScheme.onSurface
+                        past -> muted
+                        else -> MaterialTheme.colorScheme.onSurface
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                if (on) Equalizer(accent)
+            }
+            HorizontalDivider(modifier = Modifier.padding(start = 86.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        }
     }
 }
 
@@ -425,7 +614,7 @@ private fun UpNextCard(next: SavedEpisode, onClick: () -> Unit) {
     }
 }
 
-private enum class Sheet { SPEED, TIMER, QUEUE }
+private enum class Sheet { SPEED, TIMER, QUEUE, CHAPTERS, TEXT }
 
 @Composable
 private fun SheetTitle(text: String) {
@@ -453,7 +642,9 @@ fun ScrubBar(
     onScrub: (Float) -> Unit,
     onScrubEnd: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    accent: Color = MaterialTheme.colorScheme.primary
+    accent: Color = MaterialTheme.colorScheme.primary,
+    /** Plekken (0–1) waar een hoofdstuk begint; daar krijgt de balk een inkeping. */
+    marks: List<Float> = emptyList()
 ) {
     var width by remember { mutableStateOf(1f) }
     var dragValue by remember { mutableStateOf(progress) }
@@ -505,6 +696,16 @@ fun ScrubBar(
                     else accent
                 )
         )
+        if (marks.isNotEmpty()) {
+            // Een inkeping in de achtergrondkleur, zodat hij op vulling en spoor even goed te zien is.
+            val notch = MaterialTheme.colorScheme.background
+            Canvas(Modifier.fillMaxWidth().height(4.dp)) {
+                val gap = 3.dp.toPx()
+                marks.filter { it in 0.01f..0.99f }.forEach { at ->
+                    drawRect(notch, topLeft = Offset(size.width * at - gap / 2, 0f), size = Size(gap, size.height))
+                }
+            }
+        }
         if (enabled) {
             // Het handvat is altijd een hele stip: op 0 staat hij links tegen het
             // begin, op 1 rechts tegen het eind, en daartussen schuift hij mee.
@@ -576,12 +777,13 @@ private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onCli
 
 /** Gereedschap: omlijnde cirkel met een label eronder; actief = wit vlak, zoals een gekozen chip. */
 @Composable
-private fun Tool(icon: ImageVector, label: String, active: Boolean = false, onClick: () -> Unit) {
+private fun Tool(icon: ImageVector, label: String, active: Boolean = false, description: String? = null, onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .width(76.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
+            .then(if (description != null) Modifier.clearAndSetSemantics { contentDescription = description; role = Role.Button } else Modifier)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -621,8 +823,8 @@ private fun SpeedPicker(current: Float, onPick: (Float) -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TimerPicker(state: PlaybackState, onPick: (SleepTimer) -> Unit) {
-    val running = state.sleepAtEnd || state.sleepRemainingMs != null
+private fun TimerPicker(state: PlaybackState, hasChapters: Boolean, onPick: (SleepTimer) -> Unit) {
+    val running = state.sleepAtEnd || state.sleepRemainingMs != null || state.sleepAtMs != null
     FlowRow(
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -632,7 +834,18 @@ private fun TimerPicker(state: PlaybackState, onPick: (SleepTimer) -> Unit) {
         listOf(15, 30, 45, 60).forEach { minutes ->
             FilterChipBox("$minutes min", selected = false, onClick = { onPick(SleepTimer.After(minutes)) })
         }
+        if (hasChapters) {
+            FilterChipBox("Einde hoofdstuk", selected = state.sleepAtMs != null, onClick = { onPick(SleepTimer.EndOfChapter) })
+        }
         FilterChipBox("Einde aflevering", selected = state.sleepAtEnd, onClick = { onPick(SleepTimer.EndOfEpisode) })
+    }
+    state.sleepAtMs?.let { at ->
+        Text(
+            "Stopt op ${clock(at)}, aan het eind van dit hoofdstuk. Spring je naar een ander hoofdstuk, dan telt dat einde.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+        )
     }
     state.sleepRemainingMs?.let { remaining ->
         Text(

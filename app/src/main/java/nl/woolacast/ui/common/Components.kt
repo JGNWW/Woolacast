@@ -3,6 +3,13 @@ package nl.woolacast.ui.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -215,14 +222,22 @@ fun UnderlineTabs(
     indicator: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
+        // Passen de tabbladen niet op de breedte, dan schuift de rij opzij in
+        // plaats van dat het laatste woord wordt afgekapt.
+        val scroll = rememberScrollState()
+        val lefts = remember(labels) { IntArray(labels.size) }
+        val gutter = with(LocalDensity.current) { 20.dp.roundToPx() }
+        // Het gekozen tabblad schuift in beeld, ook als je erheen komt zonder te tikken.
+        LaunchedEffect(selected) { scroll.animateScrollTo((lefts.getOrElse(selected) { 0 } - gutter).coerceAtLeast(0)) }
         Row(
-            modifier = Modifier.padding(horizontal = 20.dp).height(height),
+            modifier = Modifier.horizontalScroll(scroll).padding(horizontal = 20.dp).height(height),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             labels.forEachIndexed { index, label ->
                 val on = index == selected
                 Box(
                     modifier = Modifier
+                        .onGloballyPositioned { lefts[index] = it.positionInParent().x.toInt() }
                         .height(height)
                         // Zo breed als het woord; anders rekt de streep eronder het tabblad op.
                         .width(IntrinsicSize.Max)

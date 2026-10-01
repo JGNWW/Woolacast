@@ -1,8 +1,14 @@
 package nl.woolacast.ui.library
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +27,8 @@ import nl.woolacast.data.maker.MakerFace
 import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.domain.Maker
 import nl.woolacast.data.local.LocalStore
+import nl.woolacast.data.opml.Opml
+import nl.woolacast.data.opml.ShowImporter
 import nl.woolacast.ui.common.parseDate
 
 /** Een show die je volgt en die deze week bewoog. */
@@ -38,6 +46,13 @@ data class ChartAlert(
     val isNew: Boolean get() = previousRank == null
     val reachedTop: Boolean get() = rank == 1
 }
+
+/** Het venster om een feed toe te voegen. */
+data class AddFeedState(
+    val busy: Boolean = false,
+    val error: String? = null,
+    val added: FollowedShow? = null
+)
 
 /** Wat de feed van een gevolgde show zegt: wanneer de laatste kwam en hoeveel je nog niet zag. */
 data class FeedStatus(val latestDate: String?, val newCount: Int)
@@ -79,7 +94,8 @@ class LibraryViewModel(
     private val store: LocalStore,
     private val dataset: ChartsDataset,
     private val podcasts: PodcastRepository,
-    private val makerRepository: MakerRepository
+    private val makerRepository: MakerRepository,
+    private val importer: ShowImporter? = null
 ) : ViewModel() {
 
     val follows = store.follows
@@ -345,6 +361,53 @@ class LibraryViewModel(
 
     fun removeSaved(episodeId: String) {
         viewModelScope.launch { store.removeSaved(episodeId) }
+    }
+
+    /* ---- je shows: een feed toevoegen, exporteren ---- */
+
+    private val _addFeed = MutableStateFlow(AddFeedState())
+    val addFeed: StateFlow<AddFeedState> = _addFeed.asStateFlow()
+
+    fun resetAddFeed() {
+        _addFeed.value = AddFeedState()
+    }
+
+    /** Volgt één feed; bij succes komt de show in [AddFeedState.added] zodat het scherm hem kan openen. */
+    fun addFeed(url: String, countryCode: String, appScope: CoroutineScope) {
+        val importer = importer ?: return
+        _addFeed.value = AddFeedState(busy = true)
+        viewModelScope.launch {
+            runCatching { importer.addFeed(url) }
+                .onSuccess { show ->
+                    _addFeed.value = AddFeedState(added = show)
+                    importer.startLinking(appScope, countryCode)
+                }
+                .onFailure { error -> _addFeed.value = AddFeedState(error = error.message ?: "Dat adres werkt niet.") }
+        }
+    }
+
+    /** Wat mee kan in een export, en hoeveel shows niet (alleen op Spotify, zonder feed). */
+    fun exportCounts(): Pair<Int, Int> = importer?.exportCounts() ?: (0 to 0)
+
+    /** Schrijft de OPML naar het gekozen bestand en geeft een zin terug om te tonen. */
+    fun export(uri: Uri, resolver: ContentResolver, countryCode: String, onDone: (String) -> Unit) {
+        val importer = importer ?: return
+        viewModelScope.launch {
+            val (feeds, missing) = importer.exportable(countryCode)
+            val text = Opml.write(feeds, OffsetDateTime.now().toString())
+            val ok = runCatching {
+                withContext(Dispatchers.IO) {
+                    resolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: error("geen bestand")
+                }
+            }.isSuccess
+            onDone(
+                when {
+                    !ok -> "Opslaan lukte niet. Kies een andere plek."
+                    missing.isEmpty() -> "${feeds.size} shows opgeslagen."
+                    else -> "${feeds.size} shows opgeslagen. ${missing.size} konden niet mee: geen open feed."
+                }
+            )
+        }
     }
 
     fun unfollow(show: FollowedShow) {

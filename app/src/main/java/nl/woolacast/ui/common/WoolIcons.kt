@@ -96,6 +96,17 @@ object WoolIcons {
     val News = stroke("news", 1.9f, StrokeCap.Round, "M4 5h13v14H6a2 2 0 0 1 -2-2z", "M17 8h3v9a2 2 0 0 1 -2 2", "M7 9h6", "M7 13h7")
     val Spark = filled("spark", 24f, "M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z")
 
+    /* ---- downloaden, hoofdstukken, tekst, importeren ---- */
+    val Download = stroke("download", 1.9f, StrokeCap.Round, "M12 4v10", "M8 10l4 4 4-4", "M5 19h14")
+    val Downloaded = stroke("downloaded", 1.9f, StrokeCap.Round, circle(12f, 12f, 9f), "M8 12.4l2.8 2.8 5.2-5.4")
+    val Chapters = stroke("chapters", 1.9f, StrokeCap.Round, "M9 6h11", "M9 12h11", "M9 18h11", "M4.5 6h0.2", "M4.5 12h0.2", "M4.5 18h0.2")
+    val Transcript = stroke("transcript", 1.9f, StrokeCap.Round, "M5 6h14", "M5 11h14", "M5 16h9")
+    val Warning = stroke("warning", 1.8f, StrokeCap.Round, "M12 4l9 16H3z", "M12 10v4", "M12 17.2v0.2")
+    val Link = stroke("link", 1.8f, StrokeCap.Round, "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0 -5.7 -5.7l-1 1", "M14 10a4 4 0 0 0 -5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1")
+    val FileOut = stroke("file-out", 1.8f, StrokeCap.Round, "M14 3H7a2 2 0 0 0 -2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z", "M14 3v5h5", "M12 17v-6", "M9.5 13.5L12 11l2.5 2.5")
+    val FileIn = stroke("file-in", 1.8f, StrokeCap.Round, "M14 3H7a2 2 0 0 0 -2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z", "M14 3v5h5", "M12 11v6", "M9.5 14.5L12 17l2.5-2.5")
+    val Wifi = stroke("wifi", 1.9f, StrokeCap.Round, "M3 9.5a13 13 0 0 1 18 0", "M6.2 13a8.5 8.5 0 0 1 11.6 0", "M9.4 16.4a4 4 0 0 1 5.2 0", "M12 19.4h0.1")
+
     /* ---- categorieen ----
        Een tekening per categorie, in dezelfde lijn als de rest: 24 px, lijn 1,8,
        ronde uiteinden. De sleutel is het genre-id van Apple, zodat het niet aan

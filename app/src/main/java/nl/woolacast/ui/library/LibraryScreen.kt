@@ -1,5 +1,13 @@
 package nl.woolacast.ui.library
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CoroutineScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -65,7 +73,7 @@ import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
 
 private enum class LibraryTab(val label: String) {
-    FOLLOWED("Gevolgd"), MAKERS("Makers"), QUEUE("Wachtrij"), SAVED("Bewaard")
+    FOLLOWED("Gevolgd"), MAKERS("Makers"), QUEUE("Wachtrij"), SAVED("Bewaard"), DOWNLOADS("Gedownload")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,7 +86,12 @@ fun LibraryScreen(
     onSearch: () -> Unit,
     onPlay: (Episode) -> Unit,
     onOpenMaker: (name: String) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    downloadsViewModel: DownloadsViewModel? = null,
+    /** Een gekozen OPML-bestand: het importscherm neemt het over. */
+    onImportFile: (Uri) -> Unit = {},
+    /** Voor wat langer duurt dan dit scherm: het koppelen van een nieuwe feed aan de catalogus. */
+    appScope: CoroutineScope? = null
 ) {
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val makers by viewModel.makers.collectAsStateWithLifecycle()
@@ -94,8 +107,29 @@ fun LibraryScreen(
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
-    var tab by remember { mutableStateOf(LibraryTab.FOLLOWED) }
+    var tab by rememberSaveable { mutableStateOf(LibraryTab.FOLLOWED) }
     var sortOpen by remember { mutableStateOf(false) }
+    var showsOpen by remember { mutableStateOf(false) }
+    var addOpen by remember { mutableStateOf(false) }
+    val addFeed by viewModel.addFeed.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Veel bestandskiezers kennen .opml niet als type; daarom alles tonen en daarna zelf kijken.
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) onImportFile(uri)
+    }
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/x-opml")) { uri ->
+        if (uri != null) viewModel.export(uri, context.contentResolver, countryCode) { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        }
+    }
+    LaunchedEffect(addFeed.added) {
+        addFeed.added?.let { show ->
+            addOpen = false
+            viewModel.resetAddFeed()
+            onOpenPodcast(show.id, show.feedUrl, show.title)
+        }
+    }
 
     LaunchedEffect(countryCode, follows.size) {
         viewModel.loadAlerts(countryCode)
@@ -108,6 +142,7 @@ fun LibraryScreen(
     Column(modifier = modifier.fillMaxSize()) {
         MarkBar {
             IconAction(WoolIcons.Search, "Zoeken", onSearch)
+            IconAction(WoolIcons.More, "Je shows: importeren, feed toevoegen of exporteren", { showsOpen = true })
             Box {
                 IconAction(WoolIcons.Filter, "Sorteren", { sortOpen = true })
                 DropdownMenu(expanded = sortOpen, onDismissRequest = { sortOpen = false }) {
@@ -192,7 +227,45 @@ fun LibraryScreen(
                 onPlay = onPlay,
                 onRemove = viewModel::removeSaved
             )
+            LibraryTab.DOWNLOADS -> if (downloadsViewModel != null) {
+                DownloadsTab(viewModel = downloadsViewModel, playingId = playingId, onPlay = onPlay)
+            }
         }
+    }
+
+    if (showsOpen) {
+        val (exportable, missing) = remember(follows) { viewModel.exportCounts() }
+        ModalBottomSheet(
+            onDismissRequest = { showsOpen = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ) {
+            ShowsSheet(
+                followCount = exportable + missing,
+                notExportable = missing,
+                onImport = {
+                    showsOpen = false
+                    importLauncher.launch(arrayOf("*/*"))
+                },
+                onAddFeed = {
+                    showsOpen = false
+                    viewModel.resetAddFeed()
+                    addOpen = true
+                },
+                onExport = {
+                    showsOpen = false
+                    exportLauncher.launch("toadcast-shows.opml")
+                }
+            )
+        }
+    }
+
+    if (addOpen) {
+        AddFeedDialog(
+            busy = addFeed.busy,
+            error = addFeed.error,
+            onAdd = { url -> appScope?.let { viewModel.addFeed(url, countryCode, it) } },
+            onDismiss = { addOpen = false; viewModel.resetAddFeed() }
+        )
     }
 }
 

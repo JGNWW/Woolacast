@@ -37,6 +37,15 @@ object Network {
         .readTimeout(20, TimeUnit.SECONDS)
         .build()
 
+    /**
+     * Voor audio: langer geduld per stuk, want een aflevering van honderd
+     * megabyte komt over een trage lijn niet in twintig seconden binnen.
+     * Doorverwijzingen, ook van http naar https, volgt OkHttp vanzelf.
+     */
+    val downloadClient: OkHttpClient = client.newBuilder()
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
+
     private fun retrofit(baseUrl: String): Retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)
         .client(client)

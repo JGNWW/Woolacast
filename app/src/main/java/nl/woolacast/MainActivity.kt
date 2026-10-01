@@ -3,6 +3,8 @@ package nl.woolacast
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +41,8 @@ class MainActivity : ComponentActivity() {
 
         val appContainer = container
         appContainer.player.connect()
+        // Na het draaien van het scherm of een herstart komt dezelfde intent terug; die is al verwerkt.
+        if (savedInstanceState == null) takeOpml(intent)
 
         setContent {
             val theme by appContainer.store.theme.collectAsStateWithLifecycle()
@@ -51,6 +55,33 @@ class MainActivity : ComponentActivity() {
             ) {
                 WoolacastNav(appContainer)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        takeOpml(intent)
+    }
+
+    /**
+     * Een OPML-bestand dat met Toadcast geopend of gedeeld werd, bijvoorbeeld
+     * de export uit Pocket Casts. De navigatie opent er het importscherm voor;
+     * of het echt OPML is, blijkt daar bij het lezen.
+     */
+    private fun takeOpml(intent: Intent?) {
+        val uri: Uri? = when (intent?.action) {
+            Intent.ACTION_VIEW -> intent.data
+            Intent.ACTION_SEND -> if (Build.VERSION.SDK_INT >= 33) {
+                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_STREAM)
+            }
+            else -> null
+        }
+        if (uri != null) {
+            container.incomingOpml.value = uri
+            // Eén keer is genoeg; bij draaien van het scherm niet opnieuw importeren.
+            intent?.action = null
         }
     }
 

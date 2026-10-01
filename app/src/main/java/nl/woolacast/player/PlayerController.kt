@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import nl.woolacast.domain.Chapter
 import nl.woolacast.domain.Episode
 
 /**
@@ -37,11 +38,24 @@ fun nextSpeed(current: Float): Float {
     return if (index == -1) SPEEDS.first() else SPEEDS[index]
 }
 
+/**
+ * Waar het hoofdstuk van [positionMs] ophoudt: het begin van het volgende, of
+ * het einde van de aflevering. Een halve seconde speling, zodat een sprong naar
+ * het begin van een hoofdstuk niet als het einde van het vorige telt.
+ */
+internal fun chapterStop(chapters: List<Chapter>, positionMs: Long, durationMs: Long): Long? =
+    chapters.firstOrNull { it.startMs > positionMs + 500 }?.startMs ?: durationMs.takeIf { it > 0L }
+
 /** Wanneer de speler zichzelf stilzet. */
 sealed interface SleepTimer {
     data object Off : SleepTimer
     data class After(val minutes: Int) : SleepTimer
     data object EndOfEpisode : SleepTimer
+    /**
+     * Aan het eind van het hoofdstuk waar je bent. Spring je naar een ander
+     * hoofdstuk, dan telt het einde van dat hoofdstuk.
+     */
+    data object EndOfChapter : SleepTimer
 }
 
 data class PlaybackState(
@@ -54,6 +68,8 @@ data class PlaybackState(
     /** Resterende tijd van de slaaptimer; null als er geen loopt. */
     val sleepRemainingMs: Long? = null,
     val sleepAtEnd: Boolean = false,
+    /** Stopt op deze plek in de aflevering (einde van het huidige hoofdstuk); null als dat niet zo is. */
+    val sleepAtMs: Long? = null,
     /** Waar deze aflevering vandaan kwam, bijv. "#3 in Top afleveringen NL". */
     val chartLabel: String? = null,
     val error: String? = null
@@ -84,7 +100,9 @@ class PlayerController(
     /** De eerstvolgende aflevering uit de wachtrij, of null als die leeg is. */
     private val nextInQueue: () -> Episode? = { null },
     /** Wordt aangeroepen zodra een wachtrij-aflevering begint te spelen. */
-    private val consumeQueued: suspend (episodeId: String) -> Unit = {}
+    private val consumeQueued: suspend (episodeId: String) -> Unit = {},
+    /** Het bestand op het toestel, als de aflevering gedownload is. */
+    private val localUri: (episodeId: String) -> String? = { null }
 ) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -94,6 +112,26 @@ class PlayerController(
     private var ticking = false
 
     private val _state = MutableStateFlow(PlaybackState())
+
+    /** Hoofdstukken van wat nu speelt, voor de slaaptimer "einde hoofdstuk". */
+    private var chapters: List<Chapter> = emptyList()
+
+    fun setChapters(list: List<Chapter>) {
+        chapters = list
+        if (_state.value.sleepAtMs != null) aimAtChapterEnd()
+    }
+
+    /** Legt het stoppunt op het einde van het hoofdstuk waar de speler nu is. */
+    private fun aimAtChapterEnd() {
+        val position = controller?.currentPosition ?: _state.value.positionMs
+        _state.value = _state.value.copy(sleepAtMs = chapterStop(chapters, position, _state.value.durationMs))
+    }
+
+    /** Na elke sprong: het stoppunt hoort bij het hoofdstuk waar je nu bent. */
+    private fun afterSeek() {
+        syncFromPlayer()
+        if (_state.value.sleepAtMs != null) aimAtChapterEnd()
+    }
     val state: StateFlow<PlaybackState> = _state.asStateFlow()
 
     /**
@@ -111,6 +149,16 @@ class PlayerController(
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) onEnded()
+        }
+
+        // Ook sprongen van buiten de app (melding, koptelefoon, Android Auto)
+        // verleggen het einde van het hoofdstuk.
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            if (reason == Player.DISCONTINUITY_REASON_SEEK && _state.value.sleepAtMs != null) aimAtChapterEnd()
         }
 
         override fun onPlayerError(error: PlaybackException) {
@@ -174,7 +222,7 @@ class PlayerController(
             return
         }
 
-        val item = episode.toMediaItem(audioUrl)
+        val item = episode.toMediaItem(localUri(episode.id) ?: audioUrl)
 
         val resumeAt = resumePosition(episode.id)
         _state.value = PlaybackState(
@@ -186,6 +234,8 @@ class PlayerController(
             speed = _state.value.speed,
             sleepRemainingMs = _state.value.sleepRemainingMs,
             sleepAtEnd = _state.value.sleepAtEnd,
+            // Het einde van een hoofdstuk hoort bij de vorige aflevering.
+            sleepAtMs = null,
             chartLabel = chartLabel
         )
 
@@ -210,13 +260,21 @@ class PlayerController(
         val player = controller ?: return
         val duration = player.duration.takeIf { it > 0L } ?: return
         player.seekTo((duration * fraction.coerceIn(0f, 1f)).toLong())
-        syncFromPlayer()
+        afterSeek()
+    }
+
+    /** Naar een vaste plek, bijvoorbeeld het begin van een hoofdstuk of een zin. */
+    fun seekToMs(positionMs: Long) {
+        val player = controller ?: return
+        player.seekTo(positionMs.coerceAtLeast(0L))
+        if (!player.isPlaying) player.play()
+        afterSeek()
     }
 
     fun seekBy(deltaMs: Long) {
         val player = controller ?: return
         player.seekTo((player.currentPosition + deltaMs).coerceAtLeast(0L))
-        syncFromPlayer()
+        afterSeek()
     }
 
     /** Volgende uit de wachtrij; niets als die leeg is. */
@@ -231,7 +289,7 @@ class PlayerController(
     fun previous() {
         val player = controller ?: return
         player.seekTo(0L)
-        syncFromPlayer()
+        afterSeek()
     }
 
     fun setSpeed(speed: Float) {
@@ -244,17 +302,22 @@ class PlayerController(
         when (timer) {
             SleepTimer.Off -> {
                 sleepEndsAt = null
-                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false)
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false, sleepAtMs = null)
             }
             is SleepTimer.After -> {
                 sleepEndsAt = SystemClock.elapsedRealtime() + timer.minutes * 60_000L
                 _state.value = _state.value.copy(
-                    sleepRemainingMs = timer.minutes * 60_000L, sleepAtEnd = false
+                    sleepRemainingMs = timer.minutes * 60_000L, sleepAtEnd = false, sleepAtMs = null
                 )
             }
             SleepTimer.EndOfEpisode -> {
                 sleepEndsAt = null
-                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = true)
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = true, sleepAtMs = null)
+            }
+            SleepTimer.EndOfChapter -> {
+                sleepEndsAt = null
+                _state.value = _state.value.copy(sleepRemainingMs = null, sleepAtEnd = false)
+                aimAtChapterEnd()
             }
         }
     }
@@ -316,6 +379,14 @@ class PlayerController(
                         setSleepTimer(SleepTimer.Off)
                     } else {
                         _state.value = _state.value.copy(sleepRemainingMs = remaining)
+                    }
+                }
+
+                _state.value.sleepAtMs?.let { stopAt ->
+                    if (_state.value.positionMs >= stopAt) {
+                        controller?.pause()
+                        rememberWhereWeAre()
+                        setSleepTimer(SleepTimer.Off)
                     }
                 }
 
