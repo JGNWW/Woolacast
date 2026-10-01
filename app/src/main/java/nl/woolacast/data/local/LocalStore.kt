@@ -25,8 +25,26 @@ data class FollowedShow(
     val publisher: String,
     val artworkUrl: String? = null,
     val feedUrl: String? = null,
-    /** Datum waarop je de podcastpagina voor het laatst opende; nieuwer is 'nieuw'. */
-    val lastOpened: String? = null
+    /** Datum waarop je de podcastpagina voor het laatst opende. Oude volgers zonder [followedAt] tellen nieuw vanaf hier. */
+    val lastOpened: String? = null,
+    /** Datum waarop je de show ging volgen; wat daarna verschijnt, is nieuw. */
+    val followedAt: String? = null,
+    /** Een melding bij een nieuwe aflevering; standaard uit. */
+    val notifyNew: Boolean = false
+)
+
+/**
+ * Wat de feedronde de laatste keer van een show zag: de kenmerken voor een
+ * voorwaardelijk verzoek, en de nieuwste afleveringen. Daaruit komen de lijst
+ * Nieuw, het getal "2 nieuw" en de meldingen, zonder dat er een feed open hoeft.
+ */
+@Serializable
+data class FeedCheck(
+    val checkedAt: String = "",
+    val etag: String? = null,
+    val lastModified: String? = null,
+    /** De nieuwste eerst. */
+    val latest: List<SavedEpisode> = emptyList()
 )
 
 /**
@@ -170,7 +188,13 @@ private data class StoreData(
     /** Automatische downloads die wegens ruimte opgeruimd zijn; die komen niet vanzelf terug. */
     val evicted: List<String> = emptyList(),
     /** Gewiste downloads die nog speelden: bestandsnaam → aflevering. */
-    val orphans: Map<String, String> = emptyMap()
+    val orphans: Map<String, String> = emptyMap(),
+    /** Per gevolgde show wat de feedronde laatst zag. */
+    val feedChecks: Map<String, FeedCheck> = emptyMap(),
+    /** Uit Nieuw weggeveegd; dat is niet hetzelfde als beluisterd. De nieuwste achteraan. */
+    val hiddenNew: List<String> = emptyList(),
+    /** Afleveringen waar al een melding over ging. De nieuwste achteraan. */
+    val notifiedNew: List<String> = emptyList()
 )
 
 /**
@@ -225,6 +249,12 @@ class LocalStore(private val file: File) {
     private val _orphans = MutableStateFlow<Map<String, String>>(emptyMap())
     val orphans: StateFlow<Map<String, String>> = _orphans.asStateFlow()
 
+    private val _feedChecks = MutableStateFlow<Map<String, FeedCheck>>(emptyMap())
+    val feedChecks: StateFlow<Map<String, FeedCheck>> = _feedChecks.asStateFlow()
+
+    private val _hiddenNew = MutableStateFlow<Set<String>>(emptySet())
+    val hiddenNew: StateFlow<Set<String>> = _hiddenNew.asStateFlow()
+
     private val _theme = MutableStateFlow("system")
     val theme: StateFlow<String> = _theme.asStateFlow()
 
@@ -253,15 +283,21 @@ class LocalStore(private val file: File) {
 
     suspend fun toggleFollow(show: FollowedShow) = mutate {
         val existing = it.follows.any { followed -> followed.id == show.id }
-        val follows = if (existing) it.follows.filterNot { f -> f.id == show.id } else it.follows + show
+        val follows = if (existing) it.follows.filterNot { f -> f.id == show.id } else it.follows + show.stamped()
         // Wie ontvolgt, wil ook niet dat de app nog afleveringen van die show binnenhaalt.
-        it.copy(follows = follows, autoDownload = if (existing) it.autoDownload - show.id else it.autoDownload)
+        it.copy(
+            follows = follows,
+            autoDownload = if (existing) it.autoDownload - show.id else it.autoDownload,
+            feedChecks = if (existing) it.feedChecks - show.id else it.feedChecks
+        )
     }
+
+    private fun FollowedShow.stamped() = if (followedAt == null) copy(followedAt = LocalDate.now().toString()) else this
 
     /** Volgt een rij shows tegelijk; wat je al volgde blijft zoals het was. */
     suspend fun followAll(shows: List<FollowedShow>) = mutate { data ->
         val have = data.follows.map { it.id }.toSet()
-        data.copy(follows = data.follows + shows.filter { it.id !in have }.distinctBy { it.id })
+        data.copy(follows = data.follows + shows.filter { it.id !in have }.distinctBy { it.id }.map { it.stamped() })
     }
 
     /**
@@ -274,10 +310,16 @@ class LocalStore(private val file: File) {
         val already = data.follows.any { it.id == show.id }
         data.copy(
             follows = if (already) data.follows.filterNot { it.id == oldId }
-                      else data.follows.map { if (it.id == oldId) show.copy(lastOpened = it.lastOpened) else it },
+                      else data.follows.map {
+                          if (it.id == oldId) show.copy(lastOpened = it.lastOpened, followedAt = it.followedAt, notifyNew = it.notifyNew)
+                          else it
+                      },
             autoDownload = data.autoDownload[oldId]?.let { count -> data.autoDownload - oldId + (show.id to count) }
                 ?: data.autoDownload,
             downloads = data.downloads.mapValues { (_, record) -> record.copy(episode = record.episode.moved()) },
+            feedChecks = data.feedChecks[oldId]?.let { check ->
+                data.feedChecks - oldId + (show.id to check.copy(latest = check.latest.map { it.moved() }))
+            } ?: data.feedChecks,
             queue = data.queue.map { it.moved() },
             saved = data.saved.map { it.moved() }
         )
@@ -288,6 +330,48 @@ class LocalStore(private val file: File) {
         if (data.follows.none { it.id == showId }) return@mutate data
         val today = LocalDate.now().toString()
         data.copy(follows = data.follows.map { if (it.id == showId) it.copy(lastOpened = today) else it })
+    }
+
+    /** Melding bij een nieuwe aflevering van deze show, aan of uit. */
+    suspend fun setNotifyNew(showId: String, on: Boolean) = mutate { data ->
+        // Wat er nu al staat, is geen nieuws meer: alleen wat hierna verschijnt krijgt een melding.
+        val already = if (on) data.feedChecks[showId]?.latest.orEmpty().map { it.id } else emptyList()
+        data.copy(
+            follows = data.follows.map { if (it.id == showId) it.copy(notifyNew = on) else it },
+            notifiedNew = (data.notifiedNew + already).distinct().takeLast(NEW_IDS_KEPT)
+        )
+    }
+
+    /* ---- nieuwe afleveringen ---- */
+
+    fun feedCheck(showId: String): FeedCheck? = data.feedChecks[showId]
+
+    fun notifiedNew(): Set<String> = data.notifiedNew.toSet()
+
+    suspend fun putFeedCheck(showId: String, check: FeedCheck) = mutate { data ->
+        // Een show die intussen ontvolgd is, krijgt geen plek meer.
+        if (data.follows.none { it.id == showId }) data
+        else data.copy(feedChecks = data.feedChecks + (showId to check))
+    }
+
+    suspend fun hideNew(episodeId: String) = mutate {
+        it.copy(hiddenNew = (it.hiddenNew - episodeId + episodeId).takeLast(NEW_IDS_KEPT))
+    }
+
+    suspend fun markNotified(episodeIds: Collection<String>) = mutate {
+        it.copy(notifiedNew = (it.notifiedNew + episodeIds).distinct().takeLast(NEW_IDS_KEPT))
+    }
+
+    /** Zet afleveringen achter de wachtrij, zonder dubbele. Geeft terug hoeveel erbij kwamen. */
+    suspend fun enqueueAll(episodes: List<SavedEpisode>): Int {
+        var added = 0
+        mutate { data ->
+            val have = data.queue.map { it.id }.toSet()
+            val fresh = episodes.filter { it.id !in have }.distinctBy { it.id }
+            added = fresh.size
+            data.copy(queue = data.queue + fresh)
+        }
+        return added
     }
 
     /* ---- makers ---- */
@@ -496,6 +580,8 @@ class LocalStore(private val file: File) {
         _listened.value = data.listened.toSet()
         _evicted.value = data.evicted.toSet()
         _orphans.value = data.orphans
+        _feedChecks.value = data.feedChecks
+        _hiddenNew.value = data.hiddenNew.toSet()
     }
 
     private companion object {
@@ -506,6 +592,9 @@ class LocalStore(private val file: File) {
 
         /** Zoveel podcasts onthouden we hun tips van; daarna vallen de oudste af. */
         const val SHOW_TIPS_KEPT = 300
+
+        /** Zoveel weggeveegde en gemelde afleveringen onthouden we. */
+        const val NEW_IDS_KEPT = 1000
 
         /** Zoveel makers onthouden we hun gezicht van. */
         const val MAKER_FACES_KEPT = 200

@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import nl.woolacast.data.inbox.NewEpisodeNotifier
 import nl.woolacast.ui.WoolacastNav
 import nl.woolacast.ui.theme.WoolacastTheme
 
@@ -42,7 +43,10 @@ class MainActivity : ComponentActivity() {
         val appContainer = container
         appContainer.player.connect()
         // Na het draaien van het scherm of een herstart komt dezelfde intent terug; die is al verwerkt.
-        if (savedInstanceState == null) takeOpml(intent)
+        if (savedInstanceState == null) {
+            takeOpml(intent)
+            takeNotification(intent)
+        }
 
         setContent {
             val theme by appContainer.store.theme.collectAsStateWithLifecycle()
@@ -61,6 +65,19 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         takeOpml(intent)
+        takeNotification(intent)
+    }
+
+    /** Uit de melding over nieuwe afleveringen: meteen afspelen, of naar Nieuw. */
+    private fun takeNotification(intent: Intent?) {
+        intent ?: return
+        intent.getStringExtra(NewEpisodeNotifier.EXTRA_PLAY)?.let { id ->
+            NewEpisodeNotifier.cancel(this)
+            container.incomingPlay.value = id
+        }
+        if (intent.getBooleanExtra(NewEpisodeNotifier.EXTRA_OPEN_NEW, false)) container.incomingOpenNew.value = true
+        intent.removeExtra(NewEpisodeNotifier.EXTRA_PLAY)
+        intent.removeExtra(NewEpisodeNotifier.EXTRA_OPEN_NEW)
     }
 
     /**

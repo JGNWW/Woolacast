@@ -209,6 +209,22 @@ fun WoolacastNav(container: AppContainer) {
         navController.navigate("${Tab.LIBRARY.route}/import?uri=${Uri.encode(uri.toString())}")
     }
 
+    // Uit de melding over nieuwe afleveringen: afspelen, of de Bibliotheek met Nieuw bovenaan.
+    val incomingPlay by container.incomingPlay.collectAsStateWithLifecycle()
+    LaunchedEffect(incomingPlay) {
+        val id = incomingPlay ?: return@LaunchedEffect
+        container.incomingPlay.value = null
+        container.store.ensureLoaded()
+        val episode = container.store.feedChecks.value.values.flatMap { it.latest }.firstOrNull { it.id == id }
+        if (episode != null) playAndOpen(episode.toEpisode(), null) else selectTab(Tab.LIBRARY)
+    }
+    val incomingOpenNew by container.incomingOpenNew.collectAsStateWithLifecycle()
+    LaunchedEffect(incomingOpenNew) {
+        if (!incomingOpenNew) return@LaunchedEffect
+        container.incomingOpenNew.value = false
+        selectTab(Tab.LIBRARY)
+    }
+
     // Afleveringen uit een hitlijst hebben geen audio-URL; de ViewModel zoekt
     // die op in de feed en meldt zich hier zodra hij speelbaar is.
     LaunchedEffect(chartsViewModel) {
@@ -302,7 +318,7 @@ fun WoolacastNav(container: AppContainer) {
                     val libraryViewModel: LibraryViewModel = viewModel(
                         factory = viewModelFactory {
                             initializer {
-                                LibraryViewModel(container.store, container.dataset, container.podcastRepository, container.makerRepository, container.importer)
+                                LibraryViewModel(container.store, container.dataset, container.makerRepository, container.importer, container.newEpisodes)
                             }
                         }
                     )

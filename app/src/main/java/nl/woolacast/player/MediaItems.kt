@@ -63,6 +63,9 @@ internal fun Episode.toMediaItem(playUri: String): MediaItem =
         )
         .build()
 
+/** Het adres uit de feed, ook als de speler een bestand op het toestel leest. */
+internal fun MediaItem.remoteUrl(): String? = mediaMetadata.extras?.getString(EXTRA_REMOTE_URL)
+
 /** De weg terug, voor als de speler ouder is dan het scherm. */
 internal fun MediaItem.toEpisode(durationMillis: Long?): Episode {
     val meta = mediaMetadata

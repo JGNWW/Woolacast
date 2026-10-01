@@ -228,7 +228,7 @@ class MakerScreenshots {
 
     private fun bibliotheek(dark: Boolean, followMakers: Boolean, name: String) {
         val store = seededStore(followMakers = followMakers)
-        val model = LibraryViewModel(store, dataset(), podcasts(), repository(store))
+        val model = LibraryViewModel(store, dataset(), repository(store))
         compose.setContent {
             WoolacastTheme(darkTheme = dark) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

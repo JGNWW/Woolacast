@@ -23,7 +23,11 @@ import nl.woolacast.container
 import nl.woolacast.data.Network
 import nl.woolacast.data.PodcastRepository
 import nl.woolacast.data.local.DownloadState
+import nl.woolacast.data.inbox.NewEpisodeNotifier
+import nl.woolacast.data.inbox.NewRules
+import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Catalog
+import java.time.LocalDate
 
 /**
  * Haalt één aflevering binnen. Gaat verder waar hij bleef als een eerdere poging
@@ -149,8 +153,11 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
 }
 
 /**
- * Kijkt bij shows met automatisch downloaden of er een nieuwe aflevering is,
- * zet de nieuwste klaar en ruimt oudere automatische downloads op.
+ * De feedronde, elke 6 uur: leest de feeds van alle gevolgde shows
+ * (voorwaardelijk, dus een ongewijzigde feed kost niets), meldt nieuwe
+ * afleveringen van shows waar je dat aanzette, en zet bij shows met
+ * automatisch downloaden de nieuwste klaar. Eén ronde voor alle drie, zodat de
+ * app niet twee keer langs dezelfde feeds gaat.
  */
 class AutoDownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
@@ -159,17 +166,23 @@ class AutoDownloadWorker(context: Context, params: WorkerParameters) : Coroutine
         val store = container.store
         store.ensureLoaded()
         val only = inputData.getString(KEY_SHOW)
-        val plans = store.autoDownload.value.filterKeys { only == null || it == only }
         val follows = store.follows.value.associateBy { it.id }
-        val repository: PodcastRepository = container.podcastRepository
 
+        val arrivals = container.newEpisodes.refresh(
+            follows.values.filter { only == null || it.id == only }
+        )
+        if (only == null) notifyArrivals(arrivals)
+
+        val plans = store.autoDownload.value.filterKeys { only == null || it == only }
+        val repository: PodcastRepository = container.podcastRepository
         for ((showId, count) in plans) {
             val show = follows[showId]
-            val episodes = runCatching {
-                val feed = show?.feedUrl
-                if (feed != null) repository.latestEpisodes(feed, limit = count + 5).map { it.copy(showId = showId) }
-                else repository.detail(showId, Catalog.defaultCountry.code, null, show?.title).episodes.take(count + 5)
-            }.getOrNull() ?: continue
+            // Wat de ronde net las, ligt al klaar; alleen een show zonder feed moet nog opgezocht.
+            val episodes = store.feedCheck(showId)?.latest?.takeIf { show?.feedUrl != null }?.map { it.toEpisode() }
+                ?: runCatching {
+                    repository.detail(showId, Catalog.defaultCountry.code, null, show?.title).episodes.take(count + 5)
+                }.getOrNull()
+                ?: continue
             if (episodes.isEmpty()) continue
             val artwork = show?.artworkUrl
             val existing = store.downloads.value.values.filter { it.episode.showId == showId }
@@ -188,6 +201,22 @@ class AutoDownloadWorker(context: Context, params: WorkerParameters) : Coroutine
         }
         container.downloads.cleanUp()
         return Result.success()
+    }
+
+    /** Eén gebundelde melding over wat er deze ronde binnenkwam bij shows met de melding aan. */
+    private suspend fun notifyArrivals(arrivals: Map<String, List<SavedEpisode>>) {
+        val store = applicationContext.container.store
+        val fresh = NewRules.toNotify(
+            arrivals = arrivals,
+            follows = store.follows.value,
+            notified = store.notifiedNew(),
+            listened = store.listened.value,
+            hidden = store.hiddenNew.value,
+            today = LocalDate.now()
+        )
+        if (fresh.isNotEmpty() && NewEpisodeNotifier.post(applicationContext, fresh)) {
+            store.markNotified(fresh.map { it.id })
+        }
     }
 
     companion object {

@@ -22,6 +22,7 @@ import nl.woolacast.data.opml.ShowImporter
 import nl.woolacast.data.transcript.TranscriptRepository
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.feed.FeedClient
+import nl.woolacast.data.inbox.NewEpisodes
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.maker.MakerCheckWorker
 import nl.woolacast.data.maker.MakerRepository
@@ -92,6 +93,13 @@ class AppContainer(context: Context) {
     /** OPML in en uit, en zelf een feed toevoegen. */
     val importer = ShowImporter(feedClient, catalogApi, store)
 
+    /** De feedronde langs alle gevolgde shows, voor Nieuw, meldingen en automatisch downloaden. */
+    val newEpisodes = NewEpisodes(feedClient, store)
+
+    /** Uit een melding: een aflevering om meteen af te spelen, of de lijst Nieuw openen. */
+    val incomingPlay = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+    val incomingOpenNew = kotlinx.coroutines.flow.MutableStateFlow(false)
+
     val player: PlayerController = PlayerController(
         context = context,
         resumePosition = { episodeId -> store.progress.value[episodeId] ?: 0L },
@@ -109,13 +117,14 @@ class WoolacastApp : Application() {
     lateinit var container: AppContainer
         private set
 
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             container.store.load()
-            // Uitgeluisterde downloads van gisteren mogen weg; en shows met
-            // automatisch downloaden krijgen hun vaste ronde.
+            // Uitgeluisterde downloads van gisteren mogen weg; en de feedronde
+            // (Nieuw, meldingen, automatisch downloaden) krijgt zijn vaste tijden.
             container.downloads.cleanUp()
             runCatching { Downloads.scheduleAuto(this@WoolacastApp, container.store.downloadSettings.value) }
         }
@@ -124,6 +133,9 @@ class WoolacastApp : Application() {
             container.player.state.map { it.episodeId }.distinctUntilChanged().drop(1)
                 .collect { container.downloads.cleanUp() }
         }
+        // Casten: de Cast-omgeving laadt op de achtergrond. Zonder Google
+        // Play-diensten lukt dat niet, en dan is er gewoon geen cast-knop.
+        runCatching { androidx.media3.cast.Cast.getSingletonInstance(this).initialize() }
         // Meldingen over nieuwe podcasts van gevolgde makers. In een testomgeving
         // zonder WorkManager slaat dit stil over.
         runCatching { MakerCheckWorker.schedule(this) }

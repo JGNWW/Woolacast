@@ -4,6 +4,8 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.app.NotificationManagerCompat
+import androidx.media3.cast.CastPlayer
+import androidx.media3.cast.RemoteCastPlayer
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackParameters
@@ -69,7 +71,7 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this)
+        val local = ExoPlayer.Builder(this)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
@@ -94,6 +96,22 @@ class PlaybackService : MediaSessionService() {
                 )
             )
             .build()
+
+        // Casten: Media3 wikkelt de speler op de telefoon in en wisselt zelf naar
+        // een speaker of tv en terug, ook via de uitvoerkiezer van Android. Zonder
+        // Google Play-diensten lukt dat niet; dan blijft het de speler op de telefoon.
+        val player: Player = runCatching {
+            CastPlayer.Builder(this)
+                .setLocalPlayer(local)
+                .setRemotePlayer(
+                    RemoteCastPlayer.Builder(this)
+                        .setMediaItemConverter(FeedUrlConverter())
+                        .setSeekBackIncrementMs(SKIP_BACK_MS)
+                        .setSeekForwardIncrementMs(SKIP_FORWARD_MS)
+                        .build()
+                )
+                .build()
+        }.getOrElse { local }
 
         player.addListener(object : Player.Listener {
             // De snelheidsknop draagt zijn eigen waarde als icoon; Media3

@@ -55,6 +55,13 @@ object WoolIcons {
     /* ---- app bar ---- */
     val Search = stroke("search", 1.8f, StrokeCap.Round, circle(11f, 11f, 7f), "M20.5 20.5L16.6 16.6")
     val Bell = stroke("bell", 1.8f, StrokeCap.Round, "M18 9a6 6 0 1 0 -12 0c0 5-2 6-2 6h16s-2-1-2-6", "M13.7 20a2 2 0 0 1 -3.4 0")
+    /** Het cast-teken: een scherm met golven linksonder. Alleen voor voorvertoningen; in de app tekent Media3 zijn eigen knop. */
+    val Cast = stroke("cast", 1.8f, StrokeCap.Round,
+        "M3 17.5a3.5 3.5 0 0 1 3.5 3.5", "M3 13.5a7.5 7.5 0 0 1 7.5 7.5", "M3 9.6v-3.6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-5")
+
+    /** Een speaker: voor "Speelt op Woonkamer". */
+    val Speaker = stroke("speaker", 1.8f, StrokeCap.Round,
+        "M9 3h6a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-6a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3z", circle(12f, 14f, 3.2f), "M12 7.2v0.01")
     val Filter = stroke("filter", 1.9f, StrokeCap.Round, "M4 7h16", "M7 12h10", "M10 17h4")
     val Back = stroke("back", 2f, StrokeCap.Round, "M15 5l-7 7 7 7")
     val ChevronDown = stroke("chevron-down", 2f, StrokeCap.Round, "M6 9l6 6 6-6")
