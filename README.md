@@ -541,6 +541,46 @@ twee weken. Alleen kanalen geven ook een melding: `MakerCheckWorker` kijkt twee
 keer per dag in `makers.json`. Zonder kanaal is "nieuw" niet zeker genoeg voor
 een melding.
 
+## Nieuw en meldingen
+
+Eén feedronde, elke 6 uur op de achtergrond en bij het openen of verversen van
+de Bibliotheek, leest de feeds van alle gevolgde shows. Voorwaardelijk: de app
+bewaart per feed `ETag` en `Last-Modified`, dus een ongewijzigde feed is een 304
+zonder inhoud. Per show onthoudt hij de tien nieuwste afleveringen. Dezelfde
+ronde zet bij automatisch downloaden de nieuwste klaar; er is geen tweede taak.
+
+**Wat nieuw is** staat op één plek (`NewRules`): verschenen ná de dag dat je de
+show ging volgen, in de laatste dertig dagen, niet uitgeluisterd en niet
+weggeveegd. De lijst Nieuw bovenaan Gevolgd en het getal "2 nieuw" onder een show
+rekenen er allebei mee. Wie al volgde voordat de volgdatum bestond, telt vanaf
+zijn laatste bezoek aan de podcastpagina, of een week. Naar links vegen verbergt
+een aflevering uit Nieuw; hij blijft gewoon op de podcastpagina staan.
+
+**Meldingen** staan per show uit tot je de bel op de podcastpagina aanzet; pas
+dan vraagt Android om toestemming als die er nog niet is. Shows zonder eigen
+feed (alleen Spotify) hebben geen bel. Een melding gaat alleen over wat in een
+ronde voor het eerst in de feed stond, dus de achterstand van een net gevolgde
+show meldt niets. Eén gebundelde melding per ronde, in het kanaal "Nieuwe
+afleveringen", met *Afspelen* en *In de wachtrij*.
+
+## Casten
+
+De speler in `PlaybackService` is een Media3 `CastPlayer` die de ExoPlayer van
+de telefoon inwikkelt. Media3 wisselt zelf tussen telefoon en speaker, ook via
+de uitvoerkiezer van Android 14 en later; positie, snelheid, slaaptimer,
+hoofdstukken en wachtrij lopen door. De speaker haalt de audio zelf bij de
+maker: een gedownloade aflevering gaat er met het adres uit de feed naartoe
+(`FeedUrlConverter`), nooit met het bestand op de telefoon.
+
+De cast-knop staat alleen in de speler als er een Cast-apparaat in het netwerk
+is, en onder de titel staat "Speelt op …" zolang er een speaker speelt. Zonder
+Google Play-diensten laadt de Cast-omgeving niet; dan is er geen knop en speelt
+alles gewoon op de telefoon. Een aparte build zonder Cast-SDK (voor F-Droid,
+zoals AntennaPod) is er nog niet.
+
+Media3 1.11 vraagt compileSdk 36 en Kotlin 2.2; daarom zijn AGP (8.13), Kotlin
+(2.2.21), de Compose-BOM (2026.05) en Media3 (1.11.1) bijgewerkt. targetSdk blijft 35.
+
 ## Stijgers en dalers
 
 Er bestaat geen publieke bron voor "gisteren". De app bewaart daarom zelf per
@@ -584,6 +624,9 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Hoofdstukken (Podlove, podcast:chapters, ID3) met slaaptimer "einde hoofdstuk" | werkt |
 | Meelezen met de transcriptie van de maker, met zoeken | werkt (NL ~7%, US ~14% van de shows levert tekst) |
 | OPML importeren en exporteren, zelf een feed toevoegen | werkt |
+| Nieuw bovenaan Gevolgd, met drie chips, vegen en "alles in de wachtrij" | werkt |
+| Melding bij een nieuwe aflevering, per show aan te zetten | gebouwd, nog niet op een toestel getest |
+| Casten naar Chromecast en speakers (Media3 Cast) | gebouwd, nog niet op een toestel getest |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -617,7 +660,8 @@ historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
 ## Nog te doen
 
 - Draaien op een echt toestel: de speler is nog nooit hoorbaar getest.
-- Afhankelijkheden zijn gepind op versies van eind 2024 en werken; lint meldt
-  dat er nieuwere zijn (AGP 9.4 inmiddels).
+- AGP, Kotlin, Compose en Media3 zijn in oktober 2026 bijgewerkt voor het
+  casten; de rest staat nog op versies van eind 2024. Lint meldt dat er
+  nieuwere zijn.
 - `applicationId` staat op `nl.woolacast` — aanpassen naar een domein dat je
   zelf bezit voordat je publiceert.

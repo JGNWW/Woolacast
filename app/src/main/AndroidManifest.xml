@@ -61,6 +61,18 @@
             </intent-filter>
         </service>
 
+        <!-- Casten: Media3's standaardinstellingen voor de Cast-ontvanger, en de
+             ontvanger waarmee Android een aflevering naar een speaker overzet. -->
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="androidx.media3.cast.DefaultCastOptionsProvider" />
+        <receiver android:name="androidx.mediarouter.media.MediaTransferReceiver" />
+
+        <!-- "In de wachtrij" uit de melding over nieuwe afleveringen. -->
+        <receiver
+            android:name=".data.inbox.QueueNewReceiver"
+            android:exported="false" />
+
         <!-- WorkManager draait downloads als voorgronddienst van dit type. -->
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"

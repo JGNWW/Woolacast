@@ -17,7 +17,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import nl.woolacast.data.PodcastRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import nl.woolacast.data.inbox.NewEpisodes
+import nl.woolacast.data.inbox.NewFilter
+import nl.woolacast.data.inbox.NewRules
+import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.data.dataset.ChartsDataset
 import nl.woolacast.data.dataset.DatasetMover
 import nl.woolacast.data.local.FollowedMaker
@@ -93,9 +99,9 @@ data class MakerSuggestion(
 class LibraryViewModel(
     private val store: LocalStore,
     private val dataset: ChartsDataset,
-    private val podcasts: PodcastRepository,
     private val makerRepository: MakerRepository,
-    private val importer: ShowImporter? = null
+    private val importer: ShowImporter? = null,
+    private val newEpisodes: NewEpisodes? = null
 ) : ViewModel() {
 
     val follows = store.follows
@@ -121,8 +127,55 @@ class LibraryViewModel(
     private val _alerts = MutableStateFlow<List<ChartAlert>>(emptyList())
     val alerts: StateFlow<List<ChartAlert>> = _alerts.asStateFlow()
 
-    private val _feeds = MutableStateFlow<Map<String, FeedStatus>>(emptyMap())
-    val feeds: StateFlow<Map<String, FeedStatus>> = _feeds.asStateFlow()
+    /**
+     * Per gevolgde show wat de feedronde zag: wanneer de laatste kwam en
+     * hoeveel er nieuw is. Hetzelfde "nieuw" als de lijst Nieuw, zodat het
+     * getal onder een show en de lijst nooit iets anders zeggen.
+     */
+    val feeds: StateFlow<Map<String, FeedStatus>> =
+        combine(store.follows, store.feedChecks, store.listened, store.hiddenNew) { follows, checks, listened, hidden ->
+            val today = LocalDate.now()
+            follows.mapNotNull { show ->
+                val latest = checks[show.id]?.latest ?: return@mapNotNull null
+                if (latest.isEmpty()) return@mapNotNull null
+                show.id to FeedStatus(
+                    latestDate = latest.firstOrNull()?.releaseDate,
+                    newCount = latest.count { NewRules.isNew(show, it, listened, hidden, today) }
+                )
+            }.toMap()
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** Alles wat nieuw is bij de shows die je volgt, de nieuwste eerst. */
+    val newEpisodeList: StateFlow<List<SavedEpisode>> =
+        combine(store.follows, store.feedChecks, store.listened, store.hiddenNew) { follows, checks, listened, hidden ->
+            NewRules.inbox(follows, checks, listened, hidden, LocalDate.now())
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    private val _newFilters = MutableStateFlow<Set<NewFilter>>(emptySet())
+    val newFilters: StateFlow<Set<NewFilter>> = _newFilters.asStateFlow()
+
+    /** Nieuw zoals de chips het willen. */
+    val shownNew: StateFlow<List<SavedEpisode>> =
+        combine(newEpisodeList, _newFilters, store.progress) { items, filters, progress ->
+            NewRules.applyFilters(items, filters, progress, LocalDate.now())
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun toggleNewFilter(filter: NewFilter) {
+        _newFilters.value = _newFilters.value.let { if (filter in it) it - filter else it + filter }
+    }
+
+    /** Naar links geveegd: weg uit Nieuw. Niet als beluisterd gemarkeerd; op de podcastpagina staat hij nog. */
+    fun hideNew(episodeId: String) {
+        viewModelScope.launch { store.hideNew(episodeId) }
+    }
+
+    /** Wat Nieuw nu toont achter de wachtrij, zonder dubbele en hooguit twintig. Meldt hoeveel erbij kwamen. */
+    fun queueAllNew(onDone: (Int) -> Unit) {
+        viewModelScope.launch {
+            val queued = store.queue.value.map { it.id }.toSet()
+            onDone(store.enqueueAll(NewRules.forQueue(shownNew.value, queued)))
+        }
+    }
 
     private val _sort = MutableStateFlow(LibrarySort.RECENT)
     val sort: StateFlow<LibrarySort> = _sort.asStateFlow()
@@ -166,42 +219,25 @@ class LibraryViewModel(
     }
 
     /**
-     * Leest de kop van elke gevolgde feed, hooguit vier tegelijk, om "2 nieuw"
-     * en "bijgewerkt di" onder de tegels te zetten. Eén keer per set gevolgde
-     * shows; wie wil verversen trekt de lijst naar beneden.
+     * De feedronde voor alle gevolgde shows: dezelfde als die van de
+     * achtergrondtaak, voorwaardelijk en hooguit vier tegelijk. Eén keer per set
+     * gevolgde shows; wie wil verversen trekt de lijst naar beneden.
      */
     fun refreshFeeds(force: Boolean = false) {
         val followed = store.follows.value
         val ids = followed.map { it.id }.toSet()
         if (!force && ids == feedsLoadedFor) return
         feedsLoadedFor = ids
+        val round = newEpisodes ?: return
 
         viewModelScope.launch {
             _refreshing.value = true
-            val gate = Semaphore(4)
-            val statuses = followed.map { show ->
-                async {
-                    val feedUrl = show.feedUrl ?: return@async null
-                    gate.withPermit {
-                        val episodes = podcasts.latestEpisodes(feedUrl, limit = 12)
-                        if (episodes.isEmpty()) return@withPermit null
-                        show.id to FeedStatus(
-                            latestDate = episodes.firstOrNull()?.releaseDate,
-                            newCount = episodes.count { isNewFor(show, it.releaseDate) }
-                        )
-                    }
-                }
-            }.awaitAll().filterNotNull().toMap()
-            _feeds.value = statuses
-            _refreshing.value = false
+            try {
+                round.refresh(followed)
+            } finally {
+                _refreshing.value = false
+            }
         }
-    }
-
-    /** Nieuw is: verschenen na je laatste bezoek, of — nooit geopend — in de laatste week. */
-    private fun isNewFor(show: FollowedShow, releaseDate: String?): Boolean {
-        val date = parseDate(releaseDate) ?: return false
-        val since = parseDate(show.lastOpened) ?: LocalDate.now().minusDays(7)
-        return date.isAfter(since)
     }
 
     private fun DatasetMover.toAlert(countryCode: String) = ChartAlert(

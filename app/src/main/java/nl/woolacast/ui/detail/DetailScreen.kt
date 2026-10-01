@@ -1,6 +1,11 @@
 package nl.woolacast.ui.detail
 
+import android.Manifest
 import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import nl.woolacast.data.inbox.NewEpisodeNotifier
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -120,6 +125,15 @@ fun DetailScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val follows by viewModel.follows.collectAsStateWithLifecycle()
+    // Toestemming voor meldingen pas vragen bij de eerste schakelaar die er een nodig heeft.
+    val askNotifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) {
+            viewModel.setNotifyNew(true)
+            Toast.makeText(context, "Je krijgt een melding bij een nieuwe aflevering", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Meldingen staan uit voor Toadcast. Zet ze aan in de instellingen van Android.", Toast.LENGTH_LONG).show()
+        }
+    }
     val progress by viewModel.progress.collectAsStateWithLifecycle()
     val queued by viewModel.queued.collectAsStateWithLifecycle()
     val stored by viewModel.stored.collectAsStateWithLifecycle()
@@ -272,6 +286,29 @@ fun DetailScreen(
                             selected = isFollowed
                         )
                         OutlineCircleButton(WoolIcons.Share, "Podcast delen", share)
+                        // Een melding kan alleen bij een show met een eigen feed; alleen-Spotify valt erbuiten.
+                        val followed = follows.firstOrNull { it.id == podcast.id }
+                        if (followed != null && (followed.feedUrl ?: podcast.feedUrl) != null) {
+                            OutlineCircleButton(
+                                WoolIcons.Bell,
+                                if (followed.notifyNew) "Melding bij een nieuwe aflevering: aan. Tik om uit te zetten."
+                                else "Melding bij een nieuwe aflevering: uit. Tik om aan te zetten.",
+                                onClick = {
+                                    val on = !followed.notifyNew
+                                    if (on && !NewEpisodeNotifier.canPost(context)) {
+                                        askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                    } else {
+                                        viewModel.setNotifyNew(on)
+                                        Toast.makeText(
+                                            context,
+                                            if (on) "Je krijgt een melding bij een nieuwe aflevering" else "Geen meldingen meer van deze show",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                filled = followed.notifyNew
+                            )
+                        }
                         Spacer(Modifier.weight(1f))
                         val newest = state.episodes.firstOrNull()
                         if (newest != null) {

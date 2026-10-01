@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
@@ -104,6 +105,10 @@ fun LibraryScreen(
     val saved by viewModel.saved.collectAsStateWithLifecycle()
     val alerts by viewModel.alerts.collectAsStateWithLifecycle()
     val feeds by viewModel.feeds.collectAsStateWithLifecycle()
+    val newAll by viewModel.newEpisodeList.collectAsStateWithLifecycle()
+    val newShown by viewModel.shownNew.collectAsStateWithLifecycle()
+    val newFilters by viewModel.newFilters.collectAsStateWithLifecycle()
+    var newExpanded by rememberSaveable { mutableStateOf(false) }
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
     val theme by viewModel.theme.collectAsStateWithLifecycle()
@@ -187,7 +192,30 @@ fun LibraryScreen(
                     feeds = feeds,
                     alerts = alerts,
                     onOpenPodcast = onOpenPodcast,
-                    onUnfollow = viewModel::unfollow
+                    onUnfollow = viewModel::unfollow,
+                    newSection = {
+                        newSection(
+                            all = newAll,
+                            shown = newShown,
+                            filters = newFilters,
+                            expanded = newExpanded,
+                            playingId = playingId,
+                            onToggleFilter = viewModel::toggleNewFilter,
+                            onQueueAll = {
+                                viewModel.queueAllNew { added ->
+                                    val text = when (added) {
+                                        0 -> "Staat al in de wachtrij"
+                                        1 -> "1 aflevering in de wachtrij"
+                                        else -> "$added afleveringen in de wachtrij"
+                                    }
+                                    Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onExpand = { newExpanded = true },
+                            onPlay = { onPlay(it.toEpisode()) },
+                            onHide = { viewModel.hideNew(it.id) }
+                        )
+                    }
                 )
             }
             LibraryTab.MAKERS -> PullToRefreshBox(
@@ -276,7 +304,8 @@ private fun FollowedTab(
     feeds: Map<String, FeedStatus>,
     alerts: List<ChartAlert>,
     onOpenPodcast: (String, String?, String) -> Unit,
-    onUnfollow: (FollowedShow) -> Unit
+    onUnfollow: (FollowedShow) -> Unit,
+    newSection: LazyGridScope.() -> Unit = {}
 ) {
     if (follows.isEmpty()) {
         NoticePanel(
@@ -295,6 +324,7 @@ private fun FollowedTab(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        newSection()
         if (alerts.isNotEmpty()) {
             item(span = { GridItemSpan(3) }) {
                 AlertCard(alerts, onOpenPodcast)

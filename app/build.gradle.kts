@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "nl.woolacast"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "nl.woolacast"
@@ -30,10 +30,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -51,6 +47,12 @@ android {
                 it.systemProperty("roborazzi.test.record", project.hasProperty("screenshots").toString())
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -80,6 +82,7 @@ dependencies {
 
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.session)
+    implementation(libs.media3.cast)
     implementation(libs.androidx.work.runtime)
 
     testImplementation(libs.junit)

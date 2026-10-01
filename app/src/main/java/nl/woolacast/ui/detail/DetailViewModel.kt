@@ -247,6 +247,12 @@ class DetailViewModel(
     private fun normalise(text: String) =
         text.lowercase().replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
 
+    /** Melding bij een nieuwe aflevering van deze show, aan of uit. */
+    fun setNotifyNew(on: Boolean) {
+        val podcast = _state.value.podcast ?: return
+        viewModelScope.launch { store.setNotifyNew(podcast.id, on) }
+    }
+
     fun toggleFollow() {
         val podcast = _state.value.podcast ?: return
         viewModelScope.launch {

@@ -193,12 +193,17 @@ class Downloads(
             return "$digest.$extension"
         }
 
-        /** Kijkt vier keer per dag of er bij shows met automatisch downloaden iets nieuws is. */
+        /**
+         * De feedronde, vier keer per dag. Elke verbinding volstaat: een feed is
+         * klein en meestal een 304. Downloads zelf wachten op wifi als dat zo
+         * ingesteld is; die hebben hun eigen voorwaarden.
+         */
+        @Suppress("UNUSED_PARAMETER")
         fun scheduleAuto(context: Context, settings: DownloadSettings) {
             val request = PeriodicWorkRequestBuilder<AutoDownloadWorker>(6, TimeUnit.HOURS)
                 .setConstraints(
                     Constraints.Builder()
-                        .setRequiredNetworkType(if (settings.wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
                         .setRequiresBatteryNotLow(true)
                         .build()
                 )

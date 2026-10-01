@@ -134,7 +134,9 @@ fun PlayerScreen(
     onOpenTranscript: () -> Unit = {},
     download: DownloadUi = DownloadUi.None,
     onDownload: () -> Unit = {},
-    onRemoveDownload: () -> Unit = {}
+    onRemoveDownload: () -> Unit = {},
+    /** Speakers en tv's in het netwerk; alleen voor schermafdrukken van buitenaf, anders volgt het scherm zelf. */
+    cast: CastRoutes? = null
 ) {
     val context = LocalContext.current
     val colors = LocalChartColors.current
@@ -174,6 +176,7 @@ fun PlayerScreen(
             fade = listOf(440f to 0f, 620f to 0.35f, 844f to 0.7f)
         )
 
+        val castRoutes = cast ?: rememberCastRoutes()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -189,6 +192,7 @@ fun PlayerScreen(
                 // Geen "speelt nu uit"-label: de show staat al onder de titel, en zo
                 // blijft de hoes bovenin vrij.
                 Spacer(Modifier.weight(1f))
+                CastButton(castRoutes)
                 Box {
                     GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
                     DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
@@ -260,6 +264,9 @@ fun PlayerScreen(
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                 }
+
+                // Speelt er een speaker of tv, dan staat dat hier; de knop zelf zit bovenin.
+                CastingLabel(castRoutes, Modifier.padding(top = 12.dp))
 
                 state.chartLabel?.let { label ->
                     Spacer(Modifier.height(12.dp))
