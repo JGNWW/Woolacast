@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-19T11:41:00Z",
+ "updated": "2026-10-20T10:11:41Z",
  "charts": [
   {
    "source": "apple",
@@ -8,8 +8,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1301/shows.history.json"
@@ -21,8 +21,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1303/shows.history.json"
@@ -34,8 +34,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1304/shows.history.json"
@@ -47,8 +47,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1305/shows.history.json"
@@ -60,8 +60,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1309/shows.history.json"
@@ -73,8 +73,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1310/shows.history.json"
@@ -86,8 +86,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1314/shows.history.json"
@@ -99,8 +99,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1318/shows.history.json"
@@ -112,8 +112,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1321/shows.history.json"
@@ -125,8 +125,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1324/shows.history.json"
@@ -138,8 +138,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1483/shows.history.json"
@@ -151,8 +151,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1487/shows.history.json"
@@ -164,8 +164,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1488/shows.history.json"
@@ -177,8 +177,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1489/shows.history.json"
@@ -190,8 +190,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1502/shows.history.json"
@@ -203,8 +203,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1511/shows.history.json"
@@ -216,8 +216,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1512/shows.history.json"
@@ -229,8 +229,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1533/shows.history.json"
@@ -242,8 +242,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/1545/shows.history.json"
@@ -292,7 +292,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/26/episodes.history.json"
@@ -341,7 +342,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/au/26/shows.history.json"
@@ -365,8 +367,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1301/shows.history.json"
@@ -390,8 +392,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1303/shows.history.json"
@@ -415,8 +417,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1304/shows.history.json"
@@ -440,8 +442,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1305/shows.history.json"
@@ -465,8 +467,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1309/shows.history.json"
@@ -490,8 +492,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1310/shows.history.json"
@@ -515,8 +517,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1314/shows.history.json"
@@ -540,8 +542,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1318/shows.history.json"
@@ -565,8 +567,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1321/shows.history.json"
@@ -590,8 +592,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1324/shows.history.json"
@@ -615,8 +617,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1483/shows.history.json"
@@ -640,8 +642,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1487/shows.history.json"
@@ -665,8 +667,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1488/shows.history.json"
@@ -690,8 +692,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1489/shows.history.json"
@@ -715,8 +717,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1502/shows.history.json"
@@ -740,8 +742,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1511/shows.history.json"
@@ -765,8 +767,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1512/shows.history.json"
@@ -790,8 +792,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1533/shows.history.json"
@@ -815,8 +817,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/1545/shows.history.json"
@@ -865,7 +867,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/26/episodes.history.json"
@@ -914,7 +917,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/be/26/shows.history.json"
@@ -926,8 +930,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1301/shows.history.json"
@@ -939,8 +943,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1303/shows.history.json"
@@ -952,8 +956,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1304/shows.history.json"
@@ -965,8 +969,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1305/shows.history.json"
@@ -978,8 +982,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1309/shows.history.json"
@@ -991,8 +995,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1310/shows.history.json"
@@ -1004,8 +1008,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1314/shows.history.json"
@@ -1017,8 +1021,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1318/shows.history.json"
@@ -1030,8 +1034,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1321/shows.history.json"
@@ -1043,8 +1047,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1324/shows.history.json"
@@ -1056,8 +1060,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1483/shows.history.json"
@@ -1069,8 +1073,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1487/shows.history.json"
@@ -1082,8 +1086,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1488/shows.history.json"
@@ -1095,8 +1099,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1489/shows.history.json"
@@ -1108,8 +1112,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1502/shows.history.json"
@@ -1121,8 +1125,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1511/shows.history.json"
@@ -1134,8 +1138,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1512/shows.history.json"
@@ -1147,8 +1151,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1533/shows.history.json"
@@ -1160,8 +1164,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/1545/shows.history.json"
@@ -1209,7 +1213,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/26/episodes.history.json"
@@ -1258,7 +1263,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/br/26/shows.history.json"
@@ -1270,8 +1276,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1301/shows.history.json"
@@ -1283,8 +1289,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1303/shows.history.json"
@@ -1296,8 +1302,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1304/shows.history.json"
@@ -1309,8 +1315,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1305/shows.history.json"
@@ -1322,8 +1328,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1309/shows.history.json"
@@ -1335,8 +1341,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1310/shows.history.json"
@@ -1348,8 +1354,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1314/shows.history.json"
@@ -1361,8 +1367,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1318/shows.history.json"
@@ -1374,8 +1380,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1321/shows.history.json"
@@ -1387,8 +1393,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1324/shows.history.json"
@@ -1400,8 +1406,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1483/shows.history.json"
@@ -1413,8 +1419,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1487/shows.history.json"
@@ -1426,8 +1432,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1488/shows.history.json"
@@ -1439,8 +1445,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1489/shows.history.json"
@@ -1452,8 +1458,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1502/shows.history.json"
@@ -1465,8 +1471,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1511/shows.history.json"
@@ -1478,8 +1484,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1512/shows.history.json"
@@ -1491,8 +1497,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1533/shows.history.json"
@@ -1504,8 +1510,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/1545/shows.history.json"
@@ -1554,7 +1560,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/26/episodes.history.json"
@@ -1603,7 +1610,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ca/26/shows.history.json"
@@ -1627,8 +1635,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1301/shows.history.json"
@@ -1652,8 +1660,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1303/shows.history.json"
@@ -1677,8 +1685,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1304/shows.history.json"
@@ -1702,8 +1710,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1305/shows.history.json"
@@ -1727,8 +1735,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1309/shows.history.json"
@@ -1752,8 +1760,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1310/shows.history.json"
@@ -1777,8 +1785,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1314/shows.history.json"
@@ -1802,8 +1810,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1318/shows.history.json"
@@ -1827,8 +1835,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1321/shows.history.json"
@@ -1852,8 +1860,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1324/shows.history.json"
@@ -1877,8 +1885,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1483/shows.history.json"
@@ -1902,8 +1910,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1487/shows.history.json"
@@ -1927,8 +1935,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1488/shows.history.json"
@@ -1952,8 +1960,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1489/shows.history.json"
@@ -1977,8 +1985,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1502/shows.history.json"
@@ -2002,8 +2010,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1511/shows.history.json"
@@ -2027,8 +2035,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1512/shows.history.json"
@@ -2052,8 +2060,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1533/shows.history.json"
@@ -2077,8 +2085,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/1545/shows.history.json"
@@ -2125,7 +2133,8 @@
     "2026-10-15",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/26/episodes.history.json"
@@ -2174,7 +2183,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/de/26/shows.history.json"
@@ -2186,8 +2196,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1301/shows.history.json"
@@ -2199,8 +2209,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1303/shows.history.json"
@@ -2212,8 +2222,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1304/shows.history.json"
@@ -2225,8 +2235,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1305/shows.history.json"
@@ -2238,8 +2248,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1309/shows.history.json"
@@ -2251,8 +2261,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1310/shows.history.json"
@@ -2264,8 +2274,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1314/shows.history.json"
@@ -2277,8 +2287,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1318/shows.history.json"
@@ -2290,8 +2300,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1321/shows.history.json"
@@ -2303,8 +2313,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1324/shows.history.json"
@@ -2316,8 +2326,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1483/shows.history.json"
@@ -2329,8 +2339,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1487/shows.history.json"
@@ -2342,8 +2352,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1488/shows.history.json"
@@ -2355,8 +2365,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1489/shows.history.json"
@@ -2368,8 +2378,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1502/shows.history.json"
@@ -2381,8 +2391,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1511/shows.history.json"
@@ -2394,8 +2404,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1512/shows.history.json"
@@ -2407,8 +2417,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1533/shows.history.json"
@@ -2420,8 +2430,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/1545/shows.history.json"
@@ -2469,7 +2479,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/26/episodes.history.json"
@@ -2518,7 +2529,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/dk/26/shows.history.json"
@@ -2530,8 +2542,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1301/shows.history.json"
@@ -2543,8 +2555,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1303/shows.history.json"
@@ -2556,8 +2568,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1304/shows.history.json"
@@ -2569,8 +2581,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1305/shows.history.json"
@@ -2582,8 +2594,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1309/shows.history.json"
@@ -2595,8 +2607,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1310/shows.history.json"
@@ -2608,8 +2620,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1314/shows.history.json"
@@ -2621,8 +2633,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1318/shows.history.json"
@@ -2634,8 +2646,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1321/shows.history.json"
@@ -2647,8 +2659,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1324/shows.history.json"
@@ -2660,8 +2672,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1483/shows.history.json"
@@ -2673,8 +2685,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1487/shows.history.json"
@@ -2686,8 +2698,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1488/shows.history.json"
@@ -2699,8 +2711,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1489/shows.history.json"
@@ -2712,8 +2724,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1502/shows.history.json"
@@ -2725,8 +2737,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1511/shows.history.json"
@@ -2738,8 +2750,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1512/shows.history.json"
@@ -2751,8 +2763,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1533/shows.history.json"
@@ -2764,8 +2776,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/1545/shows.history.json"
@@ -2813,7 +2825,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/26/episodes.history.json"
@@ -2862,7 +2875,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/es/26/shows.history.json"
@@ -2874,8 +2888,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1301/shows.history.json"
@@ -2887,8 +2901,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1303/shows.history.json"
@@ -2900,8 +2914,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1304/shows.history.json"
@@ -2913,8 +2927,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1305/shows.history.json"
@@ -2926,8 +2940,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1309/shows.history.json"
@@ -2939,8 +2953,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1310/shows.history.json"
@@ -2952,8 +2966,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1314/shows.history.json"
@@ -2965,8 +2979,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1318/shows.history.json"
@@ -2978,8 +2992,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1321/shows.history.json"
@@ -2991,8 +3005,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1324/shows.history.json"
@@ -3004,8 +3018,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1483/shows.history.json"
@@ -3017,8 +3031,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1487/shows.history.json"
@@ -3030,8 +3044,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1488/shows.history.json"
@@ -3043,8 +3057,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1489/shows.history.json"
@@ -3056,8 +3070,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1502/shows.history.json"
@@ -3069,8 +3083,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1511/shows.history.json"
@@ -3082,8 +3096,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1512/shows.history.json"
@@ -3095,8 +3109,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1533/shows.history.json"
@@ -3108,8 +3122,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/1545/shows.history.json"
@@ -3158,7 +3172,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/26/episodes.history.json"
@@ -3207,7 +3222,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/fr/26/shows.history.json"
@@ -3231,8 +3247,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1301/shows.history.json"
@@ -3256,8 +3272,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1303/shows.history.json"
@@ -3281,8 +3297,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1304/shows.history.json"
@@ -3306,8 +3322,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1305/shows.history.json"
@@ -3331,8 +3347,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1309/shows.history.json"
@@ -3356,8 +3372,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1310/shows.history.json"
@@ -3381,8 +3397,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1314/shows.history.json"
@@ -3406,8 +3422,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1318/shows.history.json"
@@ -3431,8 +3447,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1321/shows.history.json"
@@ -3456,8 +3472,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1324/shows.history.json"
@@ -3481,8 +3497,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1483/shows.history.json"
@@ -3506,8 +3522,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1487/shows.history.json"
@@ -3531,8 +3547,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1488/shows.history.json"
@@ -3556,8 +3572,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1489/shows.history.json"
@@ -3581,8 +3597,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1502/shows.history.json"
@@ -3606,8 +3622,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1511/shows.history.json"
@@ -3631,8 +3647,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1512/shows.history.json"
@@ -3656,8 +3672,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1533/shows.history.json"
@@ -3681,8 +3697,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/1545/shows.history.json"
@@ -3731,7 +3747,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/26/episodes.history.json"
@@ -3780,7 +3797,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/gb/26/shows.history.json"
@@ -3792,8 +3810,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1301/shows.history.json"
@@ -3805,8 +3823,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1303/shows.history.json"
@@ -3818,8 +3836,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1304/shows.history.json"
@@ -3831,8 +3849,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1305/shows.history.json"
@@ -3844,8 +3862,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1309/shows.history.json"
@@ -3857,8 +3875,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1310/shows.history.json"
@@ -3870,8 +3888,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1314/shows.history.json"
@@ -3883,8 +3901,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1318/shows.history.json"
@@ -3896,8 +3914,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1321/shows.history.json"
@@ -3909,8 +3927,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1324/shows.history.json"
@@ -3922,8 +3940,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1483/shows.history.json"
@@ -3935,8 +3953,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1487/shows.history.json"
@@ -3948,8 +3966,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1488/shows.history.json"
@@ -3961,8 +3979,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1489/shows.history.json"
@@ -3974,8 +3992,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1502/shows.history.json"
@@ -3987,8 +4005,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1511/shows.history.json"
@@ -4000,8 +4018,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1512/shows.history.json"
@@ -4013,8 +4031,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1533/shows.history.json"
@@ -4026,8 +4044,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/1545/shows.history.json"
@@ -4075,7 +4093,8 @@
     "2026-10-15",
     "2026-10-16",
     "2026-10-17",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/26/episodes.history.json"
@@ -4124,7 +4143,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/ie/26/shows.history.json"
@@ -4136,8 +4156,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1301/shows.history.json"
@@ -4149,8 +4169,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1303/shows.history.json"
@@ -4162,8 +4182,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1304/shows.history.json"
@@ -4175,8 +4195,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1305/shows.history.json"
@@ -4188,8 +4208,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1309/shows.history.json"
@@ -4201,8 +4221,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1310/shows.history.json"
@@ -4214,8 +4234,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1314/shows.history.json"
@@ -4227,8 +4247,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1318/shows.history.json"
@@ -4240,8 +4260,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1321/shows.history.json"
@@ -4253,8 +4273,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1324/shows.history.json"
@@ -4266,8 +4286,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1483/shows.history.json"
@@ -4279,8 +4299,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1487/shows.history.json"
@@ -4292,8 +4312,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1488/shows.history.json"
@@ -4305,8 +4325,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1489/shows.history.json"
@@ -4318,8 +4338,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1502/shows.history.json"
@@ -4331,8 +4351,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1511/shows.history.json"
@@ -4344,8 +4364,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1512/shows.history.json"
@@ -4357,8 +4377,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1533/shows.history.json"
@@ -4370,8 +4390,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/1545/shows.history.json"
@@ -4420,7 +4440,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/26/episodes.history.json"
@@ -4469,7 +4490,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/in/26/shows.history.json"
@@ -4481,8 +4503,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1301/shows.history.json"
@@ -4494,8 +4516,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1303/shows.history.json"
@@ -4507,8 +4529,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1304/shows.history.json"
@@ -4520,8 +4542,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1305/shows.history.json"
@@ -4533,8 +4555,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1309/shows.history.json"
@@ -4546,8 +4568,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1310/shows.history.json"
@@ -4559,8 +4581,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1314/shows.history.json"
@@ -4572,8 +4594,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1318/shows.history.json"
@@ -4585,8 +4607,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1321/shows.history.json"
@@ -4598,8 +4620,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1324/shows.history.json"
@@ -4611,8 +4633,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1483/shows.history.json"
@@ -4624,8 +4646,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1487/shows.history.json"
@@ -4637,8 +4659,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1488/shows.history.json"
@@ -4650,8 +4672,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1489/shows.history.json"
@@ -4663,8 +4685,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1502/shows.history.json"
@@ -4676,8 +4698,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1511/shows.history.json"
@@ -4689,8 +4711,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1512/shows.history.json"
@@ -4702,8 +4724,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1533/shows.history.json"
@@ -4715,8 +4737,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/1545/shows.history.json"
@@ -4765,7 +4787,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/26/episodes.history.json"
@@ -4814,7 +4837,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/it/26/shows.history.json"
@@ -4826,8 +4850,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1301/shows.history.json"
@@ -4839,8 +4863,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1303/shows.history.json"
@@ -4852,8 +4876,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1304/shows.history.json"
@@ -4865,8 +4889,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1305/shows.history.json"
@@ -4878,8 +4902,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1309/shows.history.json"
@@ -4891,8 +4915,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1310/shows.history.json"
@@ -4904,8 +4928,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1314/shows.history.json"
@@ -4917,8 +4941,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1318/shows.history.json"
@@ -4930,8 +4954,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1321/shows.history.json"
@@ -4943,8 +4967,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1324/shows.history.json"
@@ -4956,8 +4980,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1483/shows.history.json"
@@ -4969,8 +4993,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1487/shows.history.json"
@@ -4982,8 +5006,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1488/shows.history.json"
@@ -4995,8 +5019,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1489/shows.history.json"
@@ -5008,8 +5032,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1502/shows.history.json"
@@ -5021,8 +5045,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1511/shows.history.json"
@@ -5034,8 +5058,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1512/shows.history.json"
@@ -5047,8 +5071,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1533/shows.history.json"
@@ -5060,8 +5084,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/1545/shows.history.json"
@@ -5108,7 +5132,8 @@
     "2026-10-15",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/26/episodes.history.json"
@@ -5157,7 +5182,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/jp/26/shows.history.json"
@@ -5169,8 +5195,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1301/shows.history.json"
@@ -5182,8 +5208,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1303/shows.history.json"
@@ -5195,8 +5221,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1304/shows.history.json"
@@ -5208,8 +5234,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1305/shows.history.json"
@@ -5221,8 +5247,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1309/shows.history.json"
@@ -5234,8 +5260,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1310/shows.history.json"
@@ -5247,8 +5273,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1314/shows.history.json"
@@ -5260,8 +5286,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1318/shows.history.json"
@@ -5273,8 +5299,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1321/shows.history.json"
@@ -5286,8 +5312,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1324/shows.history.json"
@@ -5299,8 +5325,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1483/shows.history.json"
@@ -5312,8 +5338,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1487/shows.history.json"
@@ -5325,8 +5351,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1488/shows.history.json"
@@ -5338,8 +5364,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1489/shows.history.json"
@@ -5351,8 +5377,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1502/shows.history.json"
@@ -5364,8 +5390,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1511/shows.history.json"
@@ -5377,8 +5403,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1512/shows.history.json"
@@ -5390,8 +5416,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1533/shows.history.json"
@@ -5403,8 +5429,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/1545/shows.history.json"
@@ -5451,7 +5477,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/26/episodes.history.json"
@@ -5500,7 +5527,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/mx/26/shows.history.json"
@@ -5524,8 +5552,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1301/shows.history.json"
@@ -5549,8 +5577,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1303/shows.history.json"
@@ -5574,8 +5602,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1304/shows.history.json"
@@ -5599,8 +5627,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1305/shows.history.json"
@@ -5624,8 +5652,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1309/shows.history.json"
@@ -5649,8 +5677,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1310/shows.history.json"
@@ -5674,8 +5702,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1314/shows.history.json"
@@ -5699,8 +5727,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1318/shows.history.json"
@@ -5724,8 +5752,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1321/shows.history.json"
@@ -5749,8 +5777,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1324/shows.history.json"
@@ -5774,8 +5802,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1483/shows.history.json"
@@ -5799,8 +5827,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1487/shows.history.json"
@@ -5824,8 +5852,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1488/shows.history.json"
@@ -5849,8 +5877,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1489/shows.history.json"
@@ -5874,8 +5902,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1502/shows.history.json"
@@ -5899,8 +5927,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1511/shows.history.json"
@@ -5924,8 +5952,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1512/shows.history.json"
@@ -5949,8 +5977,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1533/shows.history.json"
@@ -5974,8 +6002,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/1545/shows.history.json"
@@ -6023,7 +6051,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/26/episodes.history.json"
@@ -6072,7 +6101,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/nl/26/shows.history.json"
@@ -6084,8 +6114,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1301/shows.history.json"
@@ -6097,8 +6127,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1303/shows.history.json"
@@ -6110,8 +6140,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1304/shows.history.json"
@@ -6123,8 +6153,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1305/shows.history.json"
@@ -6136,8 +6166,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1309/shows.history.json"
@@ -6149,8 +6179,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1310/shows.history.json"
@@ -6162,8 +6192,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1314/shows.history.json"
@@ -6175,8 +6205,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1318/shows.history.json"
@@ -6188,8 +6218,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1321/shows.history.json"
@@ -6201,8 +6231,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1324/shows.history.json"
@@ -6214,8 +6244,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1483/shows.history.json"
@@ -6227,8 +6257,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1487/shows.history.json"
@@ -6240,8 +6270,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1488/shows.history.json"
@@ -6253,8 +6283,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1489/shows.history.json"
@@ -6266,8 +6296,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1502/shows.history.json"
@@ -6279,8 +6309,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1511/shows.history.json"
@@ -6292,8 +6322,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1512/shows.history.json"
@@ -6305,8 +6335,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1533/shows.history.json"
@@ -6318,8 +6348,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/1545/shows.history.json"
@@ -6367,7 +6397,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/26/episodes.history.json"
@@ -6416,7 +6447,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/no/26/shows.history.json"
@@ -6428,8 +6460,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1301/shows.history.json"
@@ -6441,8 +6473,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1303/shows.history.json"
@@ -6454,8 +6486,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1304/shows.history.json"
@@ -6467,8 +6499,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1305/shows.history.json"
@@ -6480,8 +6512,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1309/shows.history.json"
@@ -6493,8 +6525,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1310/shows.history.json"
@@ -6506,8 +6538,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1314/shows.history.json"
@@ -6519,8 +6551,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1318/shows.history.json"
@@ -6532,8 +6564,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1321/shows.history.json"
@@ -6545,8 +6577,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1324/shows.history.json"
@@ -6558,8 +6590,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1483/shows.history.json"
@@ -6571,8 +6603,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1487/shows.history.json"
@@ -6584,8 +6616,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1488/shows.history.json"
@@ -6597,8 +6629,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1489/shows.history.json"
@@ -6610,8 +6642,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1502/shows.history.json"
@@ -6623,8 +6655,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1511/shows.history.json"
@@ -6636,8 +6668,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1512/shows.history.json"
@@ -6649,8 +6681,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1533/shows.history.json"
@@ -6662,8 +6694,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/1545/shows.history.json"
@@ -6711,7 +6743,8 @@
     "2026-10-15",
     "2026-10-16",
     "2026-10-17",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/26/episodes.history.json"
@@ -6760,7 +6793,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/se/26/shows.history.json"
@@ -6784,8 +6818,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1301/shows.history.json"
@@ -6809,8 +6843,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1303/shows.history.json"
@@ -6834,8 +6868,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1304/shows.history.json"
@@ -6859,8 +6893,8 @@
    "genreLabel": "Kinderen & gezin",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1305/shows.history.json"
@@ -6884,8 +6918,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1309/shows.history.json"
@@ -6909,8 +6943,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1310/shows.history.json"
@@ -6934,8 +6968,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1314/shows.history.json"
@@ -6959,8 +6993,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1318/shows.history.json"
@@ -6984,8 +7018,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1321/shows.history.json"
@@ -7009,8 +7043,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1324/shows.history.json"
@@ -7034,8 +7068,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1483/shows.history.json"
@@ -7059,8 +7093,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1487/shows.history.json"
@@ -7084,8 +7118,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1488/shows.history.json"
@@ -7109,8 +7143,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1489/shows.history.json"
@@ -7134,8 +7168,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1502/shows.history.json"
@@ -7159,8 +7193,8 @@
    "genreLabel": "Overheid",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1511/shows.history.json"
@@ -7184,8 +7218,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1512/shows.history.json"
@@ -7209,8 +7243,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1533/shows.history.json"
@@ -7234,8 +7268,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/1545/shows.history.json"
@@ -7284,7 +7318,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/26/episodes.history.json"
@@ -7333,7 +7368,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "apple/us/26/shows.history.json"
@@ -7345,8 +7381,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1301/shows.history.json"
@@ -7358,8 +7394,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1303/shows.history.json"
@@ -7371,8 +7407,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1304/shows.history.json"
@@ -7384,8 +7420,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1309/shows.history.json"
@@ -7397,8 +7433,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1310/shows.history.json"
@@ -7410,8 +7446,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1314/shows.history.json"
@@ -7423,8 +7459,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1318/shows.history.json"
@@ -7436,8 +7472,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1321/shows.history.json"
@@ -7449,8 +7485,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1324/shows.history.json"
@@ -7462,8 +7498,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1483/shows.history.json"
@@ -7475,8 +7511,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1487/shows.history.json"
@@ -7488,8 +7524,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1488/shows.history.json"
@@ -7501,8 +7537,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1489/shows.history.json"
@@ -7514,8 +7550,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1502/shows.history.json"
@@ -7527,8 +7563,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1512/shows.history.json"
@@ -7540,8 +7576,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1533/shows.history.json"
@@ -7553,8 +7589,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/1545/shows.history.json"
@@ -7603,7 +7639,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/26/episodes.history.json"
@@ -7652,7 +7689,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/au/26/shows.history.json"
@@ -7664,8 +7702,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1301/shows.history.json"
@@ -7677,8 +7715,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1303/shows.history.json"
@@ -7690,8 +7728,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1304/shows.history.json"
@@ -7703,8 +7741,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1309/shows.history.json"
@@ -7716,8 +7754,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1310/shows.history.json"
@@ -7729,8 +7767,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1314/shows.history.json"
@@ -7742,8 +7780,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1318/shows.history.json"
@@ -7755,8 +7793,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1321/shows.history.json"
@@ -7768,8 +7806,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1324/shows.history.json"
@@ -7781,8 +7819,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1483/shows.history.json"
@@ -7794,8 +7832,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1487/shows.history.json"
@@ -7807,8 +7845,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1488/shows.history.json"
@@ -7820,8 +7858,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1489/shows.history.json"
@@ -7833,8 +7871,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1502/shows.history.json"
@@ -7846,8 +7884,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1512/shows.history.json"
@@ -7859,8 +7897,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1533/shows.history.json"
@@ -7872,8 +7910,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/1545/shows.history.json"
@@ -7922,7 +7960,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/26/episodes.history.json"
@@ -7971,7 +8010,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/br/26/shows.history.json"
@@ -8020,7 +8060,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/ca/26/episodes.history.json"
@@ -8069,7 +8110,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/ca/26/shows.history.json"
@@ -8081,8 +8123,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1301/shows.history.json"
@@ -8094,8 +8136,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1303/shows.history.json"
@@ -8107,8 +8149,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1304/shows.history.json"
@@ -8120,8 +8162,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1309/shows.history.json"
@@ -8133,8 +8175,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1310/shows.history.json"
@@ -8146,8 +8188,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1314/shows.history.json"
@@ -8159,8 +8201,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1318/shows.history.json"
@@ -8172,8 +8214,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1321/shows.history.json"
@@ -8185,8 +8227,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1324/shows.history.json"
@@ -8198,8 +8240,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1483/shows.history.json"
@@ -8211,8 +8253,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1487/shows.history.json"
@@ -8224,8 +8266,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1488/shows.history.json"
@@ -8237,8 +8279,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1489/shows.history.json"
@@ -8250,8 +8292,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1502/shows.history.json"
@@ -8263,8 +8305,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1512/shows.history.json"
@@ -8276,8 +8318,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1533/shows.history.json"
@@ -8289,8 +8331,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/1545/shows.history.json"
@@ -8339,7 +8381,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/26/episodes.history.json"
@@ -8388,7 +8431,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/de/26/shows.history.json"
@@ -8437,7 +8481,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/dk/26/episodes.history.json"
@@ -8486,7 +8531,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/dk/26/shows.history.json"
@@ -8535,7 +8581,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/es/26/episodes.history.json"
@@ -8584,7 +8631,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/es/26/shows.history.json"
@@ -8633,7 +8681,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/fr/26/episodes.history.json"
@@ -8682,7 +8731,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/fr/26/shows.history.json"
@@ -8694,8 +8744,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1301/shows.history.json"
@@ -8707,8 +8757,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1303/shows.history.json"
@@ -8720,8 +8770,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1304/shows.history.json"
@@ -8733,8 +8783,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1309/shows.history.json"
@@ -8746,8 +8796,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1310/shows.history.json"
@@ -8759,8 +8809,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1314/shows.history.json"
@@ -8772,8 +8822,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1318/shows.history.json"
@@ -8785,8 +8835,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1321/shows.history.json"
@@ -8798,8 +8848,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1324/shows.history.json"
@@ -8811,8 +8861,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1483/shows.history.json"
@@ -8824,8 +8874,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1487/shows.history.json"
@@ -8837,8 +8887,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1488/shows.history.json"
@@ -8850,8 +8900,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1489/shows.history.json"
@@ -8863,8 +8913,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1502/shows.history.json"
@@ -8876,8 +8926,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1512/shows.history.json"
@@ -8889,8 +8939,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1533/shows.history.json"
@@ -8902,8 +8952,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/1545/shows.history.json"
@@ -8952,7 +9002,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/26/episodes.history.json"
@@ -9001,7 +9052,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/gb/26/shows.history.json"
@@ -9050,7 +9102,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/ie/26/episodes.history.json"
@@ -9099,7 +9152,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/ie/26/shows.history.json"
@@ -9147,7 +9201,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/in/26/episodes.history.json"
@@ -9196,7 +9251,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/in/26/shows.history.json"
@@ -9245,7 +9301,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/it/26/episodes.history.json"
@@ -9294,7 +9351,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/it/26/shows.history.json"
@@ -9343,7 +9401,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/jp/26/episodes.history.json"
@@ -9392,7 +9451,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/jp/26/shows.history.json"
@@ -9404,8 +9464,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1301/shows.history.json"
@@ -9417,8 +9477,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1303/shows.history.json"
@@ -9430,8 +9490,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1304/shows.history.json"
@@ -9443,8 +9503,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1309/shows.history.json"
@@ -9456,8 +9516,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1310/shows.history.json"
@@ -9469,8 +9529,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1314/shows.history.json"
@@ -9482,8 +9542,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1318/shows.history.json"
@@ -9495,8 +9555,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1321/shows.history.json"
@@ -9508,8 +9568,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1324/shows.history.json"
@@ -9521,8 +9581,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1483/shows.history.json"
@@ -9534,8 +9594,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1487/shows.history.json"
@@ -9547,8 +9607,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1488/shows.history.json"
@@ -9560,8 +9620,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1489/shows.history.json"
@@ -9573,8 +9633,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1502/shows.history.json"
@@ -9586,8 +9646,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1512/shows.history.json"
@@ -9599,8 +9659,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1533/shows.history.json"
@@ -9612,8 +9672,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/1545/shows.history.json"
@@ -9662,7 +9722,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/26/episodes.history.json"
@@ -9711,7 +9772,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/mx/26/shows.history.json"
@@ -9760,7 +9822,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/nl/26/episodes.history.json"
@@ -9809,7 +9872,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/nl/26/shows.history.json"
@@ -9858,7 +9922,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/no/26/episodes.history.json"
@@ -9907,7 +9972,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/no/26/shows.history.json"
@@ -9919,8 +9985,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1301/shows.history.json"
@@ -9932,8 +9998,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1303/shows.history.json"
@@ -9945,8 +10011,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1304/shows.history.json"
@@ -9958,8 +10024,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1309/shows.history.json"
@@ -9971,8 +10037,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1310/shows.history.json"
@@ -9984,8 +10050,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1314/shows.history.json"
@@ -9997,8 +10063,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1318/shows.history.json"
@@ -10010,8 +10076,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1321/shows.history.json"
@@ -10023,8 +10089,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1324/shows.history.json"
@@ -10036,8 +10102,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1483/shows.history.json"
@@ -10049,8 +10115,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1487/shows.history.json"
@@ -10062,8 +10128,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1488/shows.history.json"
@@ -10075,8 +10141,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1489/shows.history.json"
@@ -10088,8 +10154,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1502/shows.history.json"
@@ -10101,8 +10167,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1512/shows.history.json"
@@ -10114,8 +10180,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1533/shows.history.json"
@@ -10127,8 +10193,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/1545/shows.history.json"
@@ -10177,7 +10243,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/26/episodes.history.json"
@@ -10226,7 +10293,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/se/26/shows.history.json"
@@ -10238,8 +10306,8 @@
    "genreLabel": "Kunst",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1301/shows.history.json"
@@ -10251,8 +10319,8 @@
    "genreLabel": "Comedy",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1303/shows.history.json"
@@ -10264,8 +10332,8 @@
    "genreLabel": "Educatie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1304/shows.history.json"
@@ -10277,8 +10345,8 @@
    "genreLabel": "TV & film",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1309/shows.history.json"
@@ -10290,8 +10358,8 @@
    "genreLabel": "Muziek",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1310/shows.history.json"
@@ -10303,8 +10371,8 @@
    "genreLabel": "Religie & spiritualiteit",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1314/shows.history.json"
@@ -10316,8 +10384,8 @@
    "genreLabel": "Technologie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1318/shows.history.json"
@@ -10329,8 +10397,8 @@
    "genreLabel": "Zaken",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1321/shows.history.json"
@@ -10342,8 +10410,8 @@
    "genreLabel": "Maatschappij & cultuur",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1324/shows.history.json"
@@ -10355,8 +10423,8 @@
    "genreLabel": "Fictie",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1483/shows.history.json"
@@ -10368,8 +10436,8 @@
    "genreLabel": "Geschiedenis",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1487/shows.history.json"
@@ -10381,8 +10449,8 @@
    "genreLabel": "True crime",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1488/shows.history.json"
@@ -10394,8 +10462,8 @@
    "genreLabel": "Nieuws",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1489/shows.history.json"
@@ -10407,8 +10475,8 @@
    "genreLabel": "Vrije tijd",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1502/shows.history.json"
@@ -10420,8 +10488,8 @@
    "genreLabel": "Gezondheid & fitness",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1512/shows.history.json"
@@ -10433,8 +10501,8 @@
    "genreLabel": "Wetenschap",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1533/shows.history.json"
@@ -10446,8 +10514,8 @@
    "genreLabel": "Sport",
    "level": "shows",
    "days": [
-    "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/1545/shows.history.json"
@@ -10496,7 +10564,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/26/episodes.history.json"
@@ -10545,7 +10614,8 @@
     "2026-10-16",
     "2026-10-17",
     "2026-10-18",
-    "2026-10-19"
+    "2026-10-19",
+    "2026-10-20"
    ],
    "hasList": false,
    "path": "spotify/us/26/shows.history.json"
