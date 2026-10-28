@@ -69,7 +69,8 @@ fun Artwork(
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
     ) {
         if (url != null) {
-            AsyncImage(model = url, contentDescription = null, modifier = Modifier.size(size))
+            val px = with(LocalDensity.current) { size.roundToPx() }
+            AsyncImage(model = sizedArtwork(url, px), contentDescription = null, modifier = Modifier.size(size))
         }
     }
 }

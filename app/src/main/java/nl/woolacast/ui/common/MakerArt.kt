@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
 import coil.compose.AsyncImage
 
 /*
@@ -107,7 +108,7 @@ private fun Duo(covers: List<String>) {
 private fun WallCover(url: String, size: Dp, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(size * 0.11f)
     AsyncImage(
-        model = url,
+        model = sizedArtwork(url, with(LocalDensity.current) { size.roundToPx() }),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = modifier
@@ -128,6 +129,8 @@ private fun WallCover(url: String, size: Dp, modifier: Modifier = Modifier) {
 fun MakerTile(urls: List<String?>, size: Dp, modifier: Modifier = Modifier, corner: Dp = if (size < 48.dp) 9.dp else 11.dp) {
     val covers = urls.filterNotNull().distinct().take(4)
     val gap = 1.5.dp
+    // Elk deel is hooguit zo groot als de tegel zelf.
+    val px = with(LocalDensity.current) { size.roundToPx() }
     Box(
         modifier
             .size(size)
@@ -137,22 +140,22 @@ fun MakerTile(urls: List<String?>, size: Dp, modifier: Modifier = Modifier, corn
     ) {
         when (covers.size) {
             0 -> Unit
-            1 -> Part(covers[0], Modifier.fillMaxSize())
+            1 -> Part(covers[0], Modifier.fillMaxSize(), px)
             2 -> Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                Part(covers[0], Modifier.weight(1f).fillMaxHeight())
-                Part(covers[1], Modifier.weight(1f).fillMaxHeight())
+                Part(covers[0], Modifier.weight(1f).fillMaxHeight(), px)
+                Part(covers[1], Modifier.weight(1f).fillMaxHeight(), px)
             }
             3 -> Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                Part(covers[0], Modifier.weight(1f).fillMaxHeight())
+                Part(covers[0], Modifier.weight(1f).fillMaxHeight(), px)
                 Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(gap)) {
-                    Part(covers[1], Modifier.weight(1f).fillMaxWidth())
-                    Part(covers[2], Modifier.weight(1f).fillMaxWidth())
+                    Part(covers[1], Modifier.weight(1f).fillMaxWidth(), px)
+                    Part(covers[2], Modifier.weight(1f).fillMaxWidth(), px)
                 }
             }
             else -> Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(gap)) {
                 listOf(covers.subList(0, 2), covers.subList(2, 4)).forEach { pair ->
                     Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                        pair.forEach { Part(it, Modifier.weight(1f).fillMaxHeight()) }
+                        pair.forEach { Part(it, Modifier.weight(1f).fillMaxHeight(), px) }
                     }
                 }
             }
@@ -161,6 +164,6 @@ fun MakerTile(urls: List<String?>, size: Dp, modifier: Modifier = Modifier, corn
 }
 
 @Composable
-private fun Part(url: String, modifier: Modifier) {
-    AsyncImage(model = url, contentDescription = null, contentScale = ContentScale.Crop, modifier = modifier)
+private fun Part(url: String, modifier: Modifier, px: Int) {
+    AsyncImage(model = sizedArtwork(url, px), contentDescription = null, contentScale = ContentScale.Crop, modifier = modifier)
 }
