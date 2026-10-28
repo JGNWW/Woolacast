@@ -94,9 +94,12 @@ class PlayerController(
     private val context: Context,
     /** Waar je gebleven was, per aflevering. */
     private val resumePosition: (episodeId: String) -> Long = { 0L },
-    /** Waar je gebleven bent, zodat de podcastpagina dat kan tonen. */
-    private val onProgress: suspend (episodeId: String, positionMs: Long, durationMs: Long) -> Unit =
-        { _, _, _ -> },
+    /**
+     * Waar je gebleven bent, zodat de podcastpagina dat kan tonen. [periodic]
+     * is de vaste tik tijdens het spelen; anders pauzeerde of stopte je net.
+     */
+    private val onProgress: suspend (episodeId: String, positionMs: Long, durationMs: Long, periodic: Boolean) -> Unit =
+        { _, _, _, _ -> },
     /** De eerstvolgende aflevering uit de wachtrij, of null als die leeg is. */
     private val nextInQueue: () -> Episode? = { null },
     /** Wordt aangeroepen zodra een wachtrij-aflevering begint te spelen. */
@@ -330,7 +333,7 @@ class PlayerController(
         val snapshot = _state.value
         snapshot.episodeId?.let { id ->
             // Uitgeluisterd: de bewaarde positie mag weg.
-            scope.launch { onProgress(id, snapshot.durationMs, snapshot.durationMs) }
+            scope.launch { onProgress(id, snapshot.durationMs, snapshot.durationMs, false) }
         }
         if (snapshot.sleepAtEnd) {
             controller?.pause()
@@ -354,10 +357,10 @@ class PlayerController(
         )
     }
 
-    private fun rememberWhereWeAre() {
+    private fun rememberWhereWeAre(periodic: Boolean = false) {
         val snapshot = _state.value
         snapshot.episodeId?.let { id ->
-            scope.launch { onProgress(id, snapshot.positionMs, snapshot.durationMs) }
+            scope.launch { onProgress(id, snapshot.positionMs, snapshot.durationMs, periodic) }
         }
     }
 
@@ -390,11 +393,11 @@ class PlayerController(
                     }
                 }
 
-                // Elke tien seconden vastleggen; vaker heeft geen zin en
-                // schrijft alleen maar naar schijf.
+                // Elke tien seconden vastleggen; vaker heeft geen zin. Naar schijf
+                // gaat het nog minder vaak, dat regelt de opslag.
                 if (++sinceSave >= 20) {
                     sinceSave = 0
-                    rememberWhereWeAre()
+                    rememberWhereWeAre(periodic = true)
                 }
             }
         }

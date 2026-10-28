@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import nl.woolacast.data.inbox.NewEpisodeNotifier
 import nl.woolacast.ui.WoolacastNav
 import nl.woolacast.ui.theme.WoolacastTheme
@@ -100,6 +101,12 @@ class MainActivity : ComponentActivity() {
             // Eén keer is genoeg; bij draaien van het scherm niet opnieuw importeren.
             intent?.action = null
         }
+    }
+
+    /** Naar de achtergrond: wat de opslag nog vasthoudt, gaat nu naar schijf. */
+    override fun onStop() {
+        super.onStop()
+        container.appScope.launch { container.store.flush() }
     }
 
     override fun onDestroy() {
