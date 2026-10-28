@@ -118,6 +118,7 @@ class QueueNewReceiver : BroadcastReceiver() {
                 store.ensureLoaded()
                 val known = store.feedChecks.value.values.flatMap { it.latest }.associateBy { it.id }
                 store.enqueueAll(NewRules.forQueue(ids.mapNotNull { known[it] }, store.queue.value.map { it.id }.toSet()))
+                store.flush()
                 NewEpisodeNotifier.cancel(context)
             } finally {
                 pending.finish()

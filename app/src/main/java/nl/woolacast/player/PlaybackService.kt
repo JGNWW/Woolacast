@@ -162,6 +162,8 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        // Zonder speler kan het proces zo weg; de laatste voortgang moet dan op schijf staan.
+        container.appScope.launch { container.store.flush() }
         scope.cancel()
         mediaSession?.run {
             player.release()

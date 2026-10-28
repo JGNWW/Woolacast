@@ -2,10 +2,16 @@ package nl.woolacast.data.local
 
 import java.io.File
 import java.time.LocalDate
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -206,12 +212,24 @@ private data class StoreData(
  * Bewust geen database in deze eerste versie: het gaat om een paar honderd
  * regels. Zodra er echte historie overheen gaat — grafieken over maanden —
  * is dit het punt om naar Room te verhuizen.
+ *
+ * Een wijziging is meteen overal te zien, maar het bestand gaat pas even later
+ * naar schijf, met alles wat er intussen bij kwam in één keer. Het hele bestand
+ * telt al snel een paar megabyte; dat bij elke tik opnieuw schrijven kost
+ * batterij en laat de volgende wijziging wachten. Wie zeker wil weten dat het
+ * er staat (de app gaat naar de achtergrond, een klus is klaar), roept [flush].
  */
 class LocalStore(private val file: File) {
 
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = false }
     private val mutex = Mutex()
     private var data = StoreData()
+
+    /** Schrijft weg los van wie de wijziging deed, zodat een gesloten scherm niets tegenhoudt. */
+    private val writer = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var pendingWrite: Job? = null
+    private var writeAt = Long.MAX_VALUE
+    private var dirty = false
 
     private val _follows = MutableStateFlow<List<FollowedShow>>(emptyList())
     val follows: StateFlow<List<FollowedShow>> = _follows.asStateFlow()
@@ -456,10 +474,16 @@ class LocalStore(private val file: File) {
      * Alleen bewaren als er iets te onthouden valt; anders groeit dit eindeloos.
      * Geeft true terug als de aflevering daarmee uitgeluisterd is.
      */
-    suspend fun rememberProgress(episodeId: String, positionMs: Long, durationMs: Long): Boolean {
+    suspend fun rememberProgress(
+        episodeId: String,
+        positionMs: Long,
+        durationMs: Long,
+        /** De vaste tik tijdens het spelen: die mag wat langer op schijf wachten. */
+        whilePlaying: Boolean = false
+    ): Boolean {
         if (positionMs < 30_000L) return false
         val finished = durationMs > 0L && positionMs > durationMs - 60_000L
-        mutate { data ->
+        mutate(if (whilePlaying && !finished) PLAYING_WRITE_MS else WRITE_MS) { data ->
             data.copy(
                 progress = if (finished) data.progress - episodeId else data.progress + (episodeId to positionMs),
                 listened = if (finished) (data.listened - episodeId + episodeId).takeLast(LISTENED_KEPT) else data.listened,
@@ -554,16 +578,61 @@ class LocalStore(private val file: File) {
         current.copy(showTips = trimmed + (showId to tips))
     }
 
-    private suspend fun mutate(block: (StoreData) -> StoreData) = withContext(Dispatchers.IO) {
+    private suspend fun mutate(
+        writeWithinMs: Long = WRITE_MS,
+        block: (StoreData) -> StoreData
+    ) = withContext(Dispatchers.IO) {
         mutex.withLock {
+            val before = data
             data = block(data)
+            // Niets veranderd (een show die je niet volgt als geopend markeren): niets te schrijven.
+            if (data === before) return@withLock
             publish()
+            dirty = true
+            scheduleWrite(writeWithinMs)
+        }
+        Unit
+    }
+
+    /** Alleen onder [mutex]. Een eerder gepland moment blijft staan; een later schuift naar voren. */
+    private fun scheduleWrite(withinMs: Long) {
+        val at = System.nanoTime() / 1_000_000 + withinMs
+        if (pendingWrite != null && writeAt <= at) return
+        pendingWrite?.cancel()
+        writeAt = at
+        pendingWrite = writer.launch {
+            delay(withinMs)
+            flush()
+        }
+    }
+
+    /** Zet wat nog niet op schijf staat er nu op. */
+    suspend fun flush() = withContext(Dispatchers.IO + NonCancellable) {
+        mutex.withLock {
+            pendingWrite = null
+            writeAt = Long.MAX_VALUE
+            if (!dirty) return@withLock
+            dirty = false
             runCatching {
                 file.parentFile?.mkdirs()
-                file.writeText(json.encodeToString(StoreData.serializer(), data))
+                // Eerst ernaast, dan erover: een app die halverwege stopt, laat zo
+                // nooit een half bestand achter (en load() begon dan leeg).
+                val temp = File(file.path + ".tmp")
+                temp.writeText(json.encodeToString(StoreData.serializer(), data))
+                if (!temp.renameTo(file)) {
+                    file.writeText(temp.readText())
+                    temp.delete()
+                }
             }
         }
         Unit
+    }
+
+    /** Voor klussen buiten de app om: wat [block] veranderde, staat op schijf als hij klaar is. */
+    suspend fun <T> flushAfter(block: suspend () -> T): T = try {
+        block()
+    } finally {
+        flush()
     }
 
     private fun publish() {
@@ -586,6 +655,12 @@ class LocalStore(private val file: File) {
 
     private companion object {
         const val HISTORY_DAYS = 30
+
+        /** Zo lang mag een wijziging op schijf wachten, zodat wat tegelijk gebeurt samen gaat. */
+        const val WRITE_MS = 2_000L
+
+        /** En de voortgang tijdens het spelen: die tikt elke tien seconden. */
+        const val PLAYING_WRITE_MS = 30_000L
 
         /** Zoveel uitgeluisterde afleveringen onthouden we. */
         const val LISTENED_KEPT = 2000

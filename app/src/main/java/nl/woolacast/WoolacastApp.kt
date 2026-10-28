@@ -103,8 +103,8 @@ class AppContainer(context: Context) {
     val player: PlayerController = PlayerController(
         context = context,
         resumePosition = { episodeId -> store.progress.value[episodeId] ?: 0L },
-        onProgress = { episodeId, positionMs, durationMs ->
-            store.rememberProgress(episodeId, positionMs, durationMs)
+        onProgress = { episodeId, positionMs, durationMs, periodic ->
+            store.rememberProgress(episodeId, positionMs, durationMs, whilePlaying = periodic)
         },
         nextInQueue = { store.queue.value.firstOrNull()?.toEpisode() },
         consumeQueued = { episodeId -> store.removeFromQueue(episodeId) },

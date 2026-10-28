@@ -101,7 +101,8 @@ fun rememberCoverSeed(url: String?): CoverSeed? {
         // Nog niet geladen: de vorige kleur blijft staan tot de nieuwe er is, zodat
         // er bij het wisselen niet eerst het merkaccent tussendoor flitst.
         val request = ImageRequest.Builder(context)
-            .data(url)
+            // Voor de kleur is een kleine hoes genoeg, en die is er eerder.
+            .data(sizedArtwork(url, 100))
             .size(48)
             .allowHardware(false)
             .build()

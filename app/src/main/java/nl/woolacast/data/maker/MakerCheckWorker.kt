@@ -30,7 +30,10 @@ import nl.woolacast.container
  */
 class MakerCheckWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
+    /** Wat deze klus in de opslag veranderde, staat op schijf voordat het proces weg mag. */
+    override suspend fun doWork(): Result = applicationContext.container.store.flushAfter { check() }
+
+    private suspend fun check(): Result {
         val container = applicationContext.container
         val store = container.store
         store.ensureLoaded()

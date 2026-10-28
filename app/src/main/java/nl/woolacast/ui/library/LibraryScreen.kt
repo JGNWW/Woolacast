@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import nl.woolacast.ui.common.sizedArtwork
 import nl.woolacast.data.local.FollowedShow
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Episode
@@ -351,7 +352,8 @@ private fun FollowedTab(
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                     ) {
                         if (show.artworkUrl != null) {
-                            AsyncImage(model = show.artworkUrl, contentDescription = null, modifier = Modifier.fillMaxSize())
+                            // Een derde van de schermbreedte: 400 px is op elk toestel scherp genoeg.
+                            AsyncImage(model = sizedArtwork(show.artworkUrl, 400), contentDescription = null, modifier = Modifier.fillMaxSize())
                         }
                     }
                     Spacer(Modifier.height(8.dp))

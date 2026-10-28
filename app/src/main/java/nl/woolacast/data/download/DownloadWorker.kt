@@ -36,7 +36,10 @@ import java.time.LocalDate
  */
 class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
+    /** Wat deze klus in de opslag veranderde, staat op schijf voordat het proces weg mag. */
+    override suspend fun doWork(): Result = applicationContext.container.store.flushAfter { download() }
+
+    private suspend fun download(): Result {
         val episodeId = inputData.getString(KEY_EPISODE) ?: return Result.failure()
         val container = applicationContext.container
         val store = container.store
@@ -161,7 +164,10 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
  */
 class AutoDownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result {
+    /** Wat deze klus in de opslag veranderde, staat op schijf voordat het proces weg mag. */
+    override suspend fun doWork(): Result = applicationContext.container.store.flushAfter { round() }
+
+    private suspend fun round(): Result {
         val container = applicationContext.container
         val store = container.store
         store.ensureLoaded()
