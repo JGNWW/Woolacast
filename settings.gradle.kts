@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Woolacast"
 include(":app")
+include(":baselineprofile")

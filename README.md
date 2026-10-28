@@ -19,6 +19,21 @@ De APK komt in `app/build/outputs/apk/debug/`. Vereist de Android SDK
 (compileSdk 35) en JDK 17. Zonder toestel kun je hem ook zijladen: aanzetten bij
 *Apps van onbekende bronnen* en het bestand openen.
 
+### Sneller opstarten: het Baseline Profile
+
+De release-build neemt een Baseline Profile mee: de lijst code die bij
+opstarten en scrollen draait, zodat Android die bij de installatie al
+compileert. `profileinstaller` zet hem ook neer bij een APK die met adb of als
+bestand binnenkomt. Opnemen gaat op een emulator of toestel (Android 9+):
+
+```
+./gradlew :app:generateBaselineProfile
+```
+
+Zonder emulator kan het via de workflow *Baseline Profile maken* op GitHub; die
+zet het resultaat in `app/src/release/generated/baselineProfiles/`. Wat het
+oplevert, meet `StartupBenchmark` in `baselineprofile/`.
+
 ## Wat "geen cloud" wel en niet betekent
 
 Wat waar is:
