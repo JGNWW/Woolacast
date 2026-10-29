@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -206,10 +208,17 @@ class BeeldgloedScreenshots {
         settle()
         save("speler-${shows[0].key}-begin")
         justStarted = false
+        // Doorgescrold: de kaarten onder de speler, met de smalle balk bovenin.
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeUp(startY = bottom * 0.85f, endY = top + bottom * 0.15f) }
+        settle()
+        save("speler-${shows[0].key}-gescrold")
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeDown(startY = top + bottom * 0.15f, endY = bottom * 0.9f) }
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeDown(startY = top + bottom * 0.15f, endY = bottom * 0.9f) }
+        settle()
         // De wachtrij open, over de speler met de blauwgroene hoes.
         current = 1
         settle()
-        compose.onAllNodesWithText("Wachtrij · 2")[0].performClick()
+        compose.onAllNodesWithContentDescription("Wachtrij, 2 afleveringen")[0].performClick()
         settle()
         // Het blad staat in een eigen venster; dit legt alle vensters vast.
         captureScreenRoboImage(File(outDir, "wachtrij-${shows[1].key}.png").path)

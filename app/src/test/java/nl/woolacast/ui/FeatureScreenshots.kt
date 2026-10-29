@@ -15,6 +15,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
@@ -143,7 +147,10 @@ class FeatureScreenshots {
     private fun playing(position: Long) = PlaybackState(
         episode = Episode(
             id = "deadline-1", showId = "deadline", showTitle = "De Deadline", title = "Live vanuit Paradiso",
-            description = null, artworkUrl = "https://test.local/rood.png", audioUrl = "https://test.local/a.mp3",
+            description = "De laatste uitzending vanuit de oude zaal, live en met publiek. Sanne Kuipers vertelt hoe de nieuwe " +
+                "zaal er komt te zien, Stadslicht speelt drie nummers en we beantwoorden de vraag van een luisteraar over " +
+                "de geluidsoverlast in de binnenstad. Met dank aan iedereen die er de afgelopen tien jaar bij was.",
+            artworkUrl = "https://test.local/rood.png", audioUrl = "https://test.local/a.mp3",
             durationMillis = 71 * 60_000L, releaseDate = "2026-09-08",
             transcript = TranscriptRef("https://test.local/a.vtt", "text/vtt")
         ),
@@ -174,6 +181,14 @@ class FeatureScreenshots {
         }
         settle()
         save("speler-hoofdstukken$suffix")
+        // Helemaal doorgescrold: de kaarten, met de smalle balk bovenin.
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeUp(startY = bottom * 0.9f, endY = top + bottom * 0.1f) }
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeUp(startY = bottom * 0.9f, endY = top + bottom * 0.1f) }
+        settle()
+        save("speler-gescrold$suffix")
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeDown(startY = top + bottom * 0.1f, endY = bottom * 0.9f) }
+        compose.onAllNodes(hasScrollAction())[0].performTouchInput { swipeDown(startY = top + bottom * 0.1f, endY = bottom * 0.9f) }
+        settle()
         compose.onAllNodesWithText("3/5")[0].performClick()
         settle()
         shot("hoofdstukken-lijst$suffix")
@@ -184,7 +199,7 @@ class FeatureScreenshots {
         shot("slaaptimer-hoofdstuk$suffix")
         compose.onAllNodesWithText("Einde hoofdstuk")[0].performClick()
         settle()
-        compose.onAllNodesWithText("Tekst")[0].performClick()
+        compose.onAllNodesWithText("MEELEZEN")[0].performScrollTo().performClick()
         settle()
         shot("tekst-meelezen$suffix")
         compose.onAllNodesWithContentDescription("Zoek in de tekst")[0].performTextInput("zaal")
