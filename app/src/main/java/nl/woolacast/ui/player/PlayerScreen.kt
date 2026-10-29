@@ -1,29 +1,22 @@
 package nl.woolacast.ui.player
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.ui.graphics.Color
-import nl.woolacast.ui.common.AccentPlayButton
-import nl.woolacast.ui.common.CoverBackdrop
-import nl.woolacast.ui.common.Equalizer
-import nl.woolacast.ui.common.GlassColor
-import nl.woolacast.ui.common.GlassIconButton
-import nl.woolacast.ui.common.OutlineCircleButton
-import nl.woolacast.ui.common.outlineOnGlow
-import nl.woolacast.ui.common.rememberCoverColors
-import nl.woolacast.ui.common.softInk
-import nl.woolacast.ui.theme.NightInk
-import nl.woolacast.ui.theme.NightInkSoft
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -31,12 +24,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -45,65 +41,87 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.platform.LocalDensity
-import nl.woolacast.domain.Chapter
-import nl.woolacast.ui.common.DownloadUi
-import nl.woolacast.ui.common.label
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import nl.woolacast.data.local.SavedEpisode
+import nl.woolacast.domain.Chapter
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.player.SKIP_BACK_MS
 import nl.woolacast.player.SKIP_FORWARD_MS
 import nl.woolacast.player.SPEEDS
 import nl.woolacast.player.SleepTimer
+import nl.woolacast.ui.common.AccentPlayButton
 import nl.woolacast.ui.common.Artwork
+import nl.woolacast.ui.common.CoverBackdrop
+import nl.woolacast.ui.common.DownloadUi
+import nl.woolacast.ui.common.Equalizer
 import nl.woolacast.ui.common.FilterChipBox
+import nl.woolacast.ui.common.GlassIconButton
 import nl.woolacast.ui.common.IconAction
+import nl.woolacast.ui.common.OutlineCircleButton
 import nl.woolacast.ui.common.WoolIcons
 import nl.woolacast.ui.common.clock
+import nl.woolacast.ui.common.label
 import nl.woolacast.ui.common.minutes
+import nl.woolacast.ui.common.rememberCoverColors
 import nl.woolacast.ui.common.shortDate
+import nl.woolacast.ui.common.softInk
 import nl.woolacast.ui.common.speedLabel
 import nl.woolacast.ui.theme.DisplayFamily
 import nl.woolacast.ui.theme.LocalChartColors
 
+/** Hoeveel van de eerste kaart onder de speler al te zien is: een teken dat er meer is. */
+private val PEEK = 64.dp
+
 /**
- * Het volledige spelerscherm, zoals in de mockup: artwork, titel, waar de
- * aflevering vandaan komt, de balk, transport en de vijf gereedschappen.
+ * Het volledige spelerscherm. Bovenaan alles om te luisteren: de hoes, de
+ * titel, het hoofdstuk boven een balk die in hoofdstukken is geknipt, transport
+ * en één rij gereedschap. Daaronder, een veeg verder: meelezen, de hoofdstukken,
+ * wat hierna komt en waar de aflevering over gaat. Wie naar beneden scrolt,
+ * houdt bovenin een smalle balk met de hoes en de afspeelknop.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +146,7 @@ fun PlayerScreen(
     /** Hoofdstukken van deze aflevering; leeg als de maker er geen meegeeft. */
     chapters: List<Chapter> = emptyList(),
     onSeekToMs: (Long) -> Unit = {},
-    /** Heeft de maker een transcriptie meegeleverd? Dan is er een knop Tekst. */
+    /** Heeft de maker een transcriptie meegeleverd? Dan is er een kaart Meelezen. */
     hasTranscript: Boolean = false,
     transcript: TranscriptLoad = TranscriptLoad.Idle,
     onOpenTranscript: () -> Unit = {},
@@ -140,9 +158,15 @@ fun PlayerScreen(
 ) {
     val context = LocalContext.current
     val colors = LocalChartColors.current
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
     var scrubbing by remember { mutableStateOf<Float?>(null) }
     var sheet by remember { mutableStateOf<Sheet?>(null) }
     var menuOpen by remember { mutableStateOf(false) }
+    val scroll = rememberScrollState()
+    // Waar de kaart met hoofdstukken begint en de titel ophoudt, gemeten in de scrollende inhoud.
+    var chaptersAt by remember { mutableFloatStateOf(0f) }
+    var titleEnd by remember { mutableFloatStateOf(Float.MAX_VALUE) }
 
     val progress = scrubbing ?: state.progress
     val positionMs = (progress * state.durationMs).toLong()
@@ -167,246 +191,322 @@ fun PlayerScreen(
     val chapterEnd = chapterIndex?.let { chapterEnd(chapters, it, state.durationMs) }
     val openText = { onOpenTranscript(); sheet = Sheet.TEXT }
 
+    // De kaart Meelezen staat onder de speler, dus de tekst laadt mee zodra die opent.
+    LaunchedEffect(episode?.id, hasTranscript) { if (hasTranscript) onOpenTranscript() }
+
     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        // De hoes over de volle breedte; zijn kleur loopt door tot onderaan.
+    BoxWithConstraints(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        // Het eerste blad vult het scherm op een randje na; daar piekt de eerste kaart.
+        val page = max(maxHeight - PEEK, 560.dp)
+        // De smalle balk komt zodra de titel onder de bovenrand verdwijnt.
+        val pinned by remember {
+            derivedStateOf { scroll.value > titleEnd - with(density) { 64.dp.toPx() } }
+        }
+
+        // Gloed en vervaagde hoes achter alles; de scherpe hoes staat zelf in het blad.
         CoverBackdrop(
             state.artworkUrl, cover,
+            scrollPx = { scroll.value.toFloat() },
+            showCover = false,
             glowTo = 844f, blurTo = 850f,
             fade = listOf(440f to 0f, 620f to 0.35f, 844f to 0.7f)
         )
 
         val castRoutes = cast ?: rememberCastRoutes()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Column(Modifier.fillMaxSize().verticalScroll(scroll)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(page)
+                    .statusBarsPadding()
             ) {
-                GlassIconButton(WoolIcons.ChevronDown, "Speler inklappen", onCollapse)
-                // Geen "speelt nu uit"-label: de show staat al onder de titel, en zo
-                // blijft de hoes bovenin vrij.
-                Spacer(Modifier.weight(1f))
-                CastButton(castRoutes)
-                Box {
-                    GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        DropdownMenuItem(
-                            text = { Text("Ga naar podcast") },
-                            onClick = { menuOpen = false; onOpenPodcast() }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Aflevering delen") },
-                            onClick = { menuOpen = false; share() }
-                        )
-                        if (hasTranscript) {
-                            DropdownMenuItem(text = { Text("Tekst meelezen") }, onClick = { menuOpen = false; openText() })
-                        }
-                        when (download) {
-                            DownloadUi.None -> DropdownMenuItem(text = { Text("Downloaden") }, onClick = { menuOpen = false; onDownload() })
-                            DownloadUi.Done -> DropdownMenuItem(text = { Text("Download verwijderen") }, onClick = { menuOpen = false; onRemoveDownload() })
-                            is DownloadUi.Failed -> DropdownMenuItem(text = { Text("Opnieuw downloaden") }, onClick = { menuOpen = false; onDownload() })
-                            else -> DropdownMenuItem(
-                                text = { Text("Download stoppen (${download.label()?.lowercase()})") },
-                                onClick = { menuOpen = false; onRemoveDownload() }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    GlassIconButton(WoolIcons.ChevronDown, "Speler inklappen", onCollapse)
+                    Spacer(Modifier.weight(1f))
+                    CastButton(castRoutes)
+                    Box {
+                        GlassIconButton(WoolIcons.More, "Meer", { menuOpen = true })
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Ga naar podcast") },
+                                onClick = { menuOpen = false; onOpenPodcast() }
                             )
+                            DropdownMenuItem(
+                                text = { Text("Aflevering delen") },
+                                onClick = { menuOpen = false; share() }
+                            )
+                            if (hasTranscript) {
+                                DropdownMenuItem(text = { Text("Tekst meelezen") }, onClick = { menuOpen = false; openText() })
+                            }
+                            when (download) {
+                                DownloadUi.None -> DropdownMenuItem(text = { Text("Downloaden") }, onClick = { menuOpen = false; onDownload() })
+                                DownloadUi.Done -> DropdownMenuItem(text = { Text("Download verwijderen") }, onClick = { menuOpen = false; onRemoveDownload() })
+                                is DownloadUi.Failed -> DropdownMenuItem(text = { Text("Opnieuw downloaden") }, onClick = { menuOpen = false; onDownload() })
+                                else -> DropdownMenuItem(
+                                    text = { Text("Download stoppen (${download.label()?.lowercase()})") },
+                                    onClick = { menuOpen = false; onRemoveDownload() }
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            // Wat onder de hoes staat, zakt naar beneden: de titel valt over de
-            // oplossende onderrand, hoe hoog het scherm ook is.
-            Spacer(Modifier.weight(1f))
+                // De hoes neemt wat er overblijft, tot een vierkant van 320 dp.
+                BoxWithConstraints(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 36.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val side = minOf(maxWidth, maxHeight, 320.dp)
+                    if (side >= 96.dp) {
+                        Artwork(state.artworkUrl, side, corner = 18.dp, elevation = 18.dp)
+                    }
+                }
 
-            Column(Modifier.padding(horizontal = 20.dp)) {
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            state.title,
-                            fontFamily = DisplayFamily,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            lineHeight = 31.sp,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.heightIn(min = 32.dp).clickable(onClick = onOpenPodcast),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
+                Column(Modifier.padding(horizontal = 20.dp)) {
+                    Row(
+                        modifier = Modifier.onGloballyPositioned { titleEnd = it.positionInRoot().y + scroll.value + it.size.height },
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Column(Modifier.weight(1f)) {
                             Text(
-                                listOfNotNull(
-                                    state.showTitle.takeIf { it.isNotBlank() },
-                                    shortDate(episode?.releaseDate)
-                                ).joinToString(" · "),
-                                fontSize = 14.sp,
-                                color = soft,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f, fill = false)
+                                state.title,
+                                fontFamily = DisplayFamily,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Bold,
+                                lineHeight = 29.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
-                            Icon(WoolIcons.ChevronRight, null, tint = soft, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.heightIn(min = 32.dp).clickable(onClick = onOpenPodcast),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    listOfNotNull(
+                                        state.showTitle.takeIf { it.isNotBlank() },
+                                        shortDate(episode?.releaseDate)
+                                    ).joinToString(" · "),
+                                    fontSize = 14.sp,
+                                    color = soft,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                )
+                                Icon(WoolIcons.ChevronRight, null, tint = soft, modifier = Modifier.size(14.dp))
+                            }
                         }
-                    }
-                    OutlineCircleButton(
-                        if (isSaved) WoolIcons.Saved else WoolIcons.Save,
-                        if (isSaved) "Niet meer bewaren" else "Bewaren",
-                        onToggleSave,
-                        filled = isSaved,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-
-                // Speelt er een speaker of tv, dan staat dat hier; de knop zelf zit bovenin.
-                CastingLabel(castRoutes, Modifier.padding(top = 12.dp))
-
-                state.chartLabel?.let { label ->
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(20.dp))
-                            .clickable(onClick = onOpenPodcast)
-                            .padding(start = 12.dp, end = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(WoolIcons.Bars, null, modifier = Modifier.size(15.dp))
-                        Text(
-                            label,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                        OutlineCircleButton(
+                            if (isSaved) WoolIcons.Saved else WoolIcons.Save,
+                            if (isSaved) "Niet meer bewaren" else "Bewaren",
+                            onToggleSave,
+                            filled = isSaved,
+                            modifier = Modifier.padding(bottom = 4.dp)
                         )
                     }
-                }
 
-                state.error?.let { error ->
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colors.fallContainer)
-                            .clickable(onClick = onDismissError)
-                            .padding(horizontal = 13.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(9.dp)
-                    ) {
-                        Icon(WoolIcons.Info, null, tint = colors.onFallContainer, modifier = Modifier.size(18.dp))
-                        Text(
-                            error,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onFallContainer,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(WoolIcons.Close, "Sluiten", tint = colors.onFallContainer, modifier = Modifier.size(16.dp))
-                    }
-                }
+                    // Speelt er een speaker of tv, dan staat dat hier; de knop zelf zit bovenin.
+                    CastingLabel(castRoutes, Modifier.padding(top = 8.dp))
 
-                if (chapterIndex != null) {
-                    Spacer(Modifier.height(12.dp))
-                    ChapterButton(
-                        index = chapterIndex,
-                        count = chapters.size,
-                        title = chapters[chapterIndex].title,
-                        remainingMs = chapterEnd?.let { (it - positionMs).coerceAtLeast(0L) },
-                        onClick = { sheet = Sheet.CHAPTERS }
-                    )
-                }
-
-                Spacer(Modifier.height(18.dp))
-                ScrubBar(
-                    progress = progress,
-                    buffering = state.isBuffering,
-                    enabled = state.durationMs > 0L,
-                    accent = cover.accent,
-                    marks = if (state.durationMs > 0L) chapters.drop(1).map { it.startMs.toFloat() / state.durationMs } else emptyList(),
-                    onScrub = { scrubbing = it },
-                    onScrubEnd = { value ->
-                        onSeekTo(value)
-                        scrubbing = null
-                    }
-                )
-                Spacer(Modifier.height(6.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TimeLabel(clock(positionMs), soft)
-                    TimeLabel(
-                        if (state.durationMs > 0L) "-" + clock(state.durationMs - positionMs)
-                        else if (state.isBuffering) "laden…" else "–:––",
-                        soft
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    SkipButton(WoolIcons.Back15, SKIP_BACK_MS, "terug") { onSeekBy(-SKIP_BACK_MS) }
-                    TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
-                    AccentPlayButton(
-                        playing = state.isPlaying,
-                        colors = cover,
-                        onClick = onTogglePlay,
-                        size = 76.dp
-                    )
-                    TransportButton(
-                        WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
-                        enabled = queue.isNotEmpty()
-                    )
-                    SkipButton(WoolIcons.Forward30, SKIP_FORWARD_MS, "vooruit") { onSeekBy(SKIP_FORWARD_MS) }
-                }
-
-                Spacer(Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Tool(WoolIcons.Speed, speedLabel(state.speed), active = state.speed != 1f) { sheet = Sheet.SPEED }
-                    Tool(
-                        WoolIcons.Timer,
-                        when {
-                            state.sleepAtEnd -> "Einde afl."
-                            state.sleepAtMs != null -> "Einde hfst."
-                            state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
-                            else -> "Timer"
-                        },
-                        active = sleeping,
-                        description = when {
-                            state.sleepAtEnd -> "Slaaptimer: einde van de aflevering"
-                            state.sleepAtMs != null -> "Slaaptimer: einde van dit hoofdstuk"
-                            state.sleepRemainingMs != null -> "Slaaptimer: nog ${(state.sleepRemainingMs / 60_000L) + 1} minuten"
-                            else -> "Slaaptimer"
+                    state.chartLabel?.let { label ->
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier
+                                .heightIn(min = 32.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f))
+                                .clickable(onClick = onOpenPodcast)
+                                .padding(start = 10.dp, end = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(WoolIcons.Bars, null, modifier = Modifier.size(13.dp))
+                            Text(
+                                label,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
-                    ) { sheet = Sheet.TIMER }
-                    Tool(
-                        WoolIcons.Queue,
-                        if (queue.isEmpty()) "Wachtrij" else "Wachtrij · ${queue.size}"
-                    ) { sheet = Sheet.QUEUE }
-                    // Met tekst neemt Tekst de plek van Delen in; delen staat ook in het menu.
-                    if (hasTranscript) Tool(WoolIcons.Transcript, "Tekst", onClick = openText)
-                    else Tool(WoolIcons.Share, "Delen", onClick = share)
+                    }
+
+                    state.error?.let { error ->
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(colors.fallContainer)
+                                .clickable(onClick = onDismissError)
+                                .padding(horizontal = 13.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(9.dp)
+                        ) {
+                            Icon(WoolIcons.Info, null, tint = colors.onFallContainer, modifier = Modifier.size(18.dp))
+                            Text(
+                                error,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onFallContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(WoolIcons.Close, "Sluiten", tint = colors.onFallContainer, modifier = Modifier.size(16.dp))
+                        }
+                    }
+
+                    if (chapterIndex != null) {
+                        Spacer(Modifier.height(8.dp))
+                        ChapterLine(
+                            index = chapterIndex,
+                            count = chapters.size,
+                            title = chapters[chapterIndex].title,
+                            remainingMs = chapterEnd?.let { (it - positionMs).coerceAtLeast(0L) },
+                            onClick = {
+                                // Een veeg naar beneden, net boven de kaart met alle hoofdstukken.
+                                val above = with(density) { 84.dp.toPx() }
+                                scope.launch { scroll.animateScrollTo((chaptersAt - above).toInt().coerceAtLeast(0)) }
+                            }
+                        )
+                    } else {
+                        Spacer(Modifier.height(14.dp))
+                    }
+
+                    ScrubBar(
+                        progress = progress,
+                        buffering = state.isBuffering,
+                        enabled = state.durationMs > 0L,
+                        accent = cover.accent,
+                        marks = if (state.durationMs > 0L) chapters.drop(1).map { it.startMs.toFloat() / state.durationMs } else emptyList(),
+                        wavy = state.isPlaying && scrubbing == null,
+                        onScrub = { scrubbing = it },
+                        onScrubEnd = { value ->
+                            onSeekTo(value)
+                            scrubbing = null
+                        }
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        TimeLabel(clock(positionMs), soft)
+                        TimeLabel(
+                            if (state.durationMs > 0L) "-" + clock(state.durationMs - positionMs)
+                            else if (state.isBuffering) "laden…" else "–:––",
+                            soft
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SkipButton(WoolIcons.Back15, SKIP_BACK_MS, "terug") { onSeekBy(-SKIP_BACK_MS) }
+                        TransportButton(WoolIcons.Previous, "Opnieuw beginnen", 26.dp, onPrevious)
+                        AccentPlayButton(
+                            playing = state.isPlaying,
+                            colors = cover,
+                            onClick = onTogglePlay,
+                            size = 72.dp
+                        )
+                        TransportButton(
+                            WoolIcons.Next, "Volgende uit wachtrij", 26.dp, onNext,
+                            enabled = queue.isNotEmpty()
+                        )
+                        SkipButton(WoolIcons.Forward30, SKIP_FORWARD_MS, "vooruit") { onSeekBy(SKIP_FORWARD_MS) }
+                    }
+
+                    // Eén rij licht gereedschap in plaats van vier even zware rondjes.
+                    Spacer(Modifier.height(14.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ToolPill(WoolIcons.Speed, speedLabel(state.speed), active = state.speed != 1f, description = "Snelheid ${speedLabel(state.speed)}") { sheet = Sheet.SPEED }
+                        ToolPill(
+                            WoolIcons.Timer,
+                            when {
+                                state.sleepAtEnd -> "Einde afl."
+                                state.sleepAtMs != null -> "Einde hfst."
+                                state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
+                                else -> "Timer"
+                            },
+                            active = sleeping,
+                            description = when {
+                                state.sleepAtEnd -> "Slaaptimer: einde van de aflevering"
+                                state.sleepAtMs != null -> "Slaaptimer: einde van dit hoofdstuk"
+                                state.sleepRemainingMs != null -> "Slaaptimer: nog ${(state.sleepRemainingMs / 60_000L) + 1} minuten"
+                                else -> "Slaaptimer"
+                            }
+                        ) { sheet = Sheet.TIMER }
+                        ToolPill(
+                            WoolIcons.Queue,
+                            if (queue.isEmpty()) "Wachtrij" else "Wachtrij ${queue.size}",
+                            description = if (queue.isEmpty()) "Wachtrij" else "Wachtrij, ${queue.size} afleveringen"
+                        ) { sheet = Sheet.QUEUE }
+                        ToolPill(WoolIcons.Share, null, description = "Aflevering delen", onClick = share)
+                    }
                 }
+                Spacer(Modifier.height(16.dp))
             }
 
-            Spacer(Modifier.height(16.dp))
-            queue.firstOrNull()?.let { next ->
-                UpNextCard(next, onClick = { sheet = Sheet.QUEUE })
+            // Een veeg verder: wat er bij de aflevering hoort, als kaarten.
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp).navigationBarsPadding(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                if (hasTranscript) {
+                    ReadAlongCard(load = transcript, positionMs = positionMs, onOpen = openText)
+                }
+                if (chapters.isNotEmpty()) {
+                    ChaptersCard(
+                        chapters = chapters,
+                        current = chapterIndex,
+                        positionMs = positionMs,
+                        durationMs = state.durationMs,
+                        accent = cover.accent,
+                        onPick = { onSeekToMs(it.startMs) },
+                        modifier = Modifier.onGloballyPositioned { chaptersAt = it.positionInRoot().y + scroll.value }
+                    )
+                }
+                if (queue.isNotEmpty()) {
+                    UpNextCard(
+                        queue = queue,
+                        onPlay = onPlayQueued,
+                        onRemove = onRemoveQueued,
+                        onOpenQueue = { sheet = Sheet.QUEUE }
+                    )
+                }
+                episode?.description?.takeIf { it.isNotBlank() }?.let { AboutCard(it) }
+                Spacer(Modifier.height(14.dp))
             }
-            Spacer(Modifier.height(12.dp))
+        }
+
+        // Doorgescrold: hoes, titel en afspeelknop blijven bovenin in een smalle balk.
+        AnimatedVisibility(
+            visible = pinned,
+            enter = fadeIn() + slideInVertically { -it / 2 },
+            exit = fadeOut() + slideOutVertically { -it / 2 },
+            modifier = Modifier.align(Alignment.TopCenter)
+        ) {
+            PinnedBar(
+                state = state,
+                subtitle = chapterIndex?.let { chapters[it].title } ?: state.showTitle,
+                progress = progress,
+                accent = cover.accent,
+                onCollapse = onCollapse,
+                onTogglePlay = onTogglePlay,
+                onTop = { scope.launch { scroll.animateScrollTo(0) } }
+            )
         }
     }
     }
@@ -453,17 +553,6 @@ fun PlayerScreen(
             Spacer(Modifier.height(24.dp))
         }
 
-        Sheet.CHAPTERS -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
-            SheetTitle("Hoofdstukken")
-            ChapterList(
-                chapters = chapters,
-                current = chapterIndex,
-                accent = cover.accent,
-                onPick = { onSeekToMs(it.startMs); sheet = null }
-            )
-            Spacer(Modifier.height(24.dp))
-        }
-
         Sheet.TEXT -> ModalBottomSheet(
             onDismissRequest = { sheet = null },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -496,36 +585,28 @@ internal fun chapterEnd(chapters: List<Chapter>, index: Int, durationMs: Long): 
     chapters.getOrNull(index + 1)?.startMs ?: durationMs.takeIf { it > 0L }
 
 /**
- * Het huidige hoofdstuk boven de balk, als knop: "3/5 · titel", en rechts hoe
- * lang het nog duurt. Tikken opent de lijst.
+ * Het huidige hoofdstuk boven de balk: "3/5", de titel en hoe lang het nog
+ * duurt. Tikken scrolt naar de kaart met alle hoofdstukken.
  */
 @Composable
-private fun ChapterButton(index: Int, count: Int, title: String, remainingMs: Long?, onClick: () -> Unit) {
+private fun ChapterLine(index: Int, count: Int, title: String, remainingMs: Long?, onClick: () -> Unit) {
     val soft = softInk()
     val spoken = "Hoofdstuk ${index + 1} van $count, $title" +
         (remainingMs?.let { ", nog ${it / 60_000} minuten ${(it / 1000) % 60} seconden" } ?: "")
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .border(1.5.dp, outlineOnGlow(), RoundedCornerShape(24.dp))
+            .heightIn(min = 40.dp)
+            .clip(RoundedCornerShape(10.dp))
             .clickable(onClickLabel = "Hoofdstukken tonen", onClick = onClick)
-            .semantics(mergeDescendants = true) { contentDescription = spoken }
-            .padding(start = 14.dp, end = 14.dp),
+            .semantics(mergeDescendants = true) { contentDescription = spoken },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(WoolIcons.Chapters, null, modifier = Modifier.size(16.dp))
-        Text(
-            "${index + 1}/$count",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = soft
-        )
+        Text("${index + 1}/$count", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = soft)
         Text(
             title,
-            fontSize = 14.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -537,91 +618,291 @@ private fun ChapterButton(index: Int, count: Int, title: String, remainingMs: Lo
     }
 }
 
+/** Een kaart onder de speler: zelfde vlak, hoek en kop voor elk onderdeel. */
 @Composable
-private fun ChapterList(chapters: List<Chapter>, current: Int?, accent: Color, onPick: (Chapter) -> Unit) {
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant
-    val scroll = rememberScrollState()
-    val rowPx = with(LocalDensity.current) { 56.dp.toPx() }
-    // Een lange lijst opent bij het hoofdstuk dat speelt.
-    LaunchedEffect(Unit) { current?.let { scroll.scrollTo(((it - 2).coerceAtLeast(0) * rowPx).toInt()) } }
-    Column(Modifier.verticalScroll(scroll)) {
+private fun PlayerCard(
+    title: String,
+    modifier: Modifier = Modifier,
+    action: String? = null,
+    onAction: () -> Unit = {},
+    onClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 12.dp)
+    ) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                title,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.96.sp,
+                color = LocalChartColors.current.muted,
+                modifier = Modifier.weight(1f)
+            )
+            if (action != null) {
+                Text(
+                    action,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable(onClick = onAction)
+                        .padding(horizontal = 10.dp, vertical = 10.dp)
+                )
+            }
+        }
+        Column(Modifier.padding(end = 8.dp), content = content)
+    }
+}
+
+/**
+ * Meelezen in het klein: de zin die je hoort, met die ervoor en erna. Tikken
+ * opent de volledige tekst, met zoeken en springen.
+ */
+@Composable
+private fun ReadAlongCard(load: TranscriptLoad, positionMs: Long, onOpen: () -> Unit) {
+    val muted = LocalChartColors.current.muted
+    val soft = MaterialTheme.colorScheme.onSurfaceVariant
+    PlayerCard("MEELEZEN", action = "Alles", onAction = onOpen, onClick = onOpen) {
+        when (load) {
+            TranscriptLoad.Idle, TranscriptLoad.Loading -> Text("Tekst laden…", fontSize = 15.sp, color = soft)
+            is TranscriptLoad.Failed -> Text("De tekst laadt niet. Tik om het opnieuw te proberen.", fontSize = 15.sp, color = soft)
+            is TranscriptLoad.Ready -> {
+                val lines = load.transcript.lines
+                val at = load.transcript.indexAt(positionMs)
+                val from = if (at >= 0) at - 1 else 0
+                Text(
+                    buildAnnotatedString {
+                        (from..from + 2).forEach { i ->
+                            val line = lines.getOrNull(i) ?: return@forEach
+                            val style = when {
+                                at < 0 -> SpanStyle(color = soft)
+                                i < at -> SpanStyle(color = muted)
+                                i == at -> SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+                                else -> SpanStyle(color = soft)
+                            }
+                            withStyle(style) { append(line.text.trim()) }
+                            append(" ")
+                        }
+                    },
+                    fontSize = 17.sp,
+                    lineHeight = 24.sp,
+                    maxLines = 6,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!load.transcript.timed) {
+                    Text(
+                        "Deze tekst heeft geen tijden, dus hij loopt niet mee.",
+                        fontSize = 13.sp,
+                        color = soft,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Alle hoofdstukken: wat al voorbij is grijs met een vinkje, wat speelt in de
+ * hoeskleur met een eigen balkje, de rest met hoe lang het duurt.
+ */
+@Composable
+private fun ChaptersCard(
+    chapters: List<Chapter>,
+    current: Int?,
+    positionMs: Long,
+    durationMs: Long,
+    accent: Color,
+    onPick: (Chapter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val muted = LocalChartColors.current.muted
+    PlayerCard("HOOFDSTUKKEN · ${chapters.size}", modifier = modifier) {
         chapters.forEachIndexed { index, chapter ->
             val on = index == current
             val past = current != null && index < current
+            val end = chapterEnd(chapters, index, durationMs)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 56.dp)
-                    .background(if (on) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f) else Color.Transparent)
+                    .heightIn(min = 48.dp)
+                    .padding(start = 0.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (on) accent.copy(alpha = 0.12f) else Color.Transparent)
                     .selectable(selected = on, onClick = { onPick(chapter) })
-                    .semantics { if (on) stateDescription = "Speelt nu" }
-                    .padding(start = 20.dp, end = 22.dp, top = 8.dp, bottom = 8.dp),
+                    .semantics { if (on) stateDescription = "Speelt nu" else if (past) stateDescription = "Beluisterd" }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     clock(chapter.startMs),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = if (on) accent else muted,
-                    modifier = Modifier.width(52.dp)
+                    modifier = Modifier.width(46.dp)
                 )
-                Text(
-                    chapter.title,
-                    fontSize = 15.5.sp,
-                    fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
-                    color = when {
-                        on -> MaterialTheme.colorScheme.onSurface
-                        past -> muted
-                        else -> MaterialTheme.colorScheme.onSurface
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                if (on) Equalizer(accent)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(
+                        chapter.title,
+                        fontSize = 15.sp,
+                        fontWeight = if (on) FontWeight.Bold else FontWeight.Normal,
+                        color = when {
+                            on -> accent
+                            past -> muted
+                            else -> MaterialTheme.colorScheme.onSurface
+                        },
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (on && end != null && end > chapter.startMs) {
+                        val done = ((positionMs - chapter.startMs).toFloat() / (end - chapter.startMs)).coerceIn(0f, 1f)
+                        Box(Modifier.fillMaxWidth().height(3.dp).clip(RoundedCornerShape(2.dp)).background(accent.copy(alpha = 0.25f))) {
+                            Box(Modifier.fillMaxWidth(done).height(3.dp).background(accent))
+                        }
+                    }
+                }
+                when {
+                    on && end != null -> Text("nog ${clock((end - positionMs).coerceAtLeast(0L))}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = accent)
+                    past -> Icon(WoolIcons.Check, null, tint = muted, modifier = Modifier.size(16.dp))
+                    end != null -> Text("${((end - chapter.startMs) / 60_000L).coerceAtLeast(1L)} min", fontSize = 13.sp, color = muted)
+                }
             }
-            HorizontalDivider(modifier = Modifier.padding(start = 86.dp), color = MaterialTheme.colorScheme.outlineVariant)
         }
     }
 }
 
-/** "Hierna": het eerste uit de wachtrij, onderaan de speler. Tikken opent de wachtrij. */
+/** Hierna: de eerste drie uit de wachtrij; de rest en wissen zitten achter "Wachtrij". */
 @Composable
-private fun UpNextCard(next: SavedEpisode, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(14.dp)
+private fun UpNextCard(
+    queue: List<SavedEpisode>,
+    onPlay: (SavedEpisode) -> Unit,
+    onRemove: (String) -> Unit,
+    onOpenQueue: () -> Unit
+) {
+    val muted = LocalChartColors.current.muted
+    PlayerCard("HIERNA · ${queue.size}", action = "Wachtrij", onAction = onOpenQueue) {
+        queue.take(3).forEach { item ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(onClickLabel = "Nu afspelen") { onPlay(item) }
+                    .padding(vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Artwork(item.artworkUrl, 44.dp, corner = 8.dp, elevation = 0.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(item.title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        listOfNotNull(item.showTitle.takeIf { it.isNotBlank() }, minutes(item.durationMillis)).joinToString(" · "),
+                        fontSize = 13.sp,
+                        color = muted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                IconAction(WoolIcons.Close, "Uit wachtrij", { onRemove(item.id) }, tint = muted, iconSize = 18.dp)
+            }
+        }
+        if (queue.size > 3) {
+            Text(
+                "en nog ${queue.size - 3}",
+                fontSize = 13.sp,
+                color = muted,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+/** Waar de aflevering over gaat, in zes regels; tikken klapt de rest uit. */
+@Composable
+private fun AboutCard(description: String) {
+    var open by remember { mutableStateOf(false) }
+    PlayerCard(
+        "OVER DEZE AFLEVERING",
+        action = if (open) "Minder" else "Meer",
+        onAction = { open = !open },
+        onClick = { open = !open }
+    ) {
+        Text(
+            description,
+            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = if (open) Int.MAX_VALUE else 6,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/** De smalle balk bovenin als je onder de speler zit: hoes, titel, en afspelen met een ring als voortgang. */
+@Composable
+private fun PinnedBar(
+    state: PlaybackState,
+    subtitle: String,
+    progress: Float,
+    accent: Color,
+    onCollapse: () -> Unit,
+    onTogglePlay: () -> Unit,
+    onTop: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shape)
-            .clickable(onClick = onClick)
-            .padding(start = 10.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+            .statusBarsPadding()
+            .clickable(onClickLabel = "Terug naar de speler", onClick = onTop)
+            .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Artwork(next.artworkUrl, 40.dp, corner = 8.dp, elevation = 0.dp)
+        IconAction(WoolIcons.ChevronDown, "Speler inklappen", onCollapse)
+        Artwork(state.artworkUrl, 40.dp, corner = 8.dp, elevation = 0.dp)
         Column(Modifier.weight(1f)) {
-            Text(
-                "HIERNA",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.96.sp,
-                color = LocalChartColors.current.muted
-            )
-            Text(
-                listOfNotNull(next.title, next.showTitle.takeIf { it.isNotBlank() }).joinToString(" · "),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Text(state.title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Icon(WoolIcons.ChevronUp, "Wachtrij openen", tint = LocalChartColors.current.muted, modifier = Modifier.size(20.dp))
+        RingPlayButton(playing = state.isPlaying, progress = progress, accent = accent, onClick = onTogglePlay)
     }
 }
 
-private enum class Sheet { SPEED, TIMER, QUEUE, CHAPTERS, TEXT }
+/** Afspelen of pauzeren, met de voortgang als ring eromheen. */
+@Composable
+private fun RingPlayButton(playing: Boolean, progress: Float, accent: Color, onClick: () -> Unit) {
+    val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f)
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(Modifier.size(42.dp)) {
+            val stroke = 3.dp.toPx()
+            val inset = stroke / 2
+            val arcSize = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke)
+            drawArc(track, 0f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(stroke))
+            drawArc(accent, -90f, 360f * progress.coerceIn(0f, 1f), false, Offset(inset, inset), arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+        }
+        Icon(
+            if (playing) WoolIcons.Pause else WoolIcons.Play,
+            if (playing) "Pauzeren" else "Afspelen",
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+private enum class Sheet { SPEED, TIMER, QUEUE, TEXT }
 
 @Composable
 private fun SheetTitle(text: String) {
@@ -638,8 +919,9 @@ private fun TimeLabel(text: String, color: Color) {
 }
 
 /**
- * De voortgangsbalk uit de mockup: 5 dp spoor, accentvulling en een rond
- * handvat met een rand in de achtergrondkleur. Slepen en tikken zoeken beide.
+ * De voortgangsbalk, in stukken geknipt waar een hoofdstuk begint. De vulling
+ * golft in het stuk dat speelt zolang de aflevering loopt (zoals Material 3
+ * Expressive); gepauzeerd is ze recht. Slepen en tikken zoeken beide.
  */
 @Composable
 fun ScrubBar(
@@ -650,11 +932,15 @@ fun ScrubBar(
     onScrubEnd: (Float) -> Unit,
     modifier: Modifier = Modifier,
     accent: Color = MaterialTheme.colorScheme.primary,
-    /** Plekken (0–1) waar een hoofdstuk begint; daar krijgt de balk een inkeping. */
-    marks: List<Float> = emptyList()
+    /** Plekken (0–1) waar een hoofdstuk begint; daar krijgt de balk een opening. */
+    marks: List<Float> = emptyList(),
+    /** Golft de vulling in het stuk dat speelt? */
+    wavy: Boolean = false
 ) {
     var width by remember { mutableStateOf(1f) }
     var dragValue by remember { mutableStateOf(progress) }
+    val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+    val fill = if (buffering && progress == 0f) MaterialTheme.colorScheme.outline else accent
 
     Box(
         modifier = modifier
@@ -686,30 +972,25 @@ fun ScrubBar(
             },
         contentAlignment = Alignment.CenterStart
     ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-        )
-        Box(
-            Modifier
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(
-                    if (buffering && progress == 0f) MaterialTheme.colorScheme.outline
-                    else accent
-                )
-        )
-        if (marks.isNotEmpty()) {
-            // Een inkeping in de achtergrondkleur, zodat hij op vulling en spoor even goed te zien is.
-            val notch = MaterialTheme.colorScheme.background
-            Canvas(Modifier.fillMaxWidth().height(4.dp)) {
-                val gap = 3.dp.toPx()
-                marks.filter { it in 0.01f..0.99f }.forEach { at ->
-                    drawRect(notch, topLeft = Offset(size.width * at - gap / 2, 0f), size = Size(gap, size.height))
+        Canvas(Modifier.fillMaxWidth().height(12.dp)) {
+            val stroke = 4.dp.toPx()
+            val cap = stroke / 2
+            val gap = 4.dp.toPx()
+            val y = size.height / 2
+            val at = size.width * progress.coerceIn(0f, 1f)
+            val bounds = listOf(0f) + marks.filter { it in 0.01f..0.99f }.sorted() + 1f
+            bounds.zipWithNext().forEach { (a, b) ->
+                // Ronde uiteinden steken een halve lijndikte uit; de opening blijft zo echt open.
+                val start = size.width * a + (if (a > 0f) gap / 2 else 0f) + cap
+                val end = size.width * b - (if (b < 1f) gap / 2 else 0f) - cap
+                if (end <= start) return@forEach
+                drawLine(track, Offset(start, y), Offset(end, y), stroke, StrokeCap.Round)
+                val filledTo = minOf(end, at)
+                if (filledTo < start) return@forEach
+                if (wavy && at < end + cap) {
+                    drawPath(wave(start, filledTo, y, amplitude = 2.5.dp.toPx(), length = 12.dp.toPx()), fill, style = Stroke(stroke, cap = StrokeCap.Round))
+                } else {
+                    drawLine(fill, Offset(start, y), Offset(filledTo, y), stroke, StrokeCap.Round)
                 }
             }
         }
@@ -729,6 +1010,45 @@ fun ScrubBar(
                         .background(MaterialTheme.colorScheme.onSurface)
                 )
             }
+        }
+    }
+}
+
+/** Een golflijn van [from] tot [to] rond hoogte [y]: halve golven als kwadratische bogen. */
+private fun wave(from: Float, to: Float, y: Float, amplitude: Float, length: Float): Path = Path().apply {
+    moveTo(from, y)
+    val half = length / 2
+    var x = from
+    var up = true
+    while (x < to) {
+        val next = minOf(x + half, to)
+        // Een afgebroken laatste halve golf wordt evenredig lager, zodat hij netjes uitloopt.
+        val peak = amplitude * 2 * ((next - x) / half)
+        quadraticTo((x + next) / 2, if (up) y - peak else y + peak, next, y)
+        x = next
+        up = !up
+    }
+}
+
+/** Gereedschap als lichte pil; actief = wit vlak, zoals een gekozen chip. Zonder label alleen het icoon. */
+@Composable
+private fun ToolPill(icon: ImageVector, label: String?, active: Boolean = false, description: String, onClick: () -> Unit) {
+    val fg = if (active) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.onSurface
+    Row(
+        modifier = Modifier
+            .height(44.dp)
+            .then(if (label == null) Modifier.width(44.dp) else Modifier)
+            .clip(RoundedCornerShape(22.dp))
+            .background(if (active) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f))
+            .clickable(onClick = onClick)
+            .clearAndSetSemantics { contentDescription = description; role = Role.Button }
+            .padding(horizontal = if (label == null) 0.dp else 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
+    ) {
+        Icon(icon, null, tint = fg, modifier = Modifier.size(18.dp))
+        if (label != null) {
+            Text(label, color = fg, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
         }
     }
 }
@@ -778,32 +1098,6 @@ private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onCli
             fontWeight = FontWeight.Bold,
             letterSpacing = (-0.3).sp,
             modifier = Modifier.padding(top = 3.dp)
-        )
-    }
-}
-
-/** Gereedschap: omlijnde cirkel met een label eronder; actief = wit vlak, zoals een gekozen chip. */
-@Composable
-private fun Tool(icon: ImageVector, label: String, active: Boolean = false, description: String? = null, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .width(76.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .then(if (description != null) Modifier.clearAndSetSemantics { contentDescription = description; role = Role.Button } else Modifier)
-            .padding(vertical = 4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        OutlineCircleButton(icon, null, onClick, filled = active)
-        Text(
-            label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = if (active) MaterialTheme.colorScheme.onSurface else softInk(),
-            maxLines = 1,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis
         )
     }
 }
