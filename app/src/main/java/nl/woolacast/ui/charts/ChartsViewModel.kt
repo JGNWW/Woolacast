@@ -45,7 +45,9 @@ data class ChartsUiState(
     /** De lijst per maker in plaats van per show; alleen op het tabblad Podcasts. */
     val byMaker: Boolean = false,
     /** De makersranglijst van de huidige lijst; null zolang hij nog geteld wordt. */
-    val makers: List<MakerRank>? = null
+    val makers: List<MakerRank>? = null,
+    /** Er staat al een bewaarde lijst; de verse komt er stil overheen, zonder draaiend wieltje. */
+    val silent: Boolean = false
 )
 
 /** Een aflevering uit de lijst die speelbaar is gemaakt, met waar hij vandaan komt. */
@@ -60,7 +62,9 @@ class ChartsViewModel(
         country = Catalog.defaultCountry,
         category = Catalog.defaultCategory,
         level = ChartLevel.SHOWS
-    )
+    ),
+    /** Met een opslag onthoudt dit scherm je keuzes: bron, land, categorie en tabblad. */
+    private val store: nl.woolacast.data.local.LocalStore? = null
 ) : ViewModel() {
 
     private val _playRequests = MutableSharedFlow<PlayRequest>(extraBufferCapacity = 1)
@@ -70,9 +74,42 @@ class ChartsViewModel(
     val state: StateFlow<ChartsUiState> = _state.asStateFlow()
 
     private var loadJob: Job? = null
+    private var prefetchJob: Job? = null
 
     init {
-        load()
+        if (store == null) load() else viewModelScope.launch {
+            // De bibliotheek is klein en staat er in een oogwenk; daarna begint de app waar je was.
+            store.ensureLoaded()
+            val prefs = store.prefs.value
+            val source = runCatching { SourceId.valueOf(prefs.chartSource) }.getOrDefault(initialQuery.source)
+            val level = runCatching { ChartLevel.valueOf(prefs.chartLevel) }.getOrDefault(initialQuery.level)
+            _state.value = _state.value.copy(
+                query = initialQuery.copy(
+                    source = source,
+                    country = if (prefs.chartCountry.isBlank()) initialQuery.country else Catalog.country(prefs.chartCountry),
+                    category = if (level.isRanking) Catalog.category(prefs.chartGenre.takeIf { it != 0 }) else Catalog.defaultCategory,
+                    level = level
+                ),
+                byMaker = prefs.chartByMaker
+            )
+            load()
+        }
+    }
+
+    private fun remember() {
+        val store = store ?: return
+        val state = _state.value
+        viewModelScope.launch {
+            store.setPrefs {
+                it.copy(
+                    chartSource = state.query.source.name,
+                    chartCountry = state.query.country.code,
+                    chartGenre = state.query.category.appleGenreId ?: 0,
+                    chartLevel = state.query.level.name,
+                    chartByMaker = state.byMaker
+                )
+            }
+        }
     }
 
     fun setSource(source: SourceId) = update { it.copy(source = source) }
@@ -91,11 +128,13 @@ class ChartsViewModel(
     fun pick(country: Country?, category: Category?) =
         update { it.copy(country = country ?: it.country, category = category ?: it.category) }
 
-    fun refresh() = load()
+    /** Naar beneden getrokken: echt opnieuw bij de bron vragen. */
+    fun refresh() = load(force = true)
 
     /** Wisselt tussen de lijst per show en per maker; dezelfde lijst, anders geteld. */
     fun setByMaker(byMaker: Boolean) {
         _state.value = _state.value.copy(byMaker = byMaker)
+        remember()
     }
 
     fun dismissToast() {
@@ -142,10 +181,11 @@ class ChartsViewModel(
         val next = transform(_state.value.query)
         if (next == _state.value.query) return
         _state.value = _state.value.copy(query = next)
+        remember()
         load()
     }
 
-    private fun load() {
+    private fun load(force: Boolean = false) {
         val query = _state.value.query
         val source = repository.source(query.source)
 
@@ -166,15 +206,24 @@ class ChartsViewModel(
         }
 
         loadJob?.cancel()
+        prefetchJob?.cancel()
         _state.value = _state.value.copy(loading = true, notice = null)
 
         loadJob = viewModelScope.launch {
-            runCatching { repository.chart(query) }
+            // Eerst wat er bewaard is: dan staat er meteen een lijst, en komt de verse eroverheen.
+            if (!force && _state.value.chart?.query != query) {
+                val kept = runCatching { repository.cached(query) }.getOrNull()
+                if (kept != null && _state.value.query == query) {
+                    _state.value = _state.value.copy(chart = kept.copy(cachedAt = null), makers = null, silent = true)
+                }
+            }
+            runCatching { repository.chart(query, force) }
                 .onSuccess { chart ->
                     _state.value = _state.value.copy(
-                        loading = false, chart = chart, notice = null, makers = null,
+                        loading = false, chart = chart, notice = null, makers = null, silent = false,
                         loadedAt = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                     )
+                    if (query.level == ChartLevel.EPISODES && chart.cachedAt == null) prefetch(chart, query)
                     // Ook als je hem niet bekijkt: zo is er morgen een makersranglijst om mee te vergelijken.
                     if (query.level == ChartLevel.SHOWS && makers != null) {
                         val rows = runCatching { makers.rankMakers(chart) }.getOrDefault(emptyList())
@@ -185,10 +234,28 @@ class ChartsViewModel(
                     _state.value = _state.value.copy(
                         loading = false,
                         chart = null,
+                        silent = false,
                         notice = error.toNotice(query)
                     )
                 }
         }
+    }
+
+    /**
+     * De feeds van de bovenste afleveringen alvast binnenhalen: een tik op
+     * afspelen hoeft dan niet eerst op de maker te wachten. Eén tegelijk, en
+     * een feed die net gelezen is, wordt niet opnieuw gevraagd.
+     */
+    private fun prefetch(chart: Chart, query: ChartQuery) {
+        prefetchJob = viewModelScope.launch {
+            chart.entries.asSequence().filter { it.showId != null }.distinctBy { it.showId }.take(PREFETCH).forEach { entry ->
+                podcasts.prefetch(entry.showId.orEmpty(), query.country.code, entry.feedUrl, entry.publisher)
+            }
+        }
+    }
+
+    private companion object {
+        const val PREFETCH = 5
     }
 
     private fun Throwable.toNotice(query: ChartQuery): Notice = when (this) {

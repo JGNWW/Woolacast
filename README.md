@@ -39,9 +39,10 @@ oplevert, meet `StartupBenchmark` in `baselineprofile/`.
 Wat waar is:
 
 - Er is **geen backend van ons** — niets om te hosten, geen account, geen sleutel.
-- Alle lijsten worden **lokaal bewaard**. Zonder verbinding opent de app met de
-  laatst opgehaalde lijst en zegt erbij van wanneer die is.
-- Wat je volgt en de dagelijkse momentopnames staan in één JSON-bestand in de
+- Alle lijsten worden **lokaal bewaard**. De app opent met de laatst opgehaalde
+  lijst en haalt de verse er stil overheen; zonder verbinding zegt hij erbij
+  van wanneer de lijst is.
+- Wat je volgt, je geschiedenis en de dagelijkse momentopnames staan in de
   app-opslag. Er gaat niets naar buiten.
 
 Wat niet waar kan zijn: een *live* hitlijst komt nu eenmaal ergens vandaan. De
@@ -596,6 +597,99 @@ zoals AntennaPod) is er nog niet.
 Media3 1.11 vraagt compileSdk 36 en Kotlin 2.2; daarom zijn AGP (8.13), Kotlin
 (2.2.21), de Compose-BOM (2026.05) en Media3 (1.11.1) bijgewerkt. targetSdk blijft 35.
 
+## Snel: eerst wat er al is
+
+Drie dingen die samen bepalen hoe snel de app aanvoelt.
+
+**De opslag is gesplitst.** Vroeger stond alles in één JSON-bestand van een paar
+megabyte, dat bij de start in zijn geheel werd gelezen en bij elke wijziging in
+zijn geheel herschreven, ook voor een voortgangstik. Nu zijn het drie soorten
+bestanden: `woolacast-store.json` is je bibliotheek (klein, staat er bij de
+start meteen), `woolacast-store-lists/` heeft één bestandje per lijst met zijn
+momentopnames en de laatst opgehaalde stand, en `woolacast-store-tips.json` de
+tips die de app zelf las. Een lijst wordt pas gelezen als hij gevraagd wordt.
+Een oud bestand wordt bij het laden vanzelf uit elkaar gehaald; een onleesbaar
+bestand wordt opzij gezet in plaats van overschreven.
+
+**Hitlijsten.** De bewaarde lijst staat er meteen, de verse komt eroverheen.
+Een lijst die minder dan een kwartier oud is, vraagt de app niet opnieuw: de
+bronnen verversen hooguit een paar keer per dag en dezelfde lijst wordt op
+meerdere schermen gebruikt. Naar beneden trekken vraagt wel echt opnieuw. De
+gegevensbestanden van de verzamelaar gaan door een HTTP-schijfcache; een tweede
+keer is een kort "niets veranderd".
+
+**De podcastpagina.** De laatst gelezen feed staat per show bewaard
+(`cache/feeds/`, de laatste tachtig). De pagina staat er daardoor direct, en de
+maker krijgt alleen de vraag of er iets veranderd is (ETag en Last-Modified,
+net als de feedronde). Zonder verbinding blijft de vorige stand staan. Een
+aflevering afspelen uit een hitlijst zoekt eerst in wat er het laatste half uur
+al gelezen is, en de feeds van de bovenste vijf afleveringen haalt de app
+alvast binnen.
+
+De app onthoudt ook je keuzes: bron, land, categorie en tabblad op Hitlijsten,
+en waar je in de Bibliotheek was.
+
+## Bibliotheek, instellingen en de bel
+
+De Bibliotheek heeft twee tabbladen. **Gevolgd** toont shows of makers, met
+bovenaan *Verder luisteren* (waar je halverwege bent, de laatst gespeelde
+eerst) en *Nieuw*. **Afleveringen** heeft de wachtrij, bewaard, gedownload, de
+geschiedenis en je bladwijzers. De wachtrij versleep je aan het handvat; wie
+niet kan slepen gebruikt de toegankelijkheidsacties Omhoog en Omlaag.
+
+De **instellingen** (het schuifjes-icoon in de Bibliotheek) staan op één plek:
+thema, afspelen, downloads, meldingen en je gegevens. Wat per show geldt
+(melding, automatisch downloaden, eigen snelheid, slimme wachtrij) staat op de
+pagina van die show.
+
+De **bel** op Hitlijsten en Ontdek opent *Wat is er nieuw*: chart-alerts,
+nieuwe podcasts van makers en nieuwe afleveringen bij elkaar.
+
+Afspelen begint in de balk onderin; het spelerscherm klapt alleen uit als je
+dat zo instelt.
+
+## Luisteren
+
+- **Stiltes overslaan** en **zachte opnames luider** (6 dB via
+  `LoudnessEnhancer`), allebei alleen op de telefoon en niet bij casten.
+- **Snelheid**: zes vaste standen en een schuif van 0,5× tot 3× in stappen van
+  0,05. Met "Alleen voor deze show" begint die show voortaan op die snelheid;
+  de rest volgt de algemene. Ook de snelheidsknop in de melding wordt onthouden.
+- **Bladwijzers**: het vlaggetje in de speler zet er een op het moment van nu.
+  Ze staan onder de speler en in Bibliotheek → Afleveringen → Bladwijzers.
+- **Delen vanaf dit moment**: de tijd in woorden, plus het audio-adres met
+  `#t=seconden` voor wie het in een browser opent.
+- **Afleveringen op de podcastpagina**: zoeken in titels en omschrijvingen,
+  filteren op onbeluisterd, begonnen of gedownload, en van oud naar nieuw voor
+  een verhaal dat bij deel 1 begint. Met de hand als beluisterd markeren kan
+  per aflevering of voor alles tegelijk.
+- **Slimme wachtrij**: per show aan te zetten; wat de feedronde binnenhaalt
+  gaat dan vanzelf achter de wachtrij, met dezelfde regel als Nieuw.
+- **Geschiedenis en statistiek**: wat je afspeelde, en hoeveel je luisterde per
+  dag en per show. Geteld op het toestel terwijl de speler loopt. De
+  aanbevelingen wegen het mee: waar je uren naar luistert telt zwaarder dan
+  wat je alleen volgt.
+- **Chart-alerts als melding** (uit tot je het aanzet): een show die je volgt
+  komt op 1, gaat de top tien in, komt nieuw binnen of stijgt twintig plekken.
+  `MakerCheckWorker` kijkt twee keer per dag in `movers.json`; één melding per
+  show per dag.
+- **Reservekopie**: de hele bibliotheek in één JSON-bestand, en terugzetten op
+  een ander toestel. Downloads gaan niet mee; wat er op het toestel staat blijft.
+
+## Android Auto en de widget
+
+`PlaybackService` is een `MediaLibraryService`: wie door de sessie bladert
+(Android Auto, een horloge) krijgt vijf mappen uit de eigen bibliotheek: Verder
+luisteren, Wachtrij, Nieuw, Gedownload en Bewaard. Zo'n bediening stuurt alleen
+een id terug; het adres van de audio zoekt de dienst er zelf weer bij, en de
+aflevering begint waar je gebleven was. Voortgang, geschiedenis en de wachtrij
+lopen door zolang de dienst leeft, ook zonder dat de app open is. Een app die
+niet uit de Play Store komt, toont Android Auto pas na "Onbekende bronnen" in
+zijn ontwikkelaarsinstellingen.
+
+De widget (4×1) toont wat er speelt met afspelen en dertig seconden vooruit.
+Speelt er niets, dan staat de aflevering klaar waar je het laatst in bezig was.
+
 ## Stijgers en dalers
 
 Er bestaat geen publieke bron voor "gisteren". De app bewaart daarom zelf per
@@ -642,6 +736,19 @@ Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
 | Nieuw bovenaan Gevolgd, met drie chips, vegen en "alles in de wachtrij" | werkt |
 | Melding bij een nieuwe aflevering, per show aan te zetten | gebouwd, nog niet op een toestel getest |
 | Casten naar Chromecast en speakers (Media3 Cast) | gebouwd, nog niet op een toestel getest |
+| Bewaarde lijst en podcastpagina eerst, daarna stil verversen; keuzes onthouden | werkt |
+| Opslag gesplitst: bibliotheek, een bestand per lijst, tips | werkt (oud bestand verhuist vanzelf) |
+| Bibliotheek in twee tabbladen, Verder luisteren, wachtrij verslepen | werkt |
+| Instellingenscherm, overzicht achter de bel | werkt |
+| Zoeken, filteren en sorteren in afleveringen; als beluisterd markeren | werkt |
+| Vrije snelheid en snelheid per show, bladwijzers, delen vanaf een moment | werkt |
+| Geschiedenis en luisterstatistiek; aanbevelingen wegen luistertijd mee | werkt |
+| Slimme wachtrij per show | werkt (in de feedronde) |
+| Reservekopie maken en terugzetten | werkt |
+| Stiltes overslaan, zachte opnames luider | gebouwd, nog niet op een toestel getest |
+| Chart-alerts als melding | gebouwd, nog niet op een toestel getest |
+| Android Auto (bladeren door de bibliotheek) | gebouwd, nog niet op een toestel of in een auto getest |
+| Widget op het startscherm | gebouwd, nog niet op een toestel getest |
 
 De app bouwt en lint schoon. Wat er nog niet is: draaien op een echt toestel.
 
@@ -654,7 +761,9 @@ app/src/main/java/nl/woolacast/
     apple/    de publieke Apple-feeds plus de genreboom
     spotify/  het chart-endpoint van podcastcharts.byspotify.com
     feed/     RSS-parser en -client: de route zonder tussenpersoon
-    local/    volgen, momentopnames en de offline cache in één JSON-bestand
+    local/    de opslag: bibliotheek, een bestand per lijst, tips
+    feed/     ook: de laatst gelezen feed per show (FeedCache)
+    alerts/   welke beweging in de hitlijst een melding waard is
   player/     Media3-service met een StateFlow-laag eromheen; de melding
               krijgt hier zijn eigen knoppenrij
   ui/         Compose-schermen, thema, navigatie
@@ -668,13 +777,19 @@ tools/        svg_to_vector.py — maakt de launcher-iconen uit de tekening
 design/       de mockup en het icoon als bewerkbaar canvas
 ```
 
-Bewust simpel voor een eerste versie: handmatige bedrading in plaats van een
-DI-raamwerk, en een JSON-bestand in plaats van een database. Zodra er echte
-historie overheen gaat is `LocalStore` het punt om naar Room te verhuizen.
+Bewust simpel: handmatige bedrading in plaats van een DI-raamwerk, en
+JSON-bestanden in plaats van een database. De opslag is wel gesplitst, zodat
+de bibliotheek klein blijft en een lijst zijn eigen bestand heeft; wordt de
+geschiedenis ooit groter dan een paar honderd regels, dan is `LocalStore` het
+punt om naar Room te verhuizen.
 
 ## Nog te doen
 
-- Draaien op een echt toestel: de speler is nog nooit hoorbaar getest.
+- Draaien op een echt toestel: de speler is nog nooit hoorbaar getest. Dat
+  geldt nu ook voor stiltes overslaan, de volume-boost, Android Auto, de widget
+  en de chart-meldingen.
+- Twee shows of twee bronnen naast elkaar in de chart-tracker.
+- Lange feeds worden nog in één keer gelezen; de pagina toont er eerst twintig.
 - AGP, Kotlin, Compose en Media3 zijn in oktober 2026 bijgewerkt voor het
   casten; de rest staat nog op versies van eind 2024. Lint meldt dat er
   nieuwere zijn.

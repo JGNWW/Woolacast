@@ -121,9 +121,28 @@ class NewEpisodes(private val feeds: FeedClient, private val store: LocalStore) 
     /** Per show wat er deze ronde voor het eerst in de feed stond. */
     suspend fun refresh(shows: List<FollowedShow> = store.follows.value): Map<String, List<SavedEpisode>> = coroutineScope {
         val gate = Semaphore(PARALLEL)
-        shows.filter { it.feedUrl != null }.map { show ->
+        val arrivals = shows.filter { it.feedUrl != null }.map { show ->
             async { gate.withPermit { refreshOne(show) } }
         }.awaitAll().filterNotNull().toMap()
+        queueArrivals(arrivals, shows)
+        arrivals
+    }
+
+    /**
+     * De slimme wachtrij: wat er binnenkwam bij een show waarvoor je dat
+     * aanzette, gaat vanzelf achter de wachtrij. Dezelfde regel als Nieuw, dus
+     * niets wat je al hoorde of wegveegde.
+     */
+    private suspend fun queueArrivals(arrivals: Map<String, List<SavedEpisode>>, shows: List<FollowedShow>) {
+        val wanted = store.showPrefs.value.filterValues { it.autoQueue }.keys
+        if (wanted.isEmpty()) return
+        val today = LocalDate.now()
+        val fresh = shows.filter { it.id in wanted }.flatMap { show ->
+            arrivals[show.id].orEmpty().filter {
+                NewRules.isNew(show, it, store.listened.value, store.hiddenNew.value, today)
+            }
+        }.sortedBy { it.releaseDate.orEmpty() }
+        if (fresh.isNotEmpty()) store.enqueueAll(fresh)
     }
 
     private suspend fun refreshOne(show: FollowedShow): Pair<String, List<SavedEpisode>>? {

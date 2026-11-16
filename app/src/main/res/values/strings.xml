@@ -3,4 +3,10 @@
     <string name="app_name">Toadcast</string>
     <!-- De naam van het meldingskanaal, zoals hij in de instellingen staat. -->
     <string name="playback_channel">Afspelen</string>
+    <!-- De widget op het startscherm. -->
+    <string name="widget_description">Wat er speelt, met afspelen en vooruit</string>
+    <string name="widget_play">Afspelen of pauzeren</string>
+    <string name="widget_forward">Dertig seconden vooruit</string>
+    <string name="widget_empty_title">Toadcast</string>
+    <string name="widget_empty_subtitle">Tik om een podcast te kiezen</string>
 </resources>

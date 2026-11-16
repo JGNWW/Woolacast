@@ -32,6 +32,14 @@ const val SKIP_FORWARD_MS = 30_000L
  */
 val SPEEDS = listOf(0.8f, 1f, 1.2f, 1.5f, 1.8f, 2f)
 
+/** De grenzen van de vrije snelheid, in stappen van 0,05. */
+const val MIN_SPEED = 0.5f
+const val MAX_SPEED = 3f
+
+/** Rondt een vrij gekozen snelheid af op 0,05 en houdt hem binnen de grenzen. */
+fun tidySpeed(speed: Float): Float =
+    (Math.round(speed.coerceIn(MIN_SPEED, MAX_SPEED) * 20f) / 20f)
+
 /** De eerstvolgende snelheid, en na de laatste weer de eerste. */
 fun nextSpeed(current: Float): Float {
     val index = SPEEDS.indexOfFirst { it > current + 0.01f }
@@ -105,12 +113,24 @@ class PlayerController(
     /** Wordt aangeroepen zodra een wachtrij-aflevering begint te spelen. */
     private val consumeQueued: suspend (episodeId: String) -> Unit = {},
     /** Het bestand op het toestel, als de aflevering gedownload is. */
-    private val localUri: (episodeId: String) -> String? = { null }
+    private val localUri: (episodeId: String) -> String? = { null },
+    /** De snelheid waarmee deze aflevering hoort te beginnen: die van zijn show, of de algemene. */
+    private val speedFor: (episode: Episode) -> Float? = { null },
+    /** De snelheid veranderde, in de app of met de knop in de melding. */
+    private val onSpeedChanged: suspend (episode: Episode, speed: Float) -> Unit = { _, _ -> },
+    /** Een aflevering begint te spelen; voor de geschiedenis. */
+    private val onStarted: suspend (episode: Episode) -> Unit = {},
+    /** Zoveel milliseconden is er naar deze aflevering geluisterd sinds de vorige melding. */
+    private val onListened: suspend (episode: Episode, ms: Long) -> Unit = { _, _ -> },
+    /** Een aflevering die de app al kent (wachtrij, bewaard, nieuw, geschiedenis), op zijn id. */
+    private val knownEpisode: (episodeId: String) -> Episode? = { null }
 ) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var controller: MediaController? = null
-    private var pending: Pair<Episode, String?>? = null
+    private var pending: Triple<Episode, String?, Long?>? = null
+    /** Geluisterde tijd die nog niet is doorgegeven. */
+    private var listenedMs = 0L
     private var sleepEndsAt: Long? = null
     private var ticking = false
 
@@ -164,6 +184,35 @@ class PlayerController(
             if (reason == Player.DISCONTINUITY_REASON_SEEK && _state.value.sleepAtMs != null) aimAtChapterEnd()
         }
 
+        /**
+         * Een aflevering die niet via [play] begon: uit Android Auto of een
+         * andere bediening die door de bibliotheek van de sessie bladert. Kent
+         * de app hem, dan is hij van ons en gedraagt alles zich als anders.
+         */
+        override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
+            val item = mediaItem ?: return
+            if (item.mediaId == _state.value.episodeId) return
+            flushListened()
+            val known = knownEpisode(item.mediaId)
+            val episode = known ?: item.toEpisode(null)
+            ownEpisodeId = known?.id
+            _state.value = PlaybackState(
+                episode = episode,
+                isBuffering = true,
+                durationMs = episode.durationMillis ?: 0L,
+                speed = _state.value.speed,
+                sleepRemainingMs = _state.value.sleepRemainingMs,
+                sleepAtEnd = _state.value.sleepAtEnd
+            )
+            if (known != null) {
+                speedFor(known)?.let { speed ->
+                    _state.value = _state.value.copy(speed = speed)
+                    controller?.setPlaybackSpeed(speed)
+                }
+                scope.launch { onStarted(known) }
+            }
+        }
+
         override fun onPlayerError(error: PlaybackException) {
             _state.value = _state.value.copy(
                 isPlaying = false,
@@ -173,12 +222,31 @@ class PlayerController(
         }
     }
 
+    /** Een aflevering uit de eigen bibliotheek, op zijn id; voor wie alleen een id heeft. */
+    fun known(episodeId: String): Episode? = knownEpisode(episodeId)
+
+    private var connecting = false
+    private val waiting = mutableListOf<() -> Unit>()
+
+    /** Is er iets geladen in de speler? */
+    val hasMedia: Boolean get() = (controller?.mediaItemCount ?: 0) > 0
+
+    /** Voert [block] uit zodra de speler bereikbaar is; meteen als dat al zo is. */
+    fun whenConnected(block: () -> Unit) {
+        if (controller != null) block() else {
+            waiting += block
+            connect()
+        }
+    }
+
     fun connect() {
-        if (controller != null) return
+        if (controller != null || connecting) return
+        connecting = true
         val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val future = MediaController.Builder(context, token).buildAsync()
         future.addListener(
             {
+                connecting = false
                 controller = runCatching { future.get() }.getOrNull()?.also {
                     it.addListener(listener)
                     restoreFromPlayer(it)
@@ -186,14 +254,20 @@ class PlayerController(
                 }
                 startTicking()
                 // Wat er getikt werd voordat de verbinding er was, alsnog starten.
-                pending?.let { (episode, label) -> play(episode, label) }
+                pending?.let { (episode, label, startAt) -> play(episode, label, startAt) }
                 pending = null
+                if (controller != null) {
+                    val ready = waiting.toList()
+                    waiting.clear()
+                    ready.forEach { it() }
+                }
             },
             ContextCompat.getMainExecutor(context)
         )
     }
 
     fun release() {
+        flushListened()
         controller?.removeListener(listener)
         controller?.release()
         controller = null
@@ -203,7 +277,7 @@ class PlayerController(
      * Start een aflevering, of hervat hem als hij al klaarstaat. Bewust geen
      * pauze bij een tweede tik op dezelfde rij — daar is de knop voor.
      */
-    fun play(episode: Episode, chartLabel: String? = null) {
+    fun play(episode: Episode, chartLabel: String? = null, startAtMs: Long? = null) {
         val audioUrl = episode.audioUrl
         if (audioUrl == null) {
             _state.value = _state.value.copy(error = "Deze aflevering heeft geen audiobestand in de feed.")
@@ -213,28 +287,32 @@ class PlayerController(
 
         val player = controller
         if (player == null) {
-            pending = episode to chartLabel
+            pending = Triple(episode, chartLabel, startAtMs)
             _state.value = PlaybackState(episode = episode, isBuffering = true, chartLabel = chartLabel,
-                durationMs = episode.durationMillis ?: 0L, speed = _state.value.speed)
+                durationMs = episode.durationMillis ?: 0L, speed = speedFor(episode) ?: _state.value.speed)
             return
         }
 
-        if (_state.value.episodeId == episode.id) {
+        if (_state.value.episodeId == episode.id && player.currentMediaItem?.mediaId == episode.id) {
+            if (startAtMs != null) player.seekTo(startAtMs.coerceAtLeast(0L))
             if (!player.isPlaying) player.play()
             if (chartLabel != null) _state.value = _state.value.copy(chartLabel = chartLabel)
+            if (startAtMs != null) afterSeek()
             return
         }
 
+        flushListened()
         val item = episode.toMediaItem(localUri(episode.id) ?: audioUrl)
+        val speed = speedFor(episode) ?: _state.value.speed
 
-        val resumeAt = resumePosition(episode.id)
+        val resumeAt = startAtMs?.coerceAtLeast(0L) ?: resumePosition(episode.id)
         _state.value = PlaybackState(
             episode = episode,
             isPlaying = true,
             isBuffering = true,
             positionMs = resumeAt,
             durationMs = episode.durationMillis ?: 0L,
-            speed = _state.value.speed,
+            speed = speed,
             sleepRemainingMs = _state.value.sleepRemainingMs,
             sleepAtEnd = _state.value.sleepAtEnd,
             // Het einde van een hoofdstuk hoort bij de vorige aflevering.
@@ -243,8 +321,10 @@ class PlayerController(
         )
 
         player.setMediaItem(item, if (resumeAt > 0L) resumeAt else 0L)
+        player.setPlaybackSpeed(speed)
         player.prepare()
         player.play()
+        scope.launch { onStarted(episode) }
     }
 
     fun togglePlayPause() {
@@ -297,8 +377,17 @@ class PlayerController(
 
     fun setSpeed(speed: Float) {
         val player = controller ?: return
-        player.setPlaybackSpeed(speed)
-        _state.value = _state.value.copy(speed = speed)
+        val tidy = tidySpeed(speed)
+        player.setPlaybackSpeed(tidy)
+        _state.value = _state.value.copy(speed = tidy)
+        _state.value.episode?.let { episode -> scope.launch { onSpeedChanged(episode, tidy) } }
+    }
+
+    /** De algemene snelheid veranderde elders (instellingen); wat nu speelt gaat mee. */
+    fun applySpeed(speed: Float) {
+        val tidy = tidySpeed(speed)
+        controller?.setPlaybackSpeed(tidy)
+        _state.value = _state.value.copy(speed = tidy)
     }
 
     fun setSleepTimer(timer: SleepTimer) {
@@ -331,6 +420,7 @@ class PlayerController(
 
     private fun onEnded() {
         val snapshot = _state.value
+        flushListened()
         snapshot.episodeId?.let { id ->
             // Uitgeluisterd: de bewaarde positie mag weg.
             scope.launch { onProgress(id, snapshot.durationMs, snapshot.durationMs, false) }
@@ -357,7 +447,16 @@ class PlayerController(
         )
     }
 
+    /** Geeft de geluisterde tijd door en begint opnieuw te tellen. */
+    private fun flushListened() {
+        val ms = listenedMs
+        val episode = _state.value.episode
+        listenedMs = 0L
+        if (ms > 0L && episode != null) scope.launch { onListened(episode, ms) }
+    }
+
     private fun rememberWhereWeAre(periodic: Boolean = false) {
+        flushListened()
         val snapshot = _state.value
         snapshot.episodeId?.let { id ->
             scope.launch { onProgress(id, snapshot.positionMs, snapshot.durationMs, periodic) }
@@ -373,6 +472,7 @@ class PlayerController(
                 delay(500)
                 if (!_state.value.isPlaying) continue
                 syncFromPlayer()
+                if (!_state.value.isBuffering) listenedMs += 500L
 
                 sleepEndsAt?.let { endsAt ->
                     val remaining = endsAt - SystemClock.elapsedRealtime()
@@ -407,6 +507,12 @@ class PlayerController(
         val player = controller ?: return
         val duration = player.duration.takeIf { it > 0L } ?: _state.value.durationMs
         val ended = player.playbackState == Player.STATE_ENDED
+        // De snelheidsknop in de melding verzet de speler buiten deze laag om; ook dat onthouden we.
+        val speed = player.playbackParameters.speed
+        val before = _state.value
+        if (before.episode != null && kotlin.math.abs(speed - before.speed) > 0.001f && player.mediaItemCount > 0) {
+            scope.launch { onSpeedChanged(before.episode, speed) }
+        }
         _state.value = _state.value.copy(
             isPlaying = player.playWhenReady && !ended && player.playbackState != Player.STATE_IDLE,
             isBuffering = player.playbackState == Player.STATE_BUFFERING,

@@ -31,20 +31,36 @@ object Network {
         )
     }
 
-    val client: OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(userAgent)
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .build()
+    /**
+     * Waar antwoorden bewaard mogen worden. De app zet dit bij het opstarten,
+     * vóór het eerste verzoek. De gegevensbestanden van de verzamelaar dragen
+     * een houdbaarheid en een ETag; met een schijfcache is een tweede keer
+     * dezelfde lijst vragen een kort "niets veranderd" in plaats van een download.
+     */
+    @Volatile
+    var cacheDir: java.io.File? = null
+
+    val client: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(userAgent)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .apply { cacheDir?.let { cache(okhttp3.Cache(java.io.File(it, "http"), 20L * 1024 * 1024)) } }
+            .build()
+    }
 
     /**
      * Voor audio: langer geduld per stuk, want een aflevering van honderd
      * megabyte komt over een trage lijn niet in twintig seconden binnen.
      * Doorverwijzingen, ook van http naar https, volgt OkHttp vanzelf.
      */
-    val downloadClient: OkHttpClient = client.newBuilder()
-        .readTimeout(60, TimeUnit.SECONDS)
-        .build()
+    val downloadClient: OkHttpClient by lazy {
+        client.newBuilder()
+            .readTimeout(60, TimeUnit.SECONDS)
+            // Audio hoort niet in de cache: één aflevering zou al het andere eruit duwen.
+            .cache(null)
+            .build()
+    }
 
     private fun retrofit(baseUrl: String): Retrofit = Retrofit.Builder()
         .baseUrl(baseUrl)

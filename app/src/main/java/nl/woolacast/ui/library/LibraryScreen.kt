@@ -74,8 +74,19 @@ import nl.woolacast.ui.common.minutes
 import nl.woolacast.ui.common.relativeDay
 import nl.woolacast.ui.theme.LocalChartColors
 
+/** Twee tabbladen: wat je volgt, en losse afleveringen. Elk met een paar onderdelen eronder. */
 private enum class LibraryTab(val label: String) {
-    FOLLOWED("Gevolgd"), MAKERS("Makers"), QUEUE("Wachtrij"), SAVED("Bewaard"), DOWNLOADS("Gedownload")
+    FOLLOWED("Gevolgd"), EPISODES("Afleveringen");
+
+    companion object {
+        fun from(name: String) = entries.firstOrNull { it.name == name } ?: FOLLOWED
+    }
+}
+
+private enum class FollowedSection(val label: String) { SHOWS("Shows"), MAKERS("Makers") }
+
+private enum class EpisodeSection(val label: String) {
+    QUEUE("Wachtrij"), SAVED("Bewaard"), DOWNLOADS("Gedownload"), HISTORY("Geschiedenis"), BOOKMARKS("Bladwijzers")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,7 +104,11 @@ fun LibraryScreen(
     /** Een gekozen OPML-bestand: het importscherm neemt het over. */
     onImportFile: (Uri) -> Unit = {},
     /** Voor wat langer duurt dan dit scherm: het koppelen van een nieuwe feed aan de catalogus. */
-    appScope: CoroutineScope? = null
+    appScope: CoroutineScope? = null,
+    onOpenSettings: () -> Unit = {},
+    onOpenStats: () -> Unit = {},
+    /** Een aflevering afspelen vanaf een bladwijzer. */
+    onPlayAt: (Episode, Long) -> Unit = { episode, _ -> onPlay(episode) }
 ) {
     val follows by viewModel.follows.collectAsStateWithLifecycle()
     val makers by viewModel.makers.collectAsStateWithLifecycle()
@@ -112,8 +127,18 @@ fun LibraryScreen(
     var newExpanded by rememberSaveable { mutableStateOf(false) }
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val refreshing by viewModel.refreshing.collectAsStateWithLifecycle()
-    val theme by viewModel.theme.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableStateOf(LibraryTab.FOLLOWED) }
+    val prefs by viewModel.prefs.collectAsStateWithLifecycle()
+    val progress by viewModel.progress.collectAsStateWithLifecycle()
+    val continueItems by viewModel.continueListening.collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
+    val bookmarks by viewModel.bookmarks.collectAsStateWithLifecycle()
+    // Wat je hier kiest geldt meteen; de opslag onthoudt het voor de volgende keer.
+    var pickedTab by rememberSaveable { mutableStateOf<LibraryTab?>(null) }
+    var pickedFollowed by rememberSaveable { mutableStateOf<FollowedSection?>(null) }
+    var pickedEpisodes by rememberSaveable { mutableStateOf<EpisodeSection?>(null) }
+    val tab = pickedTab ?: LibraryTab.from(prefs.libraryTab)
+    val followedSection = pickedFollowed ?: FollowedSection.entries.firstOrNull { it.name == prefs.librarySection } ?: FollowedSection.SHOWS
+    val episodeSection = pickedEpisodes ?: EpisodeSection.entries.firstOrNull { it.name == prefs.librarySection } ?: EpisodeSection.QUEUE
     var sortOpen by remember { mutableStateOf(false) }
     var showsOpen by remember { mutableStateOf(false) }
     var addOpen by remember { mutableStateOf(false) }
@@ -158,106 +183,152 @@ fun LibraryScreen(
                             onClick = { viewModel.setSort(option); sortOpen = false }
                         )
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    listOf("light" to "Licht thema", "dark" to "Donker thema", "system" to "Thema van het toestel").forEach { (mode, label) ->
-                        DropdownMenuItem(
-                            text = { Text(label, fontWeight = if (mode == theme) FontWeight.Bold else FontWeight.Normal) },
-                            onClick = { viewModel.setTheme(mode); sortOpen = false }
-                        )
-                    }
                 }
             }
+            IconAction(WoolIcons.Settings, "Instellingen", onOpenSettings)
         }
         PageTitle("Bibliotheek")
 
         UnderlineTabs(
             labels = LibraryTab.entries.map { it.label },
             selected = LibraryTab.entries.indexOf(tab),
-            onSelect = { tab = LibraryTab.entries[it] }
+            onSelect = {
+                pickedTab = LibraryTab.entries[it]
+                viewModel.rememberPlace(
+                    tab = LibraryTab.entries[it].name,
+                    section = if (LibraryTab.entries[it] == LibraryTab.FOLLOWED) followedSection.name else episodeSection.name
+                )
+            }
         )
 
         when (tab) {
-            LibraryTab.FOLLOWED -> PullToRefreshBox(
-                isRefreshing = refreshing,
-                onRefresh = {
-                    viewModel.loadAlerts(countryCode)
-                    viewModel.refreshFeeds(force = true)
-                },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                FollowedTab(
-                    follows = when (sort) {
-                        LibrarySort.NAME -> follows.sortedBy { it.title.lowercase() }
-                        LibrarySort.RECENT -> follows.sortedByDescending { feeds[it.id]?.latestDate ?: "" }
-                    },
-                    feeds = feeds,
-                    alerts = alerts,
-                    onOpenPodcast = onOpenPodcast,
-                    onUnfollow = viewModel::unfollow,
-                    newSection = {
-                        newSection(
-                            all = newAll,
-                            shown = newShown,
-                            filters = newFilters,
-                            expanded = newExpanded,
-                            playingId = playingId,
-                            onToggleFilter = viewModel::toggleNewFilter,
-                            onQueueAll = {
-                                viewModel.queueAllNew { added ->
-                                    val text = when (added) {
-                                        0 -> "Staat al in de wachtrij"
-                                        1 -> "1 aflevering in de wachtrij"
-                                        else -> "$added afleveringen in de wachtrij"
-                                    }
-                                    Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onExpand = { newExpanded = true },
-                            onPlay = { onPlay(it.toEpisode()) },
-                            onHide = { viewModel.hideNew(it.id) }
-                        )
+            LibraryTab.FOLLOWED -> {
+                SectionChips(
+                    labels = FollowedSection.entries.map { it.label },
+                    selected = FollowedSection.entries.indexOf(followedSection),
+                    onSelect = {
+                        pickedFollowed = FollowedSection.entries[it]
+                        viewModel.rememberPlace(section = FollowedSection.entries[it].name)
                     }
                 )
+                when (followedSection) {
+                    FollowedSection.SHOWS -> PullToRefreshBox(
+                        isRefreshing = refreshing,
+                        onRefresh = {
+                            viewModel.loadAlerts(countryCode)
+                            viewModel.refreshFeeds(force = true)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        FollowedTab(
+                            follows = when (sort) {
+                                LibrarySort.NAME -> follows.sortedBy { it.title.lowercase() }
+                                LibrarySort.RECENT -> follows.sortedByDescending { feeds[it.id]?.latestDate ?: "" }
+                            },
+                            feeds = feeds,
+                            alerts = alerts,
+                            onOpenPodcast = onOpenPodcast,
+                            onUnfollow = viewModel::unfollow,
+                            continueSection = {
+                                continueSection(continueItems, progress, playingId, onPlay = { onPlay(it.toEpisode()) })
+                            },
+                            hasContinue = continueItems.isNotEmpty(),
+                            newSection = {
+                                newSection(
+                                    all = newAll,
+                                    shown = newShown,
+                                    filters = newFilters,
+                                    expanded = newExpanded,
+                                    playingId = playingId,
+                                    onToggleFilter = viewModel::toggleNewFilter,
+                                    onQueueAll = {
+                                        viewModel.queueAllNew { added ->
+                                            val text = when (added) {
+                                                0 -> "Staat al in de wachtrij"
+                                                1 -> "1 aflevering in de wachtrij"
+                                                else -> "$added afleveringen in de wachtrij"
+                                            }
+                                            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onExpand = { newExpanded = true },
+                                    onPlay = { onPlay(it.toEpisode()) },
+                                    onHide = { viewModel.hideNew(it.id) }
+                                )
+                            }
+                        )
+                    }
+                    FollowedSection.MAKERS -> PullToRefreshBox(
+                        isRefreshing = makersRefreshing,
+                        onRefresh = { viewModel.refreshMakers(countryCode, force = true) },
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        MakersTab(
+                            makers = makers,
+                            status = makerStatus,
+                            faces = makerFaces,
+                            newShows = newShows,
+                            suggestions = suggestions,
+                            onOpenMaker = onOpenMaker,
+                            onOpenNewShow = { show ->
+                                viewModel.seen(show)
+                                onOpenPodcast(show.showId, show.feedUrl, show.title)
+                            },
+                            onFollow = { viewModel.followSuggestion(it, countryCode) },
+                            onUnfollow = viewModel::unfollowMaker
+                        )
+                    }
+                }
             }
-            LibraryTab.MAKERS -> PullToRefreshBox(
-                isRefreshing = makersRefreshing,
-                onRefresh = { viewModel.refreshMakers(countryCode, force = true) },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                MakersTab(
-                    makers = makers,
-                    status = makerStatus,
-                    faces = makerFaces,
-                    newShows = newShows,
-                    suggestions = suggestions,
-                    onOpenMaker = onOpenMaker,
-                    onOpenNewShow = { show ->
-                        viewModel.seen(show)
-                        onOpenPodcast(show.showId, show.feedUrl, show.title)
+
+            LibraryTab.EPISODES -> {
+                SectionChips(
+                    labels = EpisodeSection.entries.map { section ->
+                        when (section) {
+                            EpisodeSection.QUEUE -> if (queue.isEmpty()) section.label else "${section.label} ${queue.size}"
+                            else -> section.label
+                        }
                     },
-                    onFollow = { viewModel.followSuggestion(it, countryCode) },
-                    onUnfollow = viewModel::unfollowMaker
+                    selected = EpisodeSection.entries.indexOf(episodeSection),
+                    onSelect = {
+                        pickedEpisodes = EpisodeSection.entries[it]
+                        viewModel.rememberPlace(section = EpisodeSection.entries[it].name)
+                    }
                 )
-            }
-            LibraryTab.QUEUE -> EpisodeTab(
-                episodes = queue,
-                empty = "Nog niets in de wachtrij. Zet een aflevering erin vanaf een podcastpagina; " +
-                    "de speler gaat er vanzelf mee door.",
-                playingId = playingId,
-                numbered = true,
-                onPlay = onPlay,
-                onRemove = viewModel::removeFromQueue
-            )
-            LibraryTab.SAVED -> EpisodeTab(
-                episodes = saved,
-                empty = "Nog niets bewaard. Bewaar een aflevering om hem hier terug te vinden.",
-                playingId = playingId,
-                numbered = false,
-                onPlay = onPlay,
-                onRemove = viewModel::removeSaved
-            )
-            LibraryTab.DOWNLOADS -> if (downloadsViewModel != null) {
-                DownloadsTab(viewModel = downloadsViewModel, playingId = playingId, onPlay = onPlay)
+                when (episodeSection) {
+                    EpisodeSection.QUEUE -> QueueTab(
+                        queue = queue,
+                        playingId = playingId,
+                        onPlay = onPlay,
+                        onRemove = viewModel::removeFromQueue,
+                        onMove = viewModel::moveInQueue,
+                        onClear = viewModel::clearQueue
+                    )
+                    EpisodeSection.SAVED -> EpisodeTab(
+                        episodes = saved,
+                        empty = "Nog niets bewaard. Bewaar een aflevering om hem hier terug te vinden.",
+                        playingId = playingId,
+                        numbered = false,
+                        onPlay = onPlay,
+                        onRemove = viewModel::removeSaved
+                    )
+                    EpisodeSection.DOWNLOADS -> if (downloadsViewModel != null) {
+                        DownloadsTab(viewModel = downloadsViewModel, playingId = playingId, onPlay = onPlay)
+                    }
+                    EpisodeSection.HISTORY -> HistoryTab(
+                        history = history,
+                        progress = progress,
+                        playingId = playingId,
+                        onPlay = onPlay,
+                        onRemove = viewModel::removeHistory,
+                        onOpenStats = onOpenStats
+                    )
+                    EpisodeSection.BOOKMARKS -> BookmarksTab(
+                        bookmarks = bookmarks,
+                        onPlayAt = onPlayAt,
+                        onRemove = viewModel::removeBookmark
+                    )
+                }
             }
         }
     }
@@ -306,9 +377,11 @@ private fun FollowedTab(
     alerts: List<ChartAlert>,
     onOpenPodcast: (String, String?, String) -> Unit,
     onUnfollow: (FollowedShow) -> Unit,
+    continueSection: LazyGridScope.() -> Unit = {},
+    hasContinue: Boolean = false,
     newSection: LazyGridScope.() -> Unit = {}
 ) {
-    if (follows.isEmpty()) {
+    if (follows.isEmpty() && !hasContinue) {
         NoticePanel(
             title = "Nog niets gevolgd",
             message = "Open een podcast uit een hitlijst en tik op Volgen. " +
@@ -325,7 +398,17 @@ private fun FollowedTab(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        continueSection()
         newSection()
+        if (follows.isEmpty()) {
+            item(span = { GridItemSpan(3) }) {
+                Text(
+                    "Je volgt nog niets. Open een podcast uit een hitlijst en tik op Volgen.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         if (alerts.isNotEmpty()) {
             item(span = { GridItemSpan(3) }) {
                 AlertCard(alerts, onOpenPodcast)
@@ -395,7 +478,7 @@ private fun FollowedTab(
 
 /** Van de shows die je volgt: wie er bewoog. Alleen mogelijk dankzij de dagelijkse metingen. */
 @Composable
-private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?, String) -> Unit) {
+internal fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?, String) -> Unit) {
     val colors = LocalChartColors.current
     PanelCard("Chart-alerts", "Sinds gisteren", Modifier.padding(bottom = 4.dp)) {
         alerts.forEach { alert ->
@@ -431,7 +514,7 @@ private fun AlertCard(alerts: List<ChartAlert>, onOpenPodcast: (String, String?,
 }
 
 @Composable
-private fun EpisodeTab(
+internal fun EpisodeTab(
     episodes: List<SavedEpisode>,
     empty: String,
     playingId: String?,

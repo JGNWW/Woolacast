@@ -19,6 +19,8 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import nl.woolacast.data.local.HistoryItem
 import kotlinx.coroutines.flow.stateIn
 import nl.woolacast.data.inbox.NewEpisodes
 import nl.woolacast.data.inbox.NewFilter
@@ -177,8 +179,49 @@ class LibraryViewModel(
         }
     }
 
-    private val _sort = MutableStateFlow(LibrarySort.RECENT)
-    val sort: StateFlow<LibrarySort> = _sort.asStateFlow()
+    /** De volgorde van je shows; de app onthoudt hem. */
+    val sort: StateFlow<LibrarySort> = store.prefs
+        .map { prefs -> runCatching { LibrarySort.valueOf(prefs.librarySort) }.getOrDefault(LibrarySort.RECENT) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, LibrarySort.RECENT)
+
+    val prefs = store.prefs
+    val progress = store.progress
+    val bookmarks = store.bookmarks
+
+    /** Wat je afspeelde, de laatste eerst. */
+    val history: StateFlow<List<HistoryItem>> = store.history
+        .map { it.asReversed() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Waar je halverwege bent, de laatst gespeelde eerst. */
+    val continueListening: StateFlow<List<SavedEpisode>> =
+        combine(store.history, store.progress) { history, progress ->
+            history.asReversed().filter { !it.finished && it.episode.id in progress }.map { it.episode }.take(CONTINUE_SHOWN)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    /** Het tabblad en het onderdeel waar je was; bij de volgende start sta je daar weer. */
+    fun rememberPlace(tab: String? = null, section: String? = null) {
+        viewModelScope.launch {
+            store.setPrefs { it.copy(libraryTab = tab ?: it.libraryTab, librarySection = section ?: it.librarySection) }
+        }
+    }
+
+    fun moveInQueue(from: Int, to: Int) {
+        val episode = store.queue.value.getOrNull(from) ?: return
+        viewModelScope.launch { store.moveInQueue(episode.id, to) }
+    }
+
+    fun clearQueue() {
+        viewModelScope.launch { store.clearQueue() }
+    }
+
+    fun removeHistory(episodeId: String) {
+        viewModelScope.launch { store.removeHistory(episodeId) }
+    }
+
+    fun removeBookmark(id: String) {
+        viewModelScope.launch { store.removeBookmark(id) }
+    }
 
     private val _refreshing = MutableStateFlow(false)
     val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
@@ -186,7 +229,7 @@ class LibraryViewModel(
     private var feedsLoadedFor: Set<String> = emptySet()
 
     fun setSort(sort: LibrarySort) {
-        _sort.value = sort
+        viewModelScope.launch { store.setPrefs { it.copy(librarySort = sort.name) } }
     }
 
     val theme = store.theme
@@ -451,6 +494,9 @@ class LibraryViewModel(
     }
 
     private companion object {
+        /** Zoveel afleveringen staan er hooguit onder Verder luisteren. */
+        const val CONTINUE_SHOWN = 12
+
         /** Zo jong moet een show zijn om als nieuwe podcast te gelden. */
         const val NEW_SHOW_DAYS = 14L
 

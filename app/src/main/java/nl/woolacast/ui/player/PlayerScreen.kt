@@ -98,6 +98,14 @@ import nl.woolacast.ui.common.Artwork
 import nl.woolacast.ui.common.CoverBackdrop
 import nl.woolacast.ui.common.DownloadUi
 import nl.woolacast.ui.common.Equalizer
+import nl.woolacast.ui.common.ReorderableColumn
+import nl.woolacast.ui.library.SettingSwitch
+import nl.woolacast.data.local.Bookmark
+import nl.woolacast.player.MAX_SPEED
+import nl.woolacast.player.MIN_SPEED
+import nl.woolacast.player.tidySpeed
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import nl.woolacast.ui.common.FilterChipBox
 import nl.woolacast.ui.common.GlassIconButton
 import nl.woolacast.ui.common.IconAction
@@ -154,7 +162,16 @@ fun PlayerScreen(
     onDownload: () -> Unit = {},
     onRemoveDownload: () -> Unit = {},
     /** Speakers en tv's in het netwerk; alleen voor schermafdrukken van buitenaf, anders volgt het scherm zelf. */
-    cast: CastRoutes? = null
+    cast: CastRoutes? = null,
+    /** Heeft de show van deze aflevering een eigen snelheid? Dan verandert de keuze alleen die. */
+    showHasOwnSpeed: Boolean = false,
+    onOwnSpeed: (Boolean) -> Unit = {},
+    /** Bladwijzers in deze aflevering. */
+    bookmarks: List<Bookmark> = emptyList(),
+    onAddBookmark: (Long) -> Unit = {},
+    onRemoveBookmark: (String) -> Unit = {},
+    onMoveQueued: (from: Int, to: Int) -> Unit = { _, _ -> },
+    onClearQueue: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val colors = LocalChartColors.current
@@ -181,6 +198,26 @@ fun PlayerScreen(
                 putExtra(Intent.EXTRA_TEXT, "${episode.title} — ${episode.showTitle}\n$url")
             }
             context.startActivity(Intent.createChooser(intent, "Aflevering delen"))
+        }
+    }
+
+    // Delen met het moment erbij: de tijd in woorden, en een adres dat daar begint voor wie het in een browser opent.
+    val shareMoment = {
+        val url = episode?.link ?: episode?.audioUrl
+        if (episode != null && url != null) {
+            val seconds = positionMs / 1000
+            val lines = listOfNotNull(
+                "${episode.title} — ${episode.showTitle}",
+                "Vanaf ${clock(positionMs)}",
+                url,
+                episode.audioUrl?.let { "Luister vanaf dit moment: ${it.substringBefore('#')}#t=$seconds" }
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, episode.title)
+                putExtra(Intent.EXTRA_TEXT, lines.joinToString("\n"))
+            }
+            context.startActivity(Intent.createChooser(intent, "Fragment delen"))
         }
     }
 
@@ -238,6 +275,10 @@ fun PlayerScreen(
                             DropdownMenuItem(
                                 text = { Text("Aflevering delen") },
                                 onClick = { menuOpen = false; share() }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Delen vanaf ${clock(positionMs)}") },
+                                onClick = { menuOpen = false; shareMoment() }
                             )
                             if (hasTranscript) {
                                 DropdownMenuItem(text = { Text("Tekst meelezen") }, onClick = { menuOpen = false; openText() })
@@ -438,7 +479,8 @@ fun PlayerScreen(
                                 state.sleepAtEnd -> "Einde afl."
                                 state.sleepAtMs != null -> "Einde hfst."
                                 state.sleepRemainingMs != null -> "${(state.sleepRemainingMs / 60_000L) + 1} min"
-                                else -> "Timer"
+                                // Zonder lopende timer alleen het maantje: zo past de hele rij op het scherm.
+                                else -> null
                             },
                             active = sleeping,
                             description = when {
@@ -453,6 +495,10 @@ fun PlayerScreen(
                             if (queue.isEmpty()) "Wachtrij" else "Wachtrij ${queue.size}",
                             description = if (queue.isEmpty()) "Wachtrij" else "Wachtrij, ${queue.size} afleveringen"
                         ) { sheet = Sheet.QUEUE }
+                        ToolPill(WoolIcons.Marker, null, description = "Bladwijzer op ${clock(positionMs)}") {
+                            onAddBookmark(positionMs)
+                            android.widget.Toast.makeText(context, "Bladwijzer op ${clock(positionMs)}", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                         ToolPill(WoolIcons.Share, null, description = "Aflevering delen", onClick = share)
                     }
                 }
@@ -477,6 +523,9 @@ fun PlayerScreen(
                         onPick = { onSeekToMs(it.startMs) },
                         modifier = Modifier.onGloballyPositioned { chaptersAt = it.positionInRoot().y + scroll.value }
                     )
+                }
+                if (bookmarks.isNotEmpty()) {
+                    BookmarksCard(bookmarks, onSeek = onSeekToMs, onRemove = onRemoveBookmark)
                 }
                 if (queue.isNotEmpty()) {
                     UpNextCard(
@@ -514,7 +563,14 @@ fun PlayerScreen(
     when (sheet) {
         Sheet.SPEED -> ModalBottomSheet(onDismissRequest = { sheet = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             SheetTitle("Snelheid")
-            SpeedPicker(state.speed) { onSpeed(it); sheet = null }
+            SpeedPicker(
+                current = state.speed,
+                showTitle = state.showTitle,
+                ownSpeed = showHasOwnSpeed,
+                onOwnSpeed = onOwnSpeed,
+                onPick = onSpeed,
+                onDone = { sheet = null }
+            )
             Spacer(Modifier.height(24.dp))
         }
 
@@ -538,7 +594,7 @@ fun PlayerScreen(
                         color = softInk(),
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .clickable { queue.forEach { onRemoveQueued(it.id) } }
+                            .clickable { onClearQueue?.invoke() ?: queue.forEach { onRemoveQueued(it.id) } }
                             .padding(horizontal = 12.dp, vertical = 12.dp)
                     )
                 }
@@ -548,7 +604,8 @@ fun PlayerScreen(
                 accent = cover.accent,
                 queue = queue,
                 onPlay = { onPlayQueued(it); sheet = null },
-                onRemove = onRemoveQueued
+                onRemove = onRemoveQueued,
+                onMove = onMoveQueued
             )
             Spacer(Modifier.height(24.dp))
         }
@@ -1102,16 +1159,66 @@ private fun SkipButton(icon: ImageVector, skipMs: Long, direction: String, onCli
     }
 }
 
+/**
+ * De vaste standen als chips, en een schuif voor alles ertussen. Met de
+ * schakelaar eronder geldt de keuze alleen voor deze show; die begint dan
+ * voortaan vanzelf op die snelheid.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SpeedPicker(current: Float, onPick: (Float) -> Unit) {
+private fun SpeedPicker(
+    current: Float,
+    showTitle: String,
+    ownSpeed: Boolean,
+    onOwnSpeed: (Boolean) -> Unit,
+    onPick: (Float) -> Unit,
+    onDone: () -> Unit
+) {
+    // Tijdens het schuiven volgt het getal de vinger; de speler verandert pas bij loslaten.
+    var sliding by remember { mutableStateOf<Float?>(null) }
+    val shown = sliding ?: current
     FlowRow(
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         SPEEDS.forEach { speed ->
-            FilterChipBox(speedLabel(speed), selected = speed == current, onClick = { onPick(speed) })
+            FilterChipBox(speedLabel(speed), selected = kotlin.math.abs(speed - current) < 0.01f, onClick = { onPick(speed); onDone() })
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Slider(
+            value = shown,
+            onValueChange = { sliding = tidySpeed(it) },
+            onValueChangeFinished = { sliding?.let(onPick); sliding = null },
+            valueRange = MIN_SPEED..MAX_SPEED,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            ),
+            modifier = Modifier.weight(1f).semantics { contentDescription = "Snelheid, vrij te kiezen" }
+        )
+        Text(
+            speedLabel(shown),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.width(58.dp)
+        )
+    }
+    if (showTitle.isNotBlank()) {
+        Box(Modifier.padding(horizontal = 20.dp)) {
+            SettingSwitch(
+                title = "Alleen voor deze show",
+                detail = if (ownSpeed) "$showTitle begint voortaan op ${speedLabel(current)}."
+                else "Nu geldt de snelheid voor alles wat geen eigen snelheid heeft.",
+                checked = ownSpeed,
+                onChange = onOwnSpeed
+            )
         }
     }
     Text(
@@ -1120,6 +1227,28 @@ private fun SpeedPicker(current: Float, onPick: (Float) -> Unit) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
     )
+}
+
+/** De plekken die je in deze aflevering markeerde; een tik springt erheen. */
+@Composable
+private fun BookmarksCard(bookmarks: List<Bookmark>, onSeek: (Long) -> Unit, onRemove: (String) -> Unit) {
+    PlayerCard("BLADWIJZERS") {
+        bookmarks.sortedBy { it.positionMs }.forEach { bookmark ->
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable { onSeek(bookmark.positionMs) }.padding(start = 16.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(WoolIcons.Marker, null, modifier = Modifier.size(18.dp))
+                Text(clock(bookmark.positionMs), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                IconAction(
+                    WoolIcons.Close, "Bladwijzer op ${clock(bookmark.positionMs)} verwijderen", { onRemove(bookmark.id) },
+                    tint = LocalChartColors.current.muted, iconSize = 18.dp
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -1164,7 +1293,8 @@ private fun QueueList(
     accent: Color,
     queue: List<SavedEpisode>,
     onPlay: (SavedEpisode) -> Unit,
-    onRemove: (String) -> Unit
+    onRemove: (String) -> Unit,
+    onMove: (Int, Int) -> Unit = { _, _ -> }
 ) {
     val muted = LocalChartColors.current.muted
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -1207,12 +1337,13 @@ private fun QueueList(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
             )
         }
-        queue.forEach { item ->
+        ReorderableColumn(items = queue, key = { it.id }, onMove = onMove) { _, item, handle ->
+            Column(Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onPlay(item) }
-                    .padding(start = 20.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                    .padding(start = 20.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -1228,8 +1359,10 @@ private fun QueueList(
                     )
                 }
                 IconAction(WoolIcons.Close, "Uit wachtrij", { onRemove(item.id) }, tint = muted, iconSize = 18.dp)
+                handle()
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
         }
     }
 }

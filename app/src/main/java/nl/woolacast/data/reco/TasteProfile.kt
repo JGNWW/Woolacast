@@ -76,6 +76,31 @@ object Recommender {
         return TasteProfile(genres, publishers, bag, known)
     }
 
+    /** Luistertijd die meetelt: een kwartier is een keer geprobeerd, meer is een keuze. */
+    private const val LISTENED_ENOUGH_MS = 15 * 60_000L
+
+    /** Wat een show erbij krijgt voor de tijd die je ernaar luisterde: 1 tot 3. */
+    fun listeningBonus(ms: Long): Int = when {
+        ms < LISTENED_ENOUGH_MS -> 0
+        ms < 2 * 3_600_000L -> 1
+        ms < 10 * 3_600_000L -> 2
+        else -> 3
+    }
+
+    /**
+     * Legt de luistertijd over de bibliotheek. [listened] is per show-id de
+     * titel en de geluisterde milliseconden. Een show uit je bibliotheek wordt
+     * zwaarder; een show die je wel hoorde maar niet volgt, komt erbij.
+     */
+    fun withListening(shows: List<LibraryShow>, listened: Map<String, Pair<String, Long>>): List<LibraryShow> {
+        val known = shows.map { it.id }.toSet()
+        val heavier = shows.map { show -> show.copy(weight = show.weight + listeningBonus(listened[show.id]?.second ?: 0L)) }
+        val extra = listened
+            .filter { (id, heard) -> id.isNotBlank() && id !in known && listeningBonus(heard.second) > 0 }
+            .map { (id, heard) -> LibraryShow(id, heard.first, "", weight = listeningBonus(heard.second)) }
+        return heavier + extra
+    }
+
     /**
      * Rangschikt kandidaten tegen een profiel. De volgorde komt tot stand uit
      * drie dingen: hoe zwaar het genre in jouw bibliotheek weegt, of je de maker

@@ -50,7 +50,9 @@ data class DetailUiState(
     /** Media die deze podcast tipten. */
     val tips: List<MediaTip> = emptyList(),
     /** Podcasts die hierop lijken. */
-    val similar: List<Suggestion> = emptyList()
+    val similar: List<Suggestion> = emptyList(),
+    /** De pagina staat er al uit het geheugen; de maker wordt nog gevraagd of er iets nieuws is. */
+    val refreshing: Boolean = false
 )
 
 class DetailViewModel(
@@ -81,6 +83,30 @@ class DetailViewModel(
         downloads?.progress ?: MutableStateFlow(emptyMap<String, DownloadProgress>()).asStateFlow()
     val autoDownload: StateFlow<Map<String, Int>> = store.autoDownload
     val downloadSettings: StateFlow<DownloadSettings> = store.downloadSettings
+    val listened: StateFlow<Set<String>> = store.listened
+    val showPrefs: StateFlow<Map<String, nl.woolacast.data.local.ShowPrefs>> = store.showPrefs
+    val playback: StateFlow<nl.woolacast.data.local.PlaybackSettings> = store.playback
+
+    /** Met de hand als beluisterd markeren, of juist niet meer. */
+    fun setListened(episodeIds: Collection<String>, on: Boolean) = viewModelScope.launch { store.setListened(episodeIds, on) }
+
+    /** Van oud naar nieuw, voor een verhaal dat bij deel 1 begint; de show onthoudt het. */
+    fun setOldestFirst(on: Boolean) = viewModelScope.launch { store.setShowPrefs(showId) { it.copy(oldestFirst = on) } }
+
+    /** Een eigen snelheid voor deze show; null volgt weer de algemene. */
+    fun setShowSpeed(speed: Float?) = viewModelScope.launch { store.setShowPrefs(showId) { it.copy(speed = speed) } }
+
+    /**
+     * Nieuwe afleveringen vanzelf achter de wachtrij. Aanzetten volgt de show
+     * ook: de app kijkt alleen bij shows die je volgt of er iets nieuws is.
+     */
+    fun setAutoQueue(on: Boolean) {
+        val podcast = _state.value.podcast ?: return
+        viewModelScope.launch {
+            if (on && store.follows.value.none { it.id == podcast.id }) toggleFollowNow(podcast)
+            store.setShowPrefs(showId) { it.copy(autoQueue = on) }
+        }
+    }
 
     fun waitingForWifi(): Boolean = downloads?.waitingForWifi() ?: false
 
@@ -190,23 +216,43 @@ class DetailViewModel(
 
     fun refresh() = load()
 
+    private fun show(detail: nl.woolacast.data.PodcastDetail, refreshing: Boolean) {
+        // Het genre staat niet in de feed; wat we eerder wisten, blijft staan.
+        val genre = detail.podcast.genre ?: _state.value.podcast?.genre
+        _state.value = _state.value.copy(
+            loading = false,
+            refreshing = refreshing,
+            podcast = detail.podcast.copy(genre = genre),
+            episodes = detail.episodes,
+            cadence = cadence(detail.episodes.map { it.releaseDate })
+        )
+        reconcile()
+    }
+
     private fun load() {
         _state.value = _state.value.copy(loading = _state.value.podcast == null, error = null)
         viewModelScope.launch {
+            // Eerst wat er bewaard is: de pagina staat er dan meteen, en de
+            // maker hoeft alleen nog te zeggen of er iets veranderd is.
+            if (_state.value.podcast == null) {
+                runCatching { repository.cached(showId) }.getOrNull()?.let { kept ->
+                    show(kept, refreshing = true)
+                    findSimilar(kept.podcast)
+                }
+            } else {
+                _state.value = _state.value.copy(refreshing = true)
+            }
             runCatching { repository.detail(showId, countryCode, feedUrl, title) }
                 .onSuccess { detail ->
-                    _state.value = _state.value.copy(
-                        loading = false,
-                        podcast = detail.podcast,
-                        episodes = detail.episodes,
-                        cadence = cadence(detail.episodes.map { it.releaseDate })
-                    )
-                    reconcile()
+                    show(detail, refreshing = false)
                     findSimilar(detail.podcast)
                 }
                 .onFailure { error ->
-                    _state.value = _state.value.copy(
+                    // Met een bewaarde pagina in beeld is een mislukte verversing geen fout om te tonen.
+                    _state.value = if (_state.value.podcast != null) _state.value.copy(loading = false, refreshing = false)
+                    else _state.value.copy(
                         loading = false,
+                        refreshing = false,
                         error = error.message ?: "Kon deze podcast niet laden."
                     )
                 }

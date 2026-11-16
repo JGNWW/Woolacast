@@ -338,6 +338,8 @@ class FeatureScreenshots {
             shot("feed-toevoegen$suffix")
             return
         }
+        compose.onAllNodesWithText("Afleveringen")[0].performClick()
+        settle()
         compose.onAllNodesWithText("Gedownload")[0].performScrollTo().performClick()
         settle()
         save("bibliotheek-gedownload$suffix")

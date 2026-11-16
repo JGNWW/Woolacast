@@ -69,7 +69,11 @@ class RecoRepository(
         )
     }
 
-    /** Wat er in je bibliotheek staat: gevolgd weegt zwaarder dan bewaard. */
+    /**
+     * Wat er in je bibliotheek staat: gevolgd weegt zwaarder dan bewaard, en
+     * waar je echt naar luistert weegt het zwaarst. Een show die je volgt maar
+     * nooit aanzet zegt minder over je smaak dan een die je uren hoorde.
+     */
     private fun library(): List<LibraryShow> {
         val shows = mutableMapOf<String, LibraryShow>()
         for (follow in store.follows.value) {
@@ -79,7 +83,7 @@ class RecoRepository(
             if (episode.showId.isBlank() || shows.containsKey(episode.showId)) continue
             shows[episode.showId] = LibraryShow(episode.showId, episode.showTitle, "", weight = 1)
         }
-        return shows.values.toList()
+        return Recommender.withListening(shows.values.toList(), store.listening.value.mapValues { it.value.title to it.value.ms })
     }
 
     /** Eén opzoeking voor de hele bibliotheek; Apple neemt tot vijftig ids tegelijk. */

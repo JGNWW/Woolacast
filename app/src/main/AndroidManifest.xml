@@ -58,8 +58,33 @@
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
+                <!-- Bladeren door de bibliotheek: Android Auto en andere bedieningen met een lijst. -->
+                <action android:name="androidx.media3.session.MediaLibraryService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
+            </intent-filter>
+            <!-- "Speel … af op Toadcast": zoekt in de eigen bibliotheek. -->
+            <intent-filter>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
+        <!-- Android Auto: Toadcast is een media-app. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+        <!-- De widget: wat er speelt, met afspelen en vooruit. -->
+        <receiver
+            android:name=".widget.PlayerWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/player_widget_info" />
+        </receiver>
 
         <!-- Casten: Media3's standaardinstellingen voor de Cast-ontvanger, en de
              ontvanger waarmee Android een aflevering naar een speaker overzet. -->

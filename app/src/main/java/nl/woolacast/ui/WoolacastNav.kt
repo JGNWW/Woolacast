@@ -49,7 +49,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import nl.woolacast.ui.inbox.InboxScreen
+import nl.woolacast.ui.settings.SettingsScreen
+import nl.woolacast.ui.settings.SettingsViewModel
+import nl.woolacast.ui.settings.StatsScreen
 import nl.woolacast.AppContainer
 import androidx.compose.ui.platform.LocalContext
 import nl.woolacast.data.download.Downloads
@@ -120,16 +126,19 @@ fun WoolacastNav(container: AppContainer) {
     val currentRoute = backStackEntry?.destination
     val scope = rememberCoroutineScope()
 
-    val playback by container.player.state.collectAsStateWithLifecycle()
-    val queue by container.store.queue.collectAsStateWithLifecycle()
-    val saved by container.store.saved.collectAsStateWithLifecycle()
-    val downloadRecords by container.store.downloads.collectAsStateWithLifecycle()
-    val downloadProgress by container.downloads.progress.collectAsStateWithLifecycle()
+    // De speler tikt twee keer per seconde. Hier, boven alle schermen, luisteren we
+    // alleen naar wát er speelt; de positie volgen de balk onderin en het
+    // spelerscherm zelf, zodat de rest van de app niet meetekent.
+    val startedWith = remember { container.player.state.value.episode }
+    val playingEpisode by remember {
+        container.player.state.map { it.episode }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(startedWith)
+    val playingId = playingEpisode?.id
     val context = LocalContext.current
+    val prefs by container.store.prefs.collectAsStateWithLifecycle()
 
     // Hoofdstukken en tekst horen bij de aflevering die speelt; bij een andere
     // aflevering beginnen ze opnieuw.
-    val playingEpisode = playback.episode
     var chapters by remember(playingEpisode?.id) { mutableStateOf<List<Chapter>>(emptyList()) }
     var transcript by remember(playingEpisode?.id) { mutableStateOf<TranscriptLoad>(TranscriptLoad.Idle) }
     LaunchedEffect(playingEpisode?.id) {
@@ -160,7 +169,27 @@ fun WoolacastNav(container: AppContainer) {
     // het hitlijstenscherm daarna toont.
     val chartsViewModel: ChartsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { ChartsViewModel(container.chartRepository, container.podcastRepository, container.makerRepository) }
+            initializer {
+                ChartsViewModel(container.chartRepository, container.podcastRepository, container.makerRepository, store = container.store)
+            }
+        }
+    )
+    // Ook de bibliotheek leeft boven de tabbladen: het overzicht achter de bel
+    // en de instellingen lezen dezelfde gegevens.
+    val libraryViewModel: LibraryViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                LibraryViewModel(container.store, container.dataset, container.makerRepository, container.importer, container.newEpisodes)
+            }
+        }
+    )
+    val downloadsViewModel: DownloadsViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                DownloadsViewModel(container.store, container.downloads) { settings ->
+                    Downloads.scheduleAuto(context.applicationContext, settings)
+                }
+            }
         }
     )
     val chartsState by chartsViewModel.state.collectAsStateWithLifecycle()
@@ -196,10 +225,12 @@ fun WoolacastNav(container: AppContainer) {
         )
     }
     val openPlayer = { navController.navigate(PLAYER_ROUTE) { launchSingleTop = true } }
+    // Afspelen begint in de balk onderin; het spelerscherm klapt alleen uit als je dat zo instelde.
     val playAndOpen: (Episode, String?) -> Unit = { episode, label ->
         container.player.play(episode, label)
-        openPlayer()
+        if (prefs.openPlayerOnPlay) openPlayer()
     }
+    val openInbox = { navController.navigate("${currentTab.route}/inbox") { launchSingleTop = true } }
 
     // Een OPML-bestand dat met Toadcast gedeeld of geopend werd: naar het importscherm.
     val incoming by container.incomingOpml.collectAsStateWithLifecycle()
@@ -216,7 +247,10 @@ fun WoolacastNav(container: AppContainer) {
         container.incomingPlay.value = null
         container.store.ensureLoaded()
         val episode = container.store.feedChecks.value.values.flatMap { it.latest }.firstOrNull { it.id == id }
-        if (episode != null) playAndOpen(episode.toEpisode(), null) else selectTab(Tab.LIBRARY)
+        if (episode != null) {
+            container.player.play(episode.toEpisode())
+            openPlayer()
+        } else selectTab(Tab.LIBRARY)
     }
     val incomingOpenNew by container.incomingOpenNew.collectAsStateWithLifecycle()
     LaunchedEffect(incomingOpenNew) {
@@ -239,13 +273,8 @@ fun WoolacastNav(container: AppContainer) {
             val onPlayerRoute = currentRoute?.route == PLAYER_ROUTE
             if (!onPlayerRoute) Column(Modifier.background(MaterialTheme.colorScheme.background)) {
                 // Op het spelerscherm zelf hoeft de mini-speler er niet ook te staan.
-                if (playback.hasEpisode) {
-                    MiniPlayer(
-                        state = playback,
-                        onExpand = openPlayer,
-                        onTogglePlay = container.player::togglePlayPause,
-                        onSkipForward = { container.player.seekBy(SKIP_FORWARD_MS) }
-                    )
+                if (playingEpisode != null) {
+                    MiniPlayerHost(container, onExpand = openPlayer)
                     Spacer(Modifier.height(6.dp))
                 }
                 BottomNav(selected = Tab.of(currentRoute), onSelect = selectTab)
@@ -271,14 +300,14 @@ fun WoolacastNav(container: AppContainer) {
                     ChartsScreen(
                         viewModel = chartsViewModel,
                         repository = container.chartRepository,
-                        playingId = playback.episodeId,
+                        playingId = playingId,
                         onSearch = openSearch,
-                        onAlerts = { selectTab(Tab.LIBRARY) },
+                        onAlerts = openInbox,
                         onOpenPodcast = { showId, feedUrl, _, title -> openPodcast(showId, feedUrl, title) },
                         onOpenMaker = { name, fromShowId -> openMaker(name, fromShowId, MakerSort.POPULAR) }
                     )
                 }
-                tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, playingId, openPodcast, playAndOpen, libraryViewModel, downloadsViewModel)
             }
 
             navigation(startDestination = Tab.DISCOVER.home, route = Tab.DISCOVER.route) {
@@ -294,7 +323,7 @@ fun WoolacastNav(container: AppContainer) {
                         },
                         onOpenPodcast = openPodcast,
                         onSearch = openSearch,
-                        onAlerts = { selectTab(Tab.LIBRARY) },
+                        onAlerts = openInbox,
                         onTips = { navController.navigate("${Tab.DISCOVER.route}/tips") },
                         onPick = { country, category ->
                             // Een land of categorie vanaf Ontdek opent zijn eigen lijst.
@@ -310,29 +339,15 @@ fun WoolacastNav(container: AppContainer) {
                         }
                     )
                 }
-                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, chartsState.query.source, playingId, openPodcast, playAndOpen, libraryViewModel, downloadsViewModel)
             }
 
             navigation(startDestination = Tab.LIBRARY.home, route = Tab.LIBRARY.route) {
                 composable(Tab.LIBRARY.home) {
-                    val libraryViewModel: LibraryViewModel = viewModel(
-                        factory = viewModelFactory {
-                            initializer {
-                                LibraryViewModel(container.store, container.dataset, container.makerRepository, container.importer, container.newEpisodes)
-                            }
-                        }
-                    )
-                    val downloadsViewModel: DownloadsViewModel = viewModel(
-                        factory = viewModelFactory {
-                            initializer { DownloadsViewModel(container.store, container.downloads) { settings ->
-                                    Downloads.scheduleAuto(context.applicationContext, settings)
-                                } }
-                        }
-                    )
                     LibraryScreen(
                         viewModel = libraryViewModel,
                         countryCode = chartsCountry,
-                        playingId = playback.episodeId,
+                        playingId = playingId,
                         onOpenPodcast = openPodcast,
                         onSearch = openSearch,
                         onPlay = { episode -> playAndOpen(episode, null) },
@@ -342,7 +357,13 @@ fun WoolacastNav(container: AppContainer) {
                         onImportFile = { uri ->
                             navController.navigate("${Tab.LIBRARY.route}/import?uri=${Uri.encode(uri.toString())}")
                         },
-                        appScope = container.appScope
+                        appScope = container.appScope,
+                        onOpenSettings = { navController.navigate("${Tab.LIBRARY.route}/settings") },
+                        onOpenStats = { navController.navigate("${Tab.LIBRARY.route}/stats") },
+                        onPlayAt = { episode, positionMs ->
+                            container.player.play(episode, startAtMs = positionMs)
+                            if (prefs.openPlayerOnPlay) openPlayer()
+                        }
                     )
                 }
                 composable("${Tab.LIBRARY.route}/import?uri={uri}") { entry ->
@@ -361,11 +382,19 @@ fun WoolacastNav(container: AppContainer) {
                         onDone = { navController.popBackStack(Tab.LIBRARY.home, inclusive = false) }
                     )
                 }
-                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playingId, openPodcast, playAndOpen, libraryViewModel, downloadsViewModel)
             }
 
             composable(PLAYER_ROUTE) {
+                val playback by container.player.state.collectAsStateWithLifecycle()
+                val queue by container.store.queue.collectAsStateWithLifecycle()
+                val saved by container.store.saved.collectAsStateWithLifecycle()
+                val downloadRecords by container.store.downloads.collectAsStateWithLifecycle()
+                val downloadProgress by container.downloads.progress.collectAsStateWithLifecycle()
+                val showPrefs by container.store.showPrefs.collectAsStateWithLifecycle()
+                val allBookmarks by container.store.bookmarks.collectAsStateWithLifecycle()
                 val episode = playback.episode
+                val bookmarks = remember(allBookmarks, episode?.id) { allBookmarks.filter { it.episode.id == episode?.id } }
                 PlayerScreen(
                     state = playback,
                     queue = queue,
@@ -402,11 +431,42 @@ fun WoolacastNav(container: AppContainer) {
                         downloadUi(downloadRecords[it.id], downloadProgress[it.id], container.downloads.waitingForWifi())
                     } ?: DownloadUi.None,
                     onDownload = { episode?.let { scope.launch { container.downloads.enqueue(it) } } },
-                    onRemoveDownload = { episode?.let { scope.launch { container.downloads.remove(it.id) } } }
+                    onRemoveDownload = { episode?.let { scope.launch { container.downloads.remove(it.id) } } },
+                    showHasOwnSpeed = showPrefs[episode?.showId]?.speed != null,
+                    onOwnSpeed = { own ->
+                        episode?.let { current ->
+                            scope.launch {
+                                // Aan: deze show houdt de snelheid van nu. Uit: hij volgt weer de algemene.
+                                container.store.setShowPrefs(current.showId) { it.copy(speed = if (own) playback.speed else null) }
+                                if (!own) container.player.applySpeed(container.store.playback.value.speed)
+                            }
+                        }
+                    },
+                    bookmarks = bookmarks,
+                    onAddBookmark = { positionMs ->
+                        episode?.let { scope.launch { container.store.addBookmark(it.toSaved(), positionMs) } }
+                    },
+                    onRemoveBookmark = { id -> scope.launch { container.store.removeBookmark(id) } },
+                    onMoveQueued = { from, to ->
+                        queue.getOrNull(from)?.let { moved -> scope.launch { container.store.moveInQueue(moved.id, to) } }
+                    },
+                    onClearQueue = { scope.launch { container.store.clearQueue() } }
                 )
             }
         }
     }
+}
+
+/** De balk onderin volgt de speler zelf, zodat alleen hij twee keer per seconde hertekent. */
+@Composable
+private fun MiniPlayerHost(container: AppContainer, onExpand: () -> Unit) {
+    val playback by container.player.state.collectAsStateWithLifecycle()
+    MiniPlayer(
+        state = playback,
+        onExpand = onExpand,
+        onTogglePlay = container.player::togglePlayPause,
+        onSkipForward = { container.player.seekBy(SKIP_FORWARD_MS) }
+    )
 }
 
 /** De schermen die elk tabblad onder zich kan hebben: zoeken, podcastpagina, tracker. */
@@ -418,9 +478,60 @@ private fun NavGraphBuilder.tabScreens(
     chartsSource: SourceId,
     playingId: String?,
     openPodcast: (String, String?, String) -> Unit,
-    playAndOpen: (Episode, String?) -> Unit
+    playAndOpen: (Episode, String?) -> Unit,
+    libraryViewModel: LibraryViewModel,
+    downloadsViewModel: DownloadsViewModel
 ) {
     val prefix = tab.route
+
+    composable("$prefix/inbox") {
+        InboxScreen(
+            viewModel = libraryViewModel,
+            countryCode = chartsCountry,
+            playingId = playingId,
+            onBack = { navController.popBackStack() },
+            onOpenPodcast = openPodcast,
+            onPlay = { episode -> playAndOpen(episode, null) }
+        )
+    }
+
+    composable("$prefix/settings") {
+        val settingsViewModel: SettingsViewModel = viewModel(
+            factory = viewModelFactory {
+                initializer {
+                    SettingsViewModel(
+                        store = container.store,
+                        onSpeed = { speed ->
+                            // Een show met een eigen snelheid houdt die.
+                            val playing = container.player.state.value.episode
+                            if (playing == null || container.store.showPrefs.value[playing.showId]?.speed == null) {
+                                container.player.applySpeed(speed)
+                            }
+                        },
+                        onDownloadSettings = { downloadsViewModel.setSettings(it) }
+                    )
+                }
+            }
+        )
+        val context = LocalContext.current
+        val version = remember {
+            runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
+        }
+        SettingsScreen(
+            viewModel = settingsViewModel,
+            onBack = { navController.popBackStack() },
+            onOpenStats = { navController.navigate("$prefix/stats") },
+            versionName = version
+        )
+    }
+
+    composable("$prefix/stats") {
+        StatsScreen(
+            store = container.store,
+            onBack = { navController.popBackStack() },
+            onOpenPodcast = { showId, title -> if (showId.isNotBlank()) openPodcast(showId, null, title) }
+        )
+    }
 
     composable("$prefix/list?source={source}&country={country}&genre={genre}&level={level}") { entry ->
         val arguments = entry.arguments

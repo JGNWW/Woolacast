@@ -112,6 +112,14 @@ object WoolIcons {
     val Link = stroke("link", 1.8f, StrokeCap.Round, "M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0 -5.7 -5.7l-1 1", "M14 10a4 4 0 0 0 -5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1")
     val FileOut = stroke("file-out", 1.8f, StrokeCap.Round, "M14 3H7a2 2 0 0 0 -2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z", "M14 3v5h5", "M12 17v-6", "M9.5 13.5L12 11l2.5 2.5")
     val FileIn = stroke("file-in", 1.8f, StrokeCap.Round, "M14 3H7a2 2 0 0 0 -2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z", "M14 3v5h5", "M12 11v6", "M9.5 14.5L12 17l2.5-2.5")
+    /** Instellingen: twee schuifjes. */
+    val Settings = stroke("settings", 1.9f, StrokeCap.Round, "M4 7h9", "M19 7h1", "M4 17h1", "M11 17h9", circle(16f, 7f, 2.6f), circle(8f, 17f, 2.6f))
+    /** Het handvat om een rij te verslepen. */
+    val Drag = stroke("drag", 2f, StrokeCap.Round, "M6 9h12", "M6 15h12")
+    /** Een bladwijzer: een vlaggetje op een plek in de aflevering. */
+    val Marker = stroke("marker", 1.8f, StrokeCap.Round, "M6 21V4", "M6 5h11l-2.6 4 2.6 4H6")
+    val Trash = stroke("trash", 1.8f, StrokeCap.Round, "M5 7h14", "M10 7V4.5h4V7", "M7 7l1 12.5h8L17 7")
+    val Volume = stroke("volume", 1.8f, StrokeCap.Round, "M4 9.5v5h3.5l4.5 4v-13l-4.5 4z", "M15.5 9a4.2 4.2 0 0 1 0 6", "M18 6.5a7.6 7.6 0 0 1 0 11")
     val Wifi = stroke("wifi", 1.9f, StrokeCap.Round, "M3 9.5a13 13 0 0 1 18 0", "M6.2 13a8.5 8.5 0 0 1 11.6 0", "M9.4 16.4a4 4 0 0 1 5.2 0", "M12 19.4h0.1")
 
     /* ---- categorieen ----

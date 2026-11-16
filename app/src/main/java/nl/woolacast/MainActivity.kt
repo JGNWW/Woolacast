@@ -110,7 +110,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        container.player.release()
+        // Speelt er nog iets, dan blijft de laag die voortgang en wachtrij bijhoudt meeluisteren.
+        if (!container.player.state.value.isPlaying) container.player.release()
         super.onDestroy()
     }
 }

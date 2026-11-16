@@ -42,6 +42,7 @@ data class Chart(
     val cachedAt: String? = null
 )
 
+@Serializable
 data class Podcast(
     val id: String,
     val title: String,
@@ -53,6 +54,7 @@ data class Podcast(
     val feedUrl: String?
 )
 
+@Serializable
 data class Episode(
     val id: String,
     val showId: String,

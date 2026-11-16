@@ -464,4 +464,4 @@ fun SettingSwitch(title: String, detail: String, checked: Boolean, onChange: (Bo
     }
 }
 
-private val LIMITS = listOf(512, 1024, 2048, 5120, 10240)
+internal val LIMITS = listOf(512, 1024, 2048, 5120, 10240)

@@ -37,6 +37,7 @@ class MakerCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
         val container = applicationContext.container
         val store = container.store
         store.ensureLoaded()
+        runCatching { checkCharts() }
         val followed = store.makers.value
         if (followed.isEmpty()) return Result.success()
 
@@ -52,6 +53,50 @@ class MakerCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
             }
         }
         return Result.success()
+    }
+
+    /**
+     * Chart-alerts als melding, als je dat aanzette: van de shows die je volgt,
+     * wie er opvallend bewoog in het land waar je de hitlijsten bekijkt. Leest
+     * één bestand van de verzamelaar.
+     */
+    private suspend fun checkCharts() {
+        val container = applicationContext.container
+        val store = container.store
+        val prefs = store.prefs.value
+        if (!prefs.chartAlertNotify) return
+        val followed = store.follows.value.map { it.id }.toSet()
+        if (followed.isEmpty()) return
+        val country = prefs.chartCountry.ifBlank { nl.woolacast.domain.Catalog.defaultCountry.code }
+        val today = java.time.LocalDate.now().toString()
+        val news = nl.woolacast.data.alerts.ChartAlertRules.news(
+            container.dataset.movers(country), followed, country, store.notifiedAlerts(), today
+        )
+        if (news.isEmpty()) return
+        ensureChannel(applicationContext)
+        news.take(4).forEach { item -> post("chart-${item.showId}".hashCode(), item.title, item.line) }
+        store.markAlertsNotified(news.map { nl.woolacast.data.alerts.ChartAlertRules.key(today, it.showId) })
+    }
+
+    private fun post(id: Int, title: String, text: String) {
+        val context = applicationContext
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) return
+        val open = PendingIntent.getActivity(
+            context, id,
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notification = NotificationCompat.Builder(context, ALERT_CHANNEL)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+        runCatching { NotificationManagerCompat.from(context).notify(id, notification) }
     }
 
     private fun notify(makerName: String, title: String, showId: String) {
@@ -78,6 +123,7 @@ class MakerCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
 
     companion object {
         private const val CHANNEL = "makers"
+        private const val ALERT_CHANNEL = "chart-alerts"
         private const val WORK = "makers-check"
 
         private fun ensureChannel(context: Context) {
@@ -86,6 +132,11 @@ class MakerCheckWorker(context: Context, params: WorkerParameters) : CoroutineWo
             manager.createNotificationChannel(
                 NotificationChannel(CHANNEL, "Nieuwe podcasts van makers", NotificationManager.IMPORTANCE_DEFAULT).apply {
                     description = "Als een maker die je volgt een nieuwe podcast begint."
+                }
+            )
+            manager.createNotificationChannel(
+                NotificationChannel(ALERT_CHANNEL, "Chart-alerts", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = "Als een show die je volgt opvallend beweegt in de hitlijst."
                 }
             )
         }

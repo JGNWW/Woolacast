@@ -33,6 +33,8 @@ class FeedClient(
             val request = Request.Builder()
                 .url(feedUrl)
                 .header("User-Agent", USER_AGENT)
+                // Feeds bewaren we zelf, gelezen en al; de ruwe tekst hoeft niet ook nog op schijf.
+                .cacheControl(okhttp3.CacheControl.Builder().noStore().build())
                 .apply {
                     etag?.let { header("If-None-Match", it) }
                     lastModified?.let { header("If-Modified-Since", it) }

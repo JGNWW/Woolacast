@@ -15,8 +15,15 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
+import com.google.common.util.concurrent.SettableFuture
+import nl.woolacast.data.inbox.NewRules
+import nl.woolacast.domain.Episode
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
@@ -64,10 +71,14 @@ private const val ACTION_SAVE = "nl.woolacast.SAVE"
  * sessie uitdeelt.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class PlaybackService : MediaSessionService() {
+class PlaybackService : MediaLibraryService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var mediaSession: MediaSession? = null
+    private var mediaSession: MediaLibrarySession? = null
+
+    /** Maakt zachte opnames luider; hangt aan de audiosessie van de speler op de telefoon. */
+    private var enhancer: android.media.audiofx.LoudnessEnhancer? = null
+    private var boostOn = false
 
     override fun onCreate() {
         super.onCreate()
@@ -133,11 +144,29 @@ class PlaybackService : MediaSessionService() {
             packageManager.getLaunchIntentForPackage(packageName) ?: Intent(),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-        mediaSession = MediaSession.Builder(this, player)
+        mediaSession = MediaLibrarySession.Builder(this, player, Bediening())
             .setSessionActivity(openApp)
-            .setCallback(Bediening())
             .setCustomLayout(extraButtons())
             .build()
+
+        // Stiltes overslaan en zachte opnames luider: twee schakelaars uit de instellingen.
+        local.addListener(object : Player.Listener {
+            override fun onAudioSessionIdChanged(audioSessionId: Int) = applyBoost(audioSessionId)
+        })
+        scope.launch {
+            container.store.playback.collect { settings ->
+                local.skipSilenceEnabled = settings.skipSilence
+                boostOn = settings.volumeBoost
+                applyBoost(local.audioSessionId)
+            }
+        }
+
+        // De laag die voortgang, geschiedenis en de wachtrij bijhoudt, luistert mee
+        // zolang deze dienst leeft, ook als de app zelf niet open is (Android Auto, de widget).
+        scope.launch {
+            container.store.ensureLoaded()
+            container.player.connect()
+        }
 
         setMediaNotificationProvider(WoolNotification(this))
 
@@ -152,11 +181,27 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = mediaSession
+
+    /** 6 dB erbij, of niets. Faalt het effect op dit toestel, dan speelt alles gewoon door. */
+    private fun applyBoost(audioSessionId: Int) {
+        runCatching {
+            enhancer?.release()
+            enhancer = null
+            if (boostOn && audioSessionId != C.AUDIO_SESSION_ID_UNSET && audioSessionId != 0) {
+                enhancer = android.media.audiofx.LoudnessEnhancer(audioSessionId).apply {
+                    setTargetGain(BOOST_MILLIBEL)
+                    enabled = true
+                }
+            }
+        }
+    }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         val player = mediaSession?.player
         if (player == null || !player.playWhenReady || player.mediaItemCount == 0) {
+            // De eigen verbinding met deze dienst houdt hem anders in leven.
+            container.player.release()
             stopSelf()
         }
     }
@@ -164,6 +209,8 @@ class PlaybackService : MediaSessionService() {
     override fun onDestroy() {
         // Zonder speler kan het proces zo weg; de laatste voortgang moet dan op schijf staan.
         container.appScope.launch { container.store.flush() }
+        runCatching { enhancer?.release() }
+        enhancer = null
         scope.cancel()
         mediaSession?.run {
             player.release()
@@ -313,7 +360,165 @@ class PlaybackService : MediaSessionService() {
 
     /* ---- bediening van buiten ---- */
 
-    private inner class Bediening : MediaSession.Callback {
+    /* ---- bladeren: Android Auto en andere bedieningen met een lijst ---- */
+
+    private fun folder(id: String, title: String): MediaItem = MediaItem.Builder()
+        .setMediaId(id)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(title)
+                .setIsBrowsable(true)
+                .setIsPlayable(false)
+                .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS)
+                .build()
+        )
+        .build()
+
+    /** Een aflevering uit de bibliotheek als speelbaar item, met het bestand op het toestel als dat er is. */
+    private fun playable(episode: Episode): MediaItem? {
+        val audio = episode.audioUrl ?: return null
+        val local = container.downloads.localFile(episode.id)?.let { android.net.Uri.fromFile(it).toString() }
+        val item = episode.toMediaItem(local ?: audio)
+        return item.buildUpon()
+            .setMediaMetadata(
+                item.mediaMetadata.buildUpon()
+                    .setIsBrowsable(false)
+                    .setIsPlayable(true)
+                    .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
+                    .build()
+            )
+            .build()
+    }
+
+    /** Wat er onder een map staat. Alles komt uit de eigen bibliotheek; er gaat niets het net op. */
+    private fun childrenOf(parentId: String): List<MediaItem> {
+        val store = container.store
+        return when (parentId) {
+            ROOT -> listOf(
+                folder(FOLDER_RESUME, "Verder luisteren"),
+                folder(FOLDER_QUEUE, "Wachtrij"),
+                folder(FOLDER_NEW, "Nieuw"),
+                folder(FOLDER_DOWNLOADS, "Gedownload"),
+                folder(FOLDER_SAVED, "Bewaard")
+            )
+            FOLDER_RESUME -> store.history.value.asReversed()
+                .filter { !it.finished && it.episode.id in store.progress.value }
+                .map { it.episode.toEpisode() }
+            FOLDER_QUEUE -> store.queue.value.map { it.toEpisode() }
+            FOLDER_NEW -> NewRules.inbox(
+                store.follows.value, store.feedChecks.value, store.listened.value, store.hiddenNew.value,
+                java.time.LocalDate.now()
+            ).map { it.toEpisode() }
+            FOLDER_DOWNLOADS -> store.downloads.value.values
+                .filter { it.state == nl.woolacast.data.local.DownloadState.DONE }
+                .sortedByDescending { it.addedAt }
+                .map { it.episode.toEpisode() }
+            FOLDER_SAVED -> store.saved.value.asReversed().map { it.toEpisode() }
+            else -> emptyList<Episode>()
+        }.mapNotNull { if (it is MediaItem) it else playable(it as Episode) }.take(MAX_CHILDREN)
+    }
+
+    /**
+     * Van wat een bediening stuurt naar iets speelbaars. Een item met een
+     * adres gaat ongemoeid door; een id zoeken we op in de bibliotheek; en een
+     * gesproken zoekvraag ("speel … af") vergelijken we met de titels en shows
+     * van wat klaarstaat. Zonder zoekwoorden: verder waar je was.
+     */
+    private fun resolve(item: MediaItem): MediaItem? {
+        if (item.localConfiguration != null) return item
+        container.player.known(item.mediaId)?.let { return playable(it) }
+        val query = item.requestMetadata.searchQuery ?: return null
+        val ready = (childrenOf(FOLDER_RESUME) + childrenOf(FOLDER_QUEUE) + childrenOf(FOLDER_NEW) +
+            childrenOf(FOLDER_DOWNLOADS) + childrenOf(FOLDER_SAVED)).distinctBy { it.mediaId }
+        val words = query.lowercase().split(Regex("\\s+")).filter { it.length > 2 }
+        if (words.isEmpty()) return ready.firstOrNull()
+        return ready.maxByOrNull { candidate ->
+            val text = (candidate.mediaMetadata.title.toString() + " " + candidate.mediaMetadata.artist.toString()).lowercase()
+            words.count { it in text }
+        }?.takeIf { candidate ->
+            val text = (candidate.mediaMetadata.title.toString() + " " + candidate.mediaMetadata.artist.toString()).lowercase()
+            words.any { it in text }
+        }
+    }
+
+    private fun <T> afterLoad(block: () -> T): ListenableFuture<T> {
+        val future = SettableFuture.create<T>()
+        scope.launch {
+            runCatching {
+                container.store.ensureLoaded()
+                block()
+            }.onSuccess(future::set).onFailure(future::setException)
+        }
+        return future
+    }
+
+    private inner class Bediening : MediaLibrarySession.Callback {
+
+        override fun onGetLibraryRoot(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            params: MediaLibraryService.LibraryParams?
+        ): ListenableFuture<LibraryResult<MediaItem>> =
+            Futures.immediateFuture(LibraryResult.ofItem(folder(ROOT, "Toadcast"), params))
+
+        override fun onGetChildren(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            parentId: String,
+            page: Int,
+            pageSize: Int,
+            params: MediaLibraryService.LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = afterLoad {
+            val all = childrenOf(parentId)
+            val from = (page.toLong() * pageSize).coerceAtMost(all.size.toLong()).toInt()
+            LibraryResult.ofItemList(all.drop(from).take(pageSize.coerceAtLeast(1)), params)
+        }
+
+        override fun onGetItem(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            mediaId: String
+        ): ListenableFuture<LibraryResult<MediaItem>> = afterLoad {
+            val item = container.player.known(mediaId)?.let(::playable)
+            if (item != null) LibraryResult.ofItem(item, null)
+            else LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+        }
+
+        /**
+         * Wie door de bibliotheek bladert, stuurt alleen een id terug. Het
+         * adres van de audio zoeken we er zelf weer bij, in de eigen
+         * bibliotheek, en de aflevering begint waar je gebleven was. Een item
+         * dat zijn adres al draagt (zo zet de app zelf een aflevering klaar)
+         * gaat ongemoeid door.
+         */
+        override fun onSetMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: List<MediaItem>,
+            startIndex: Int,
+            startPositionMs: Long
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            if (mediaItems.all { it.localConfiguration != null }) {
+                return Futures.immediateFuture(
+                    MediaSession.MediaItemsWithStartPosition(mediaItems, startIndex, startPositionMs)
+                )
+            }
+            return afterLoad {
+                val resolved = mediaItems.mapNotNull(::resolve)
+                val index = if (startIndex == C.INDEX_UNSET) 0 else startIndex.coerceIn(0, (resolved.size - 1).coerceAtLeast(0))
+                val position = if (startPositionMs != C.TIME_UNSET) startPositionMs
+                else resolved.getOrNull(index)?.let { container.store.progress.value[it.mediaId] } ?: C.TIME_UNSET
+                MediaSession.MediaItemsWithStartPosition(resolved, index, position)
+            }
+        }
+
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: List<MediaItem>
+        ): ListenableFuture<List<MediaItem>> = afterLoad {
+            mediaItems.mapNotNull(::resolve)
+        }
 
         override fun onConnect(
             session: MediaSession,
@@ -370,6 +575,19 @@ class PlaybackService : MediaSessionService() {
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
+    }
+
+    private companion object {
+        const val ROOT = "toadcast-root"
+        const val FOLDER_RESUME = "toadcast-resume"
+        const val FOLDER_QUEUE = "toadcast-queue"
+        const val FOLDER_NEW = "toadcast-new"
+        const val FOLDER_DOWNLOADS = "toadcast-downloads"
+        const val FOLDER_SAVED = "toadcast-saved"
+        const val MAX_CHILDREN = 100
+
+        /** 6 dB. */
+        const val BOOST_MILLIBEL = 600
     }
 
     /** Media3's melding, maar met onze rij knoppen erin. */

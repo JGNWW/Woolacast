@@ -2,7 +2,11 @@ package nl.woolacast.data
 
 import nl.woolacast.data.Html
 import nl.woolacast.data.apple.AppleCatalogApi
+import nl.woolacast.data.feed.CachedFeed
+import nl.woolacast.data.feed.FeedCache
 import nl.woolacast.data.feed.FeedClient
+import nl.woolacast.data.feed.FeedFetch
+import nl.woolacast.data.feed.ParsedFeed
 import nl.woolacast.data.opml.Opml
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.Podcast
@@ -16,30 +20,80 @@ data class PodcastDetail(val podcast: Podcast, val episodes: List<Episode>)
  */
 class PodcastRepository(
     private val catalog: AppleCatalogApi,
-    private val feedClient: FeedClient
+    private val feedClient: FeedClient,
+    /** De laatst gelezen feed per show; zonder is elke opening een volledige download. */
+    private val cache: FeedCache? = null
 ) {
 
+    /** Wat er van deze show bewaard is, zonder het net op te gaan. */
+    suspend fun cached(showId: String): PodcastDetail? =
+        cache?.get(showId)?.let { PodcastDetail(it.podcast, it.episodes) }
+
+    /**
+     * [maxAgeMs]: is de bewaarde feed zo kort geleden nog nagekeken, dan is hij
+     * goed genoeg en gaat er niets het net op. Nul betekent: altijd navragen,
+     * en dan nog alleen óf er iets veranderd is.
+     */
     suspend fun detail(
         showId: String,
         countryCode: String,
         feedUrl: String? = null,
-        title: String? = null
+        title: String? = null,
+        maxAgeMs: Long = 0L
     ): PodcastDetail {
+        val kept = cache?.get(showId)
+        if (kept != null && maxAgeMs > 0L && System.currentTimeMillis() - kept.checkedAtMs in 0 until maxAgeMs) {
+            return PodcastDetail(kept.podcast, kept.episodes)
+        }
         // Een show die alleen op zijn feed bestaat, zoeken we niet op naam op:
         // dat geeft een andere podcast met dezelfde titel.
-        if (feedUrl.isNullOrBlank() && showId.startsWith(Opml.FEED_PREFIX)) {
+        if (feedUrl.isNullOrBlank() && kept == null && showId.startsWith(Opml.FEED_PREFIX)) {
             throw IllegalStateException("Het feed-adres van deze show is niet meer bekend. Volg hem opnieuw via Bibliotheek → Je shows.")
         }
+        // Het adres dat we al kennen scheelt een opzoeking bij Apple.
         val resolvedFeed = feedUrl?.takeIf { it.isNotBlank() }
+            ?: kept?.feedUrl
             ?: lookupFeedUrl(showId, countryCode)
             ?: searchFeedUrl(title, countryCode)
             ?: return lookupDetail(showId, countryCode)
 
-        val detail = runCatching { fromFeed(showId, resolvedFeed) }
-            .getOrElse { lookupDetail(showId, countryCode) }
-        return if (detail.podcast.artworkUrl.isNullOrBlank()) withArtwork(detail, showId, countryCode)
-        else detail
+        val sameFeed = kept?.takeIf { it.feedUrl == resolvedFeed }
+        val fetch = try {
+            feedClient.fetchIfChanged(resolvedFeed, sameFeed?.etag, sameFeed?.lastModified)
+        } catch (cancelled: kotlin.coroutines.cancellation.CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            // Geen verbinding of een kapotte feed: liever de vorige stand dan niets.
+            if (sameFeed != null) return PodcastDetail(sameFeed.podcast, sameFeed.episodes)
+            return lookupDetail(showId, countryCode)
+        }
+        return when (fetch) {
+            FeedFetch.NotModified -> {
+                val same = sameFeed ?: return lookupDetail(showId, countryCode)
+                cache?.put(showId, same.copy(checkedAtMs = System.currentTimeMillis()))
+                PodcastDetail(same.podcast, same.episodes)
+            }
+            is FeedFetch.Fetched -> {
+                val read = fromFeed(showId, resolvedFeed, fetch.feed)
+                val detail = when {
+                    !read.podcast.artworkUrl.isNullOrBlank() -> read
+                    // De hoes die we eerder bij Apple haalden, hoeft niet opnieuw.
+                    sameFeed?.podcast?.artworkUrl != null -> read.withArt(sameFeed.podcast.artworkUrl)
+                    else -> withArtwork(read, showId, countryCode)
+                }
+                cache?.put(
+                    showId,
+                    CachedFeed(resolvedFeed, fetch.etag, fetch.lastModified, System.currentTimeMillis(), detail.podcast, detail.episodes)
+                )
+                detail
+            }
+        }
     }
+
+    private fun PodcastDetail.withArt(art: String) = copy(
+        podcast = podcast.copy(artworkUrl = art),
+        episodes = episodes.map { if (it.artworkUrl.isNullOrBlank()) it.copy(artworkUrl = art) else it }
+    )
 
     /**
      * Sommige feeds dragen geen plaatje. In de hitlijst staat er dan wel een,
@@ -55,16 +109,13 @@ class PodcastRepository(
         val hit = runCatching { catalog.lookup(id = showId, country = countryCode, limit = 1) }
             .getOrNull()?.results?.firstOrNull() ?: return detail
         val art = hit.artworkUrl600 ?: hit.artworkUrl100 ?: return detail
-        return detail.copy(
-            podcast = detail.podcast.copy(artworkUrl = art),
-            episodes = detail.episodes.map {
-                if (it.artworkUrl.isNullOrBlank()) it.copy(artworkUrl = art) else it
-            }
-        )
+        return detail.withArt(art)
     }
 
-    private suspend fun fromFeed(showId: String, feedUrl: String): PodcastDetail {
-        val feed = feedClient.fetch(feedUrl)
+    private suspend fun fromFeed(showId: String, feedUrl: String): PodcastDetail =
+        fromFeed(showId, feedUrl, feedClient.fetch(feedUrl))
+
+    private fun fromFeed(showId: String, feedUrl: String, feed: ParsedFeed): PodcastDetail {
         val title = feed.title.orEmpty()
 
         val podcast = Podcast(
@@ -111,11 +162,19 @@ class PodcastRepository(
         showTitle: String?,
         episodeTitle: String
     ): Episode? {
-        val detail = runCatching { detail(showId, countryCode, feedUrl, showTitle) }.getOrNull()
-            ?: return null
         val wanted = normalise(episodeTitle)
-        return detail.episodes.firstOrNull { normalise(it.title) == wanted }
-            ?: detail.episodes.firstOrNull { normalise(it.title).contains(wanted) || wanted.contains(normalise(it.title)) }
+        fun find(detail: PodcastDetail?) = detail?.episodes?.let { episodes ->
+            episodes.firstOrNull { normalise(it.title) == wanted }
+                ?: episodes.firstOrNull { normalise(it.title).contains(wanted) || wanted.contains(normalise(it.title)) }
+        }
+        // Eerst wat er net nog gelezen is; pas als de aflevering daar niet in staat, de maker opnieuw vragen.
+        val recent = runCatching { detail(showId, countryCode, feedUrl, showTitle, maxAgeMs = RECENT_MS) }.getOrNull()
+        return find(recent) ?: find(runCatching { detail(showId, countryCode, feedUrl, showTitle) }.getOrNull())
+    }
+
+    /** Haalt de feed alvast binnen, zodat afspelen uit een lijst niet op de maker hoeft te wachten. */
+    suspend fun prefetch(showId: String, countryCode: String, feedUrl: String?, showTitle: String?) {
+        runCatching { detail(showId, countryCode, feedUrl, showTitle, maxAgeMs = RECENT_MS) }
     }
 
     /** Alleen de kop van een feed: wat is de nieuwste aflevering, en hoeveel zijn er. */
@@ -189,5 +248,10 @@ class PodcastRepository(
             }
 
         return PodcastDetail(podcast, episodes)
+    }
+
+    private companion object {
+        /** Zo lang is een gelezen feed goed genoeg om een aflevering in te zoeken. */
+        const val RECENT_MS = 30 * 60_000L
     }
 }

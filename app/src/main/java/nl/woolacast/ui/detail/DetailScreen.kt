@@ -7,6 +7,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import nl.woolacast.data.inbox.NewEpisodeNotifier
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import nl.woolacast.ui.common.speedLabel
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -150,6 +155,32 @@ fun DetailScreen(
     // Twintig is genoeg om te zien wat er speelt; de rest komt op verzoek.
     var allEpisodes by remember(state.podcast?.id) { mutableStateOf(false) }
     var sheetEpisode by remember { mutableStateOf<Episode?>(null) }
+    val listened by viewModel.listened.collectAsStateWithLifecycle()
+    val showPrefs by viewModel.showPrefs.collectAsStateWithLifecycle()
+    val playback by viewModel.playback.collectAsStateWithLifecycle()
+    var search by remember { mutableStateOf("") }
+    var searchOpen by remember { mutableStateOf(false) }
+    var filter by remember { mutableStateOf(EpisodeFilter.ALL) }
+    var speedSheet by remember { mutableStateOf(false) }
+    val ownPrefs = showPrefs[state.podcast?.id]
+    val oldestFirst = ownPrefs?.oldestFirst == true
+    // Eén keer een verzameling maken in plaats van per rij de hele wachtrij af te lopen.
+    val queuedIds = remember(queued) { queued.mapTo(HashSet()) { it.id } }
+    val savedIds = remember(stored) { stored.mapTo(HashSet()) { it.id } }
+    // Wat de lijst toont: gezocht, gefilterd en in de gekozen volgorde.
+    val visible = remember(state.episodes, search, filter, oldestFirst, listened, downloadRecords, progress.keys) {
+        val words = search.trim().lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        state.episodes.filter { episode ->
+            (words.isEmpty() || words.all { word ->
+                episode.title.lowercase().contains(word) || episode.description?.lowercase()?.contains(word) == true
+            }) && when (filter) {
+                EpisodeFilter.ALL -> true
+                EpisodeFilter.UNPLAYED -> episode.id !in listened
+                EpisodeFilter.STARTED -> episode.id in progress
+                EpisodeFilter.DOWNLOADED -> downloadRecords[episode.id]?.state == nl.woolacast.data.local.DownloadState.DONE
+            }
+        }.let { if (oldestFirst) it.asReversed() else it }
+    }
 
     val podcast = state.podcast
     val isFollowed = podcast != null && follows.any { it.id == podcast.id }
@@ -310,13 +341,16 @@ fun DetailScreen(
                             )
                         }
                         Spacer(Modifier.weight(1f))
-                        val newest = state.episodes.firstOrNull()
-                        if (newest != null) {
+                        // Bij een verhaal van oud naar nieuw begin je bij de eerste die je nog niet hoorde.
+                        val first = if (oldestFirst) state.episodes.lastOrNull { it.id !in listened && it.audioUrl != null }
+                            ?: state.episodes.lastOrNull()
+                        else state.episodes.firstOrNull()
+                        if (first != null) {
                             AccentPlayButton(
                                 playing = false,
                                 colors = cover,
-                                onClick = { onPlay(newest, labelFor(newest)) },
-                                playLabel = "Nieuwste aflevering afspelen"
+                                onClick = { onPlay(first, labelFor(first)) },
+                                playLabel = if (oldestFirst) "Verder met de volgende aflevering" else "Nieuwste aflevering afspelen"
                             )
                         }
                     }
@@ -393,11 +427,42 @@ fun DetailScreen(
                                 )
                             }
                         }
+                        if (state.episodes.isNotEmpty()) {
+                            item(key = "episode-tools") {
+                                EpisodeTools(
+                                    search = search,
+                                    searchOpen = searchOpen,
+                                    onSearch = { search = it },
+                                    onToggleSearch = {
+                                        searchOpen = !searchOpen
+                                        if (!searchOpen) search = ""
+                                    },
+                                    filter = filter,
+                                    onFilter = { filter = if (filter == it) EpisodeFilter.ALL else it },
+                                    oldestFirst = oldestFirst,
+                                    onOldestFirst = viewModel::setOldestFirst,
+                                    accent = cover.accent
+                                )
+                            }
+                            if (visible.isEmpty()) {
+                                item(key = "episode-none") {
+                                    Text(
+                                        if (search.isNotBlank()) "Geen aflevering met \u201C${search.trim()}\u201D."
+                                        else "Geen aflevering die hierbij past.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                        // Wie zoekt of filtert, wil alles zien wat past; anders de eerste twintig.
+                        val narrowed = search.isNotBlank() || filter != EpisodeFilter.ALL
                         val shown =
-                            if (allEpisodes) state.episodes.size
-                            else minOf(EPISODES_AT_FIRST, state.episodes.size)
-                        items(shown, key = { "$it-${state.episodes[it].id}" }) { index ->
-                            val episode = state.episodes[index]
+                            if (allEpisodes || narrowed) visible.size
+                            else minOf(EPISODES_AT_FIRST, visible.size)
+                        items(shown, key = { "$it-${visible[it].id}" }) { index ->
+                            val episode = visible[index]
                             EpisodeRow(
                                 episode = episode,
                                 positionMs = progress[episode.id],
@@ -405,14 +470,15 @@ fun DetailScreen(
                                 countryLabel = countryLabel,
                                 playing = playingId == episode.id,
                                 accent = cover.accent,
-                                inQueue = queued.any { it.id == episode.id },
+                                inQueue = episode.id in queuedIds,
                                 download = downloadState(episode.id),
                                 onOpen = { sheetEpisode = episode },
-                                onPlay = { onPlay(episode, labelFor(episode)) }
+                                onPlay = { onPlay(episode, labelFor(episode)) },
+                                listened = episode.id in listened
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
                         }
-                        if (shown < state.episodes.size) {
+                        if (shown < visible.size) {
                             item {
                                 WoolButton(
                                     "Toon meer afleveringen",
@@ -551,6 +617,32 @@ fun DetailScreen(
                         text = { Text(autoDownload[podcast?.id]?.let { "Automatisch downloaden: nieuwste $it" } ?: "Automatisch downloaden…") },
                         onClick = { menuOpen = false; downloadSheet = true }
                     )
+                    DropdownMenuItem(
+                        text = { Text(ownPrefs?.speed?.let { "Snelheid voor deze show: ${speedLabel(it)}" } ?: "Snelheid voor deze show…") },
+                        onClick = { menuOpen = false; speedSheet = true }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(if (ownPrefs?.autoQueue == true) "Nieuwe afleveringen in de wachtrij: aan" else "Nieuwe afleveringen in de wachtrij: uit")
+                        },
+                        onClick = {
+                            menuOpen = false
+                            val on = ownPrefs?.autoQueue != true
+                            viewModel.setAutoQueue(on)
+                            Toast.makeText(
+                                context,
+                                if (on) "Nieuwe afleveringen van deze show gaan vanzelf achter de wachtrij"
+                                else "Nieuwe afleveringen gaan niet meer vanzelf in de wachtrij",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+                    if (state.episodes.any { it.id !in listened }) {
+                        DropdownMenuItem(
+                            text = { Text("Alles als beluisterd markeren") },
+                            onClick = { menuOpen = false; viewModel.setListened(state.episodes.map { it.id }, true) }
+                        )
+                    }
                     if (state.positions.isNotEmpty()) {
                         DropdownMenuItem(text = { Text("Chart-tracker") }, onClick = { menuOpen = false; onOpenTracker() })
                     }
@@ -572,14 +664,27 @@ fun DetailScreen(
         }
     }
 
+    if (speedSheet && podcast != null) {
+        ModalBottomSheet(onDismissRequest = { speedSheet = false }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
+            ShowSpeedSheet(
+                title = podcast.title,
+                own = ownPrefs?.speed,
+                general = playback.speed,
+                onPick = { viewModel.setShowSpeed(it); speedSheet = false }
+            )
+        }
+    }
+
     sheetEpisode?.let { episode ->
         ModalBottomSheet(onDismissRequest = { sheetEpisode = null }, containerColor = MaterialTheme.colorScheme.surfaceContainerLowest) {
             EpisodeSheet(
                 episode = episode,
                 chartRank = state.episodeRanks[episode.id],
                 countryLabel = countryLabel,
-                inQueue = queued.any { it.id == episode.id },
-                isSaved = stored.any { it.id == episode.id },
+                inQueue = episode.id in queuedIds,
+                isSaved = episode.id in savedIds,
+                isListened = episode.id in listened,
+                onListened = { viewModel.setListened(listOf(episode.id), episode.id !in listened) },
                 positionMs = progress[episode.id],
                 onPlay = { sheetEpisode = null; onPlay(episode, labelFor(episode)) },
                 onPlayNext = { viewModel.playNext(episode); sheetEpisode = null },
@@ -655,6 +760,109 @@ private fun AutoDownloadSheet(
     }
 }
 
+/** De chips boven de afleveringen; er staat er hooguit één aan. */
+private enum class EpisodeFilter(val label: String) {
+    ALL("Alles"), UNPLAYED("Onbeluisterd"), STARTED("Begonnen"), DOWNLOADED("Gedownload")
+}
+
+/**
+ * Boven de afleveringen: zoeken in titels en omschrijvingen, drie filters, en
+ * de volgorde. Van oud naar nieuw is voor een verhaal dat bij deel 1 begint; de
+ * show onthoudt het.
+ */
+@Composable
+private fun EpisodeTools(
+    search: String,
+    searchOpen: Boolean,
+    onSearch: (String) -> Unit,
+    onToggleSearch: () -> Unit,
+    filter: EpisodeFilter,
+    onFilter: (EpisodeFilter) -> Unit,
+    oldestFirst: Boolean,
+    onOldestFirst: (Boolean) -> Unit,
+    accent: Color
+) {
+    Column(Modifier.padding(top = 10.dp, bottom = 2.dp)) {
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilterChipBox(
+                if (searchOpen) "Sluiten" else "Zoeken",
+                selected = searchOpen,
+                onClick = onToggleSearch,
+                leading = { Icon(if (searchOpen) WoolIcons.Close else WoolIcons.Search, null, modifier = Modifier.size(15.dp)) }
+            )
+            EpisodeFilter.entries.drop(1).forEach { option ->
+                FilterChipBox(option.label, selected = filter == option, onClick = { onFilter(option) })
+            }
+            FilterChipBox(
+                if (oldestFirst) "Oudste eerst" else "Nieuwste eerst",
+                selected = oldestFirst,
+                onClick = { onOldestFirst(!oldestFirst) },
+                leading = { Icon(if (oldestFirst) WoolIcons.ChevronUp else WoolIcons.ChevronDown, null, modifier = Modifier.size(15.dp)) }
+            )
+        }
+        if (searchOpen) {
+            val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+            androidx.compose.runtime.LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+            Box(
+                Modifier
+                    .padding(start = 20.dp, end = 20.dp, top = 10.dp)
+                    .fillMaxWidth()
+                    .heightIn(min = 46.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(horizontal = 14.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                if (search.isEmpty()) {
+                    Text("Zoek in de afleveringen", style = MaterialTheme.typography.bodyLarge, color = LocalChartColors.current.muted)
+                }
+                androidx.compose.foundation.text.BasicTextField(
+                    value = search,
+                    onValueChange = onSearch,
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    cursorBrush = androidx.compose.ui.graphics.SolidColor(accent),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focus)
+                        .semantics { contentDescription = "Zoek in de afleveringen" }
+                )
+            }
+        }
+    }
+}
+
+/** Een eigen snelheid voor één show, of weer de algemene. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ShowSpeedSheet(title: String, own: Float?, general: Float, onPick: (Float?) -> Unit) {
+    Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+        Text("Snelheid voor deze show", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            title,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 14.dp)
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChipBox("Algemeen (${speedLabel(general)})", selected = own == null, onClick = { onPick(null) })
+            nl.woolacast.player.SPEEDS.forEach { speed ->
+                FilterChipBox(speedLabel(speed), selected = own != null && kotlin.math.abs(own - speed) < 0.01f, onClick = { onPick(speed) })
+            }
+        }
+        Text(
+            "Afleveringen van deze show beginnen voortaan op deze snelheid. Een snelheid ertussenin kies je in de speler.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 12.dp)
+        )
+    }
+}
+
 private enum class DetailTab(val label: String) {
     EPISODES("Afleveringen"), CHARTS("Noteringen"), ABOUT("Over")
 }
@@ -670,7 +878,8 @@ private fun EpisodeRow(
     inQueue: Boolean,
     download: DownloadUi,
     onOpen: () -> Unit,
-    onPlay: () -> Unit
+    onPlay: () -> Unit,
+    listened: Boolean = false
 ) {
     val colors = LocalChartColors.current
     val soft = softInk()
@@ -687,13 +896,19 @@ private fun EpisodeRow(
                 episode.title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp),
                 // Wat nu speelt krijgt de hoeskleur, net als in de wachtrij.
-                color = if (playing) accent else MaterialTheme.colorScheme.onSurface,
+                // Wat je al hoorde treedt terug, zodat het onbeluisterde opvalt.
+                color = when {
+                    playing -> accent
+                    listened -> soft
+                    else -> MaterialTheme.colorScheme.onSurface
+                },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(5.dp))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (playing) Equalizer(accent)
+                if (listened && !playing) Icon(WoolIcons.Check, "Beluisterd", tint = soft, modifier = Modifier.size(14.dp))
                 val duration = episode.durationMillis
                 val started = positionMs != null && duration != null && duration > 0L
                 Text(
@@ -778,6 +993,8 @@ private fun EpisodeSheet(
     onQueue: () -> Unit,
     onSave: () -> Unit,
     onShare: () -> Unit,
+    isListened: Boolean = false,
+    onListened: () -> Unit = {},
     download: DownloadUi = DownloadUi.None,
     onDownload: () -> Unit = {},
     onRemoveDownload: () -> Unit = {},
@@ -833,6 +1050,12 @@ private fun EpisodeSheet(
             label = if (isSaved) "Bewaard" else "Bewaren",
             active = isSaved,
             onClick = onSave
+        )
+        ActionRow(
+            icon = WoolIcons.Check,
+            label = if (isListened) "Beluisterd · markeer als onbeluisterd" else "Markeer als beluisterd",
+            active = false,
+            onClick = onListened
         )
         if (episode.audioUrl != null) {
             when (download) {

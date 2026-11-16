@@ -125,6 +125,7 @@ fun ChartsScreen(
                 Text("Hitlijsten", style = MaterialTheme.typography.displaySmall.copy(fontSize = 26.sp, lineHeight = 30.sp))
                 Text(
                     when {
+                        state.loading && state.silent -> "Verversen…"
                         state.loading -> "Laden…"
                         state.chart?.cachedAt != null -> "Geen verbinding"
                         state.loadedAt != null -> "Bijgewerkt ${state.loadedAt}"
@@ -178,7 +179,7 @@ fun ChartsScreen(
             val chart = state.chart
 
             PullToRefreshBox(
-                isRefreshing = state.loading && chart != null,
+                isRefreshing = state.loading && chart != null && !state.silent,
                 onRefresh = viewModel::refresh,
                 modifier = Modifier.fillMaxSize()
             ) {

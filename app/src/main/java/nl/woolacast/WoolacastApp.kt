@@ -21,7 +21,10 @@ import nl.woolacast.data.download.Downloads
 import nl.woolacast.data.opml.ShowImporter
 import nl.woolacast.data.transcript.TranscriptRepository
 import nl.woolacast.data.dataset.ChartsDataset
+import nl.woolacast.data.feed.FeedCache
 import nl.woolacast.data.feed.FeedClient
+import nl.woolacast.data.local.toSaved
+import nl.woolacast.domain.Episode
 import nl.woolacast.data.inbox.NewEpisodes
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.maker.MakerCheckWorker
@@ -36,6 +39,11 @@ import nl.woolacast.player.PlayerController
  * korter en scheelt het een annotatieprocessor in de build.
  */
 class AppContainer(context: Context) {
+
+    init {
+        // Vóór het eerste verzoek: waar antwoorden bewaard mogen worden.
+        if (Network.cacheDir == null) Network.cacheDir = context.cacheDir
+    }
 
     private val marketingApi = Network.marketingApi()
     private val catalogApi = Network.catalogApi()
@@ -60,7 +68,10 @@ class AppContainer(context: Context) {
         store = store
     )
 
-    val podcastRepository = PodcastRepository(catalogApi, feedClient)
+    /** De laatst gelezen feed per show, zodat een podcastpagina er meteen staat. */
+    private val feedCache = FeedCache(File(context.cacheDir, "feeds"))
+
+    val podcastRepository = PodcastRepository(catalogApi, feedClient, feedCache)
 
     val searchRepository = SearchRepository(catalogApi)
 
@@ -108,8 +119,26 @@ class AppContainer(context: Context) {
         },
         nextInQueue = { store.queue.value.firstOrNull()?.toEpisode() },
         consumeQueued = { episodeId -> store.removeFromQueue(episodeId) },
-        localUri = { episodeId -> downloads.localFile(episodeId)?.let { android.net.Uri.fromFile(it).toString() } }
+        localUri = { episodeId -> downloads.localFile(episodeId)?.let { android.net.Uri.fromFile(it).toString() } },
+        speedFor = { episode -> store.showPrefs.value[episode.showId]?.speed ?: store.playback.value.speed },
+        onSpeedChanged = { episode, speed ->
+            // Heeft de show een eigen snelheid, dan verandert die; anders de algemene.
+            if (store.showPrefs.value[episode.showId]?.speed != null) store.setShowPrefs(episode.showId) { it.copy(speed = speed) }
+            else store.setPlayback { it.copy(speed = speed) }
+        },
+        onStarted = { episode -> store.touchHistory(episode.toSaved()) },
+        onListened = { episode, ms -> store.addListening(episode.showId, episode.showTitle, episode.artworkUrl, ms) },
+        knownEpisode = ::knownEpisode
     )
+
+    /** Een aflevering die ergens in de bibliotheek staat, op zijn id. */
+    private fun knownEpisode(id: String): Episode? =
+        (store.queue.value.firstOrNull { it.id == id }
+            ?: store.saved.value.firstOrNull { it.id == id }
+            ?: store.downloads.value[id]?.episode
+            ?: store.history.value.lastOrNull { it.episode.id == id }?.episode
+            ?: store.feedChecks.value.values.firstNotNullOfOrNull { check -> check.latest.firstOrNull { it.id == id } }
+            ?: store.bookmarks.value.firstOrNull { it.episode.id == id }?.episode)?.toEpisode()
 }
 
 class WoolacastApp : Application() {
@@ -132,6 +161,11 @@ class WoolacastApp : Application() {
         container.appScope.launch {
             container.player.state.map { it.episodeId }.distinctUntilChanged().drop(1)
                 .collect { container.downloads.cleanUp() }
+        }
+        // De widget volgt wat er speelt; zonder widget op het startscherm doet dit niets.
+        container.appScope.launch {
+            container.player.state.map { Triple(it.episodeId, it.isPlaying, it.title) }.distinctUntilChanged()
+                .collect { runCatching { nl.woolacast.widget.PlayerWidget.refresh(this@WoolacastApp) } }
         }
         // Casten: de Cast-omgeving laadt op de achtergrond. Zonder Google
         // Play-diensten lukt dat niet, en dan is er gewoon geen cast-knop.
