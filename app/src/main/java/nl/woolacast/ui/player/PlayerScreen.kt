@@ -1193,7 +1193,7 @@ private fun QueueList(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Equalizer(accent)
+                Equalizer(accent, animated = state.isPlaying)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }

@@ -62,6 +62,7 @@ import nl.woolacast.data.transcript.TranscriptParser
 import nl.woolacast.domain.Chapter
 import nl.woolacast.domain.Episode
 import nl.woolacast.domain.TranscriptRef
+import kotlinx.coroutines.flow.MutableStateFlow
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.ui.common.DownloadUi
 import nl.woolacast.ui.detail.DetailScreen
@@ -248,7 +249,7 @@ class FeatureScreenshots {
         compose.setContent {
             Screen(dark = dark) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-                    DetailScreen(viewModel = model, playingId = null, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
+                    DetailScreen(viewModel = model, playback = MutableStateFlow(PlaybackState()), onTogglePlay = {}, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
                 }
             }
         }
@@ -278,7 +279,7 @@ class FeatureScreenshots {
         )
         compose.setContent {
             Screen(dark = dark) {
-                DetailScreen(viewModel = model, playingId = null, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
+                DetailScreen(viewModel = model, playback = MutableStateFlow(PlaybackState()), onTogglePlay = {}, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
             }
         }
         settle { !model.state.value.loading }

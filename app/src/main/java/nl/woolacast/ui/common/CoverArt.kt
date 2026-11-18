@@ -4,6 +4,17 @@ import android.os.Build
 import android.util.LruCache
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -68,11 +78,13 @@ import coil.request.SuccessResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import nl.woolacast.ui.theme.CoverColors
+import nl.woolacast.ui.theme.CoverEdge
 import nl.woolacast.ui.theme.CoverSeed
 import nl.woolacast.ui.theme.NightInk
 import nl.woolacast.ui.theme.NightOutline
 import nl.woolacast.ui.theme.NightInkSoft
 import nl.woolacast.ui.theme.coverColors
+import nl.woolacast.ui.theme.coverEdgeFromPixels
 import nl.woolacast.ui.theme.coverSeedFromPixels
 
 /*
@@ -81,23 +93,26 @@ import nl.woolacast.ui.theme.coverSeedFromPixels
  * schalen mee met de schermbreedte, zodat de verhouding tot de hoes klopt.
  */
 
-private sealed interface SeedResult {
-    data class Found(val seed: CoverSeed) : SeedResult
-    data object Grey : SeedResult
-}
+/** Wat we uit een hoes halen: de hoofdtint (accent) en de kleur van de onderrand (vlakken). */
+@androidx.compose.runtime.Immutable
+data class CoverTones(val seed: CoverSeed?, val edge: CoverEdge?)
 
-private val seedCache = LruCache<String, SeedResult>(64)
+private val tonesCache = LruCache<String, CoverTones>(64)
 
 /** De hoofdtint van een hoes, uit een verkleinde kopie. Null zolang hij laadt en bij een grijze hoes. */
 @Composable
-fun rememberCoverSeed(url: String?): CoverSeed? {
+fun rememberCoverSeed(url: String?): CoverSeed? = rememberCoverTones(url)?.seed
+
+/** Hoofdtint en onderrand van een hoes. Null zolang hij laadt. */
+@Composable
+fun rememberCoverTones(url: String?): CoverTones? {
     val context = LocalContext.current
-    val cached = url?.let { seedCache.get(it) }
-    val seed by produceState((cached as? SeedResult.Found)?.seed, url) {
+    val cached = url?.let { tonesCache.get(it) }
+    val tones by produceState(cached, url) {
         // Bij een andere hoes (ook een die al in de cache staat) altijd opnieuw
         // zetten: produceState houdt anders de waarde van de vorige vast.
         if (url == null) { value = null; return@produceState }
-        if (cached != null) { value = (cached as? SeedResult.Found)?.seed; return@produceState }
+        if (cached != null) { value = cached; return@produceState }
         // Nog niet geladen: de vorige kleur blijft staan tot de nieuwe er is, zodat
         // er bij het wisselen niet eerst het merkaccent tussendoor flitst.
         val request = ImageRequest.Builder(context)
@@ -112,19 +127,20 @@ fun rememberCoverSeed(url: String?): CoverSeed? {
             val bitmap = drawable.toBitmap(48, 48)
             val pixels = IntArray(bitmap.width * bitmap.height)
             bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-            coverSeedFromPixels(pixels)
+            CoverTones(coverSeedFromPixels(pixels), coverEdgeFromPixels(pixels, bitmap.width))
         }
-        seedCache.put(url, found?.let { SeedResult.Found(it) } ?: SeedResult.Grey)
+        tonesCache.put(url, found)
         value = found
     }
-    return seed
+    return tones
 }
 
 /** De meekleurende rollen voor deze hoes, met een zachte overgang als de hoes wisselt. */
 @Composable
 fun rememberCoverColors(url: String?): CoverColors {
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val target = coverColors(rememberCoverSeed(url), dark)
+    val tones = rememberCoverTones(url)
+    val target = coverColors(tones?.seed, dark, tones?.edge)
     val spec = tween<Color>(durationMillis = 450)
     val accent by animateColorAsState(target.accent, spec, label = "accent")
     val onAccent by animateColorAsState(target.onAccent, spec, label = "onAccent")
@@ -422,19 +438,106 @@ fun AccentPlayButton(
     }
 }
 
-/** Drie staafjes: "speelt nu", overal dezelfde maat (12 dp). */
+/**
+ * Drie staafjes: "speelt nu", overal dezelfde maat (12 dp). Met [animated] dansen
+ * ze, zolang er echt geluid is; gepauzeerd staan ze stil.
+ */
 @Composable
-fun Equalizer(color: Color, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .height(12.dp)
-            .semantics { contentDescription = "Speelt nu" },
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        listOf(7.dp, 12.dp, 9.dp).forEach { h ->
-            Box(Modifier.width(3.dp).height(h).clip(RoundedCornerShape(1.dp)).background(color))
+fun Equalizer(color: Color, modifier: Modifier = Modifier, animated: Boolean = false) {
+    // Vaste standen als hij stilstaat; bewegend elk een eigen tempo, zodat het niet als één blok op en neer gaat.
+    val bars: List<() -> Float> = if (animated) {
+        val transition = rememberInfiniteTransition(label = "equalizer")
+        listOf(
+            Triple(0.3f, 1f, 430),
+            Triple(1f, 0.35f, 330),
+            Triple(0.55f, 0.95f, 520)
+        ).map { (from, to, ms) ->
+            val state = transition.animateFloat(
+                initialValue = from,
+                targetValue = to,
+                animationSpec = infiniteRepeatable(tween(ms, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+                label = "bar"
+            )
+            ({ state.value })
         }
+    } else {
+        listOf({ 7f / 12f }, { 1f }, { 9f / 12f })
+    }
+    Box(
+        modifier = modifier
+            .size(width = 13.dp, height = 12.dp)
+            .semantics { contentDescription = if (animated) "Speelt nu" else "Gepauzeerd" }
+            // Alleen tekenen, niet opnieuw opmaken: de staafjes bewegen elk beeld.
+            .drawBehind {
+                val bar = 3.dp.toPx()
+                val gap = 2.dp.toPx()
+                val radius = CornerRadius(1.dp.toPx())
+                bars.forEachIndexed { i, fraction ->
+                    val h = size.height * fraction().coerceIn(0.15f, 1f)
+                    drawRoundRect(
+                        color = color,
+                        topLeft = Offset(i * (bar + gap), size.height - h),
+                        size = Size(bar, h),
+                        cornerRadius = radius
+                    )
+                }
+            }
+    )
+}
+
+/**
+ * Ronde afspeelknop met een ring die laat zien hoe ver je in de aflevering bent.
+ * Niet begonnen: een volle ring. Begonnen: een vage baan met daarop de voortgang
+ * vanaf boven, met de klok mee. [progress] wordt bij het tekenen gelezen, zodat
+ * een lopende aflevering de knop niet elke tik opnieuw opbouwt.
+ */
+@Composable
+fun ProgressRingButton(
+    playing: Boolean,
+    color: Color,
+    progress: () -> Float?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    size: Dp = 44.dp,
+    playLabel: String = "Afspelen"
+) {
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .clickable(enabled = enabled, onClick = onClick)
+            .drawBehind {
+                val stroke = 2.dp.toPx()
+                val inset = stroke / 2f
+                val arcSize = Size(this.size.width - stroke, this.size.height - stroke)
+                val fraction = progress()
+                if (fraction == null) {
+                    drawCircle(color, radius = this.size.minDimension / 2f - inset, style = Stroke(stroke))
+                } else {
+                    drawCircle(color.copy(alpha = 0.28f), radius = this.size.minDimension / 2f - inset, style = Stroke(stroke))
+                    val sweep = 360f * fraction.coerceIn(0f, 1f)
+                    if (sweep > 0f) {
+                        drawArc(
+                            color = color,
+                            startAngle = -90f,
+                            sweepAngle = sweep,
+                            useCenter = false,
+                            topLeft = Offset(inset, inset),
+                            size = arcSize,
+                            style = Stroke(stroke, cap = StrokeCap.Round)
+                        )
+                    }
+                }
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            if (playing) WoolIcons.Pause else WoolIcons.Play,
+            if (playing) "Pauzeren" else playLabel,
+            tint = color,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 

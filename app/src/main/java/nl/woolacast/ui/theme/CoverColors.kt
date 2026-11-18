@@ -25,6 +25,15 @@ import kotlin.math.sin
 @Immutable
 data class CoverSeed(val hue: Float, val chroma: Float)
 
+/**
+ * De gemiddelde kleur van de onderrand van een hoes, in OKLCH. Daar lost de hoes
+ * op in de gloed, dus de gloed moet die kleur voortzetten. Bij een hoes met een
+ * grijsblauwe achtergrond en rode figuren is de hoofdtint rood, maar loopt de
+ * hoes grijsblauw af; een rode (donker: bruine) gloed sloot daar niet op aan.
+ */
+@Immutable
+data class CoverEdge(val lightness: Float, val chroma: Float, val hue: Float)
+
 /** De rollen die met de hoes meekleuren. Al het andere blijft neutraal. */
 @Immutable
 data class CoverColors(
@@ -47,13 +56,13 @@ private const val BRAND_HUE = 45f
 /** Oranje tot geel: donker worden die bruin, dus daar knijpen we de verzadiging harder af. */
 fun isWarmHue(hue: Float): Boolean = hue in 40f..110f
 
-fun coverColors(seed: CoverSeed?, dark: Boolean): CoverColors {
+fun coverColors(seed: CoverSeed?, dark: Boolean, edge: CoverEdge? = null): CoverColors {
     // Een grijze of zwart-witte hoes heeft geen kleur om over te nemen: dan het merk
     // als accent en een neutrale gloed.
     val hue = seed?.hue ?: BRAND_HUE
     val chroma = seed?.chroma ?: 0f
     val warm = seed != null && isWarmHue(hue)
-    return if (dark) {
+    val base = if (dark) {
         CoverColors(
             // Rood verbleekt op L .80 tot zalm (de gamut knijpt de verzadiging af); iets donkerder houdt het rood.
             accent = if (seed == null) EmberLight else oklch(if (hue < 40f || hue >= 340f) 0.77f else 0.80f, minOf(maxOf(chroma, 0.09f), 0.14f), hue),
@@ -83,6 +92,51 @@ fun coverColors(seed: CoverSeed?, dark: Boolean): CoverColors {
             bleedSaturation = 0.8f
         )
     }
+    // De vlakken (gloed en mini-speler) volgen de onderrand van de hoes, zodat de
+    // hoes er naadloos in overloopt. Het accent blijft de uitgesproken hoofdtint.
+    return if (edge == null) base else base.copy(glow = edgeGlow(edge, dark), mini = edgeMini(edge, dark))
+}
+
+/** Warme tinten worden donker bruin, dus daar blijft het vlak bijna grijs. */
+private fun surfaceChromaCap(hue: Float, cool: Float, warm: Float): Float =
+    if (isWarmHue(hue)) warm else cool
+
+private fun edgeGlow(edge: CoverEdge, dark: Boolean): Color =
+    if (dark) {
+        // Een lichte onderrand geeft een iets lichtere gloed, een zwarte een donkerdere;
+        // binnen grenzen waarin witte tekst ruim leesbaar blijft.
+        val l = (0.22f + 0.16f * edge.lightness).coerceIn(0.24f, 0.34f)
+        oklch(l, minOf(edge.chroma * 0.8f, surfaceChromaCap(edge.hue, 0.07f, 0.024f)), edge.hue)
+    } else {
+        oklch(0.93f, minOf(edge.chroma * 0.5f, 0.035f), edge.hue)
+    }
+
+private fun edgeMini(edge: CoverEdge, dark: Boolean): Color =
+    if (dark) oklch(0.26f, minOf(edge.chroma * 0.4f, surfaceChromaCap(edge.hue, 0.032f, 0.010f)), edge.hue)
+    else oklch(0.27f, minOf(edge.chroma * 0.3f, surfaceChromaCap(edge.hue, 0.03f, 0.012f)), edge.hue)
+
+/**
+ * De gemiddelde kleur van de onderste rijen van een (verkleinde) hoes van
+ * [width] pixels breed. Gemiddeld in OKLab, zodat lichte en donkere vlakken
+ * eerlijk mengen. Null als er niets te middelen valt.
+ */
+fun coverEdgeFromPixels(pixels: IntArray, width: Int, fraction: Float = 0.2f): CoverEdge? {
+    if (width <= 0 || pixels.size < width) return null
+    val height = pixels.size / width
+    val rows = (height * fraction).toInt().coerceIn(1, height)
+    var l = 0.0; var a = 0.0; var b = 0.0; var n = 0
+    for (y in height - rows until height) {
+        for (x in 0 until width) {
+            val argb = pixels[y * width + x]
+            if ((argb ushr 24) < 128) continue
+            val lab = argbToOklab(argb)
+            l += lab[0]; a += lab[1]; b += lab[2]; n++
+        }
+    }
+    if (n == 0) return null
+    l /= n; a /= n; b /= n
+    val hue = ((Math.toDegrees(atan2(b, a)) + 360.0) % 360.0).toFloat()
+    return CoverEdge(lightness = l.toFloat(), chroma = hypot(a, b).toFloat(), hue = hue)
 }
 
 /**
@@ -141,8 +195,8 @@ private fun srgbToLinear(c: Float): Float =
 private fun linearToSrgb(c: Float): Float =
     if (c <= 0.0031308f) c * 12.92f else (1.055f * c.toDouble().pow(1.0 / 2.4) - 0.055f).toFloat()
 
-/** [L, C, h in graden] van een ARGB-pixel. */
-fun argbToOklch(argb: Int): FloatArray {
+/** [L, a, b] van een ARGB-pixel. */
+private fun argbToOklab(argb: Int): FloatArray {
     val r = srgbToLinear(((argb shr 16) and 0xFF) / 255f)
     val g = srgbToLinear(((argb shr 8) and 0xFF) / 255f)
     val b = srgbToLinear((argb and 0xFF) / 255f)
@@ -152,6 +206,12 @@ fun argbToOklch(argb: Int): FloatArray {
     val lab0 = 0.2104542553f * l + 0.7936177850f * m - 0.0040720468f * s
     val lab1 = 1.9779984951f * l - 2.4285922050f * m + 0.4505937099f * s
     val lab2 = 0.0259040371f * l + 0.7827717662f * m - 0.8086757660f * s
+    return floatArrayOf(lab0, lab1, lab2)
+}
+
+/** [L, C, h in graden] van een ARGB-pixel. */
+fun argbToOklch(argb: Int): FloatArray {
+    val (lab0, lab1, lab2) = argbToOklab(argb)
     val c = hypot(lab1, lab2)
     val h = ((Math.toDegrees(atan2(lab2.toDouble(), lab1.toDouble())) + 360.0) % 360.0).toFloat()
     return floatArrayOf(lab0, c, h)

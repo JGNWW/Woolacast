@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
@@ -50,6 +51,7 @@ import nl.woolacast.data.feed.FeedClient
 import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.domain.Episode
+import kotlinx.coroutines.flow.MutableStateFlow
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.ui.common.MiniPlayer
 import nl.woolacast.ui.common.rememberCoverSeed
@@ -103,7 +105,11 @@ class BeeldgloedScreenshots {
         Show("blauwgroen", "Diepzee", "Getij Media",
             listOf("Licht op 4000 meter", "Het geluid van walvissen", "Leven zonder zon", "De kaart van de bodem", "Onder druk")),
         Show("amber", "Goud van Oud", "Radio Zolder",
-            listOf("De eerste radio van Hilversum", "Tulpen en schulden", "Een koning op de fiets", "Het water komt", "De laatste trekschuit"))
+            listOf("De eerste radio van Hilversum", "Tulpen en schulden", "Een koning op de fiets", "Het water komt", "De laatste trekschuit")),
+        // Grijsblauwe achtergrond met rode figuren: het accent is rood, maar de gloed
+        // moet grijsblauw doorlopen, zoals de onderrand van de hoes.
+        Show("grijsblauw", "Bagage", "De Avondkrant",
+            listOf("Een revolutie in gameland?", "De parels van het festival", "Romantasy is hot", "Nieuwe vrienden maken", "Wat blijft hangen"))
     )
 
     @Before
@@ -147,7 +153,7 @@ class BeeldgloedScreenshots {
                     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                         DetailScreen(
                             viewModel = models[current],
-                            playingId = playing.episodeId,
+                            playback = MutableStateFlow(playing), onTogglePlay = {},
                             onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {}
                         )
                         MiniPlayer(
@@ -164,7 +170,7 @@ class BeeldgloedScreenshots {
             save("podcast-${show.key}")
             // Gescrold: de gloed moet vloeiend tot in de afleveringen doorlopen,
             // en de bovenbalk wordt dicht zodra de hoes weg is.
-            compose.onNode(hasScrollAction()).performTouchInput { swipeUp(startY = bottom * 0.8f, endY = top + bottom * 0.2f) }
+            compose.onNode(hasScrollToIndexAction()).performTouchInput { swipeUp(startY = bottom * 0.8f, endY = top + bottom * 0.2f) }
             settle()
             save("podcast-${show.key}-gescrold")
         }
@@ -317,6 +323,7 @@ class BeeldgloedScreenshots {
             val bitmap = when {
                 "rood" in url -> red()
                 "blauwgroen" in url -> teal()
+                "grijsblauw" in url -> greyBlue()
                 else -> amber()
             }
             return SuccessResult(BitmapDrawable(context.resources, bitmap), chain.request, DataSource.MEMORY)
@@ -345,6 +352,23 @@ class BeeldgloedScreenshots {
             })
             val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 8f; color = 0x21FFFFFF }
             for (r in 1..14) drawCircle(size / 2, size * 1.25f, r * 48f, ring)
+        }
+
+        private fun greyBlue() = canvas {
+            drawRect(0f, 0f, size, size, Paint().apply {
+                shader = LinearGradient(0f, 0f, 0f, size, intArrayOf(0xFFB4B6C4.toInt(), 0xFF9C9FB2.toInt(), 0xFF8A8D9E.toInt()), floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP)
+            })
+            val fill = Paint(Paint.ANTI_ALIAS_FLAG)
+            // Figuren: rode hoofden en truien, witte en gele jassen, donkere benen.
+            fun body(x: Float, top: Float, coat: Int, head: Int) {
+                fill.color = 0xFF26262C.toInt(); drawRect(x - 30f, top + 190f, x + 30f, size, fill)
+                fill.color = coat; drawRoundRect(x - 55f, top + 50f, x + 55f, top + 230f, 40f, 40f, fill)
+                fill.color = head; drawCircle(x, top + 20f, 38f, fill)
+            }
+            body(140f, 230f, 0xFFF1ECE2.toInt(), 0xFFC8372D.toInt())
+            body(300f, 120f, 0xFFD8402F.toInt(), 0xFFF1ECE2.toInt())
+            body(250f, 300f, 0xFFE2C45A.toInt(), 0xFFD8402F.toInt())
+            body(450f, 200f, 0xFFF1ECE2.toInt(), 0xFFC8372D.toInt())
         }
 
         private fun amber() = canvas {

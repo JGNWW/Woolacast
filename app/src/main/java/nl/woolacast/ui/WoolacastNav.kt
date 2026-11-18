@@ -278,7 +278,7 @@ fun WoolacastNav(container: AppContainer) {
                         onOpenMaker = { name, fromShowId -> openMaker(name, fromShowId, MakerSort.POPULAR) }
                     )
                 }
-                tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.CHARTS, navController, container, chartsCountry, chartsState.query.source, openPodcast, playAndOpen)
             }
 
             navigation(startDestination = Tab.DISCOVER.home, route = Tab.DISCOVER.route) {
@@ -310,7 +310,7 @@ fun WoolacastNav(container: AppContainer) {
                         }
                     )
                 }
-                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.DISCOVER, navController, container, chartsCountry, chartsState.query.source, openPodcast, playAndOpen)
             }
 
             navigation(startDestination = Tab.LIBRARY.home, route = Tab.LIBRARY.route) {
@@ -361,7 +361,7 @@ fun WoolacastNav(container: AppContainer) {
                         onDone = { navController.popBackStack(Tab.LIBRARY.home, inclusive = false) }
                     )
                 }
-                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, playback.episodeId, openPodcast, playAndOpen)
+                tabScreens(Tab.LIBRARY, navController, container, chartsCountry, chartsState.query.source, openPodcast, playAndOpen)
             }
 
             composable(PLAYER_ROUTE) {
@@ -416,7 +416,6 @@ private fun NavGraphBuilder.tabScreens(
     container: AppContainer,
     chartsCountry: String,
     chartsSource: SourceId,
-    playingId: String?,
     openPodcast: (String, String?, String) -> Unit,
     playAndOpen: (Episode, String?) -> Unit
 ) {
@@ -514,7 +513,8 @@ private fun NavGraphBuilder.tabScreens(
         val podcast = detailViewModel.state.collectAsStateWithLifecycle().value.podcast
         DetailScreen(
             viewModel = detailViewModel,
-            playingId = playingId,
+            playback = container.player.state,
+            onTogglePlay = container.player::togglePlayPause,
             onOpenPodcast = openPodcast,
             onOpenTracker = {
                 navController.navigate(

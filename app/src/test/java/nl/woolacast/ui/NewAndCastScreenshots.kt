@@ -36,6 +36,7 @@ import nl.woolacast.data.local.LocalStore
 import nl.woolacast.data.local.SavedEpisode
 import nl.woolacast.data.maker.MakerRepository
 import nl.woolacast.domain.Episode
+import kotlinx.coroutines.flow.MutableStateFlow
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.ui.detail.DetailScreen
 import nl.woolacast.ui.detail.DetailViewModel
@@ -139,7 +140,7 @@ class NewAndCastScreenshots {
         )
         compose.setContent {
             Screen(dark) {
-                DetailScreen(viewModel = model, playingId = null, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
+                DetailScreen(viewModel = model, playback = MutableStateFlow(PlaybackState()), onTogglePlay = {}, onBack = {}, onPlay = { _, _ -> }, onOpenTracker = {}, onOpenMaker = {})
             }
         }
         settle { !model.state.value.loading }

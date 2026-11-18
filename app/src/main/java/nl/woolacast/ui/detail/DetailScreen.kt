@@ -75,6 +75,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.derivedStateOf
+import kotlinx.coroutines.flow.StateFlow
+import nl.woolacast.player.PlaybackState
+import nl.woolacast.ui.common.ProgressRingButton
 import nl.woolacast.domain.Catalog
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -114,7 +118,9 @@ import nl.woolacast.ui.theme.LocalChartColors
 @Composable
 fun DetailScreen(
     viewModel: DetailViewModel,
-    playingId: String?,
+    /** Wat de speler doet; de spelende rij leest er live zijn voortgang uit. */
+    playback: StateFlow<PlaybackState>,
+    onTogglePlay: () -> Unit,
     onBack: () -> Unit,
     onPlay: (Episode, String?) -> Unit,
     onOpenTracker: () -> Unit,
@@ -135,6 +141,11 @@ fun DetailScreen(
         }
     }
     val progress by viewModel.progress.collectAsStateWithLifecycle()
+    // De speler tikt twee keer per seconde; het scherm hoeft alleen opnieuw op te
+    // bouwen als de aflevering of play/pauze wisselt. De ring leest de positie zelf.
+    val playbackState = playback.collectAsStateWithLifecycle()
+    val playingId by remember { derivedStateOf { playbackState.value.episodeId } }
+    val isPlaying by remember { derivedStateOf { playbackState.value.isPlaying } }
     val queued by viewModel.queued.collectAsStateWithLifecycle()
     val stored by viewModel.stored.collectAsStateWithLifecycle()
     val downloadRecords by viewModel.downloadRecords.collectAsStateWithLifecycle()
@@ -398,17 +409,30 @@ fun DetailScreen(
                             else minOf(EPISODES_AT_FIRST, state.episodes.size)
                         items(shown, key = { "$it-${state.episodes[it].id}" }) { index ->
                             val episode = state.episodes[index]
+                            val current = playingId == episode.id
+                            val saved = progress[episode.id]
                             EpisodeRow(
                                 episode = episode,
-                                positionMs = progress[episode.id],
+                                positionMs = saved,
                                 chartRank = state.episodeRanks[episode.id],
                                 countryLabel = countryLabel,
-                                playing = playingId == episode.id,
+                                current = current,
+                                playing = current && isPlaying,
+                                ringProgress = {
+                                    val live = playbackState.value
+                                    if (live.episodeId == episode.id && live.durationMs > 0L) {
+                                        live.progress
+                                    } else {
+                                        val duration = episode.durationMillis
+                                        if (saved != null && saved > 0L && duration != null && duration > 0L) saved.toFloat() / duration else null
+                                    }
+                                },
                                 accent = cover.accent,
                                 inQueue = queued.any { it.id == episode.id },
                                 download = downloadState(episode.id),
                                 onOpen = { sheetEpisode = episode },
-                                onPlay = { onPlay(episode, labelFor(episode)) }
+                                // De aflevering die al klaarstaat pauzeer of hervat je hier ter plekke.
+                                onPlay = { if (current) onTogglePlay() else onPlay(episode, labelFor(episode)) }
                             )
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
                         }
@@ -665,7 +689,12 @@ private fun EpisodeRow(
     positionMs: Long?,
     chartRank: Int?,
     countryLabel: String,
+    /** Deze aflevering staat in de speler (spelend of gepauzeerd). */
+    current: Boolean,
+    /** En speelt nu echt. */
     playing: Boolean,
+    /** Hoe ver je bent, 0..1; null als je nog niet begon. */
+    ringProgress: () -> Float?,
     accent: Color,
     inQueue: Boolean,
     download: DownloadUi,
@@ -687,13 +716,13 @@ private fun EpisodeRow(
                 episode.title,
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold, lineHeight = 21.sp),
                 // Wat nu speelt krijgt de hoeskleur, net als in de wachtrij.
-                color = if (playing) accent else MaterialTheme.colorScheme.onSurface,
+                color = if (current) accent else MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(5.dp))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (playing) Equalizer(accent)
+                if (current) Equalizer(accent, animated = playing)
                 val duration = episode.durationMillis
                 val started = positionMs != null && duration != null && duration > 0L
                 Text(
@@ -745,22 +774,14 @@ private fun EpisodeRow(
                 }
             }
         }
-        // Een ring in de hoeskleur; wat al speelt toont pauze.
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .border(2.dp, accent, CircleShape)
-                .clickable(enabled = episode.audioUrl != null, onClick = onPlay),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                if (playing) WoolIcons.Pause else WoolIcons.Play,
-                if (playing) "Pauzeren" else "Afspelen",
-                tint = accent,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+        // Een ring in de hoeskleur die meeloopt met hoe ver je bent; wat speelt toont pauze.
+        ProgressRingButton(
+            playing = playing,
+            color = accent,
+            progress = ringProgress,
+            onClick = onPlay,
+            enabled = episode.audioUrl != null
+        )
     }
 }
 

@@ -93,6 +93,38 @@ class CoverColorsTest {
     }
 
     @Test
+    fun glowContinuesTheBottomEdgeNotTheAccent() {
+        // Grijsblauwe achtergrond met rode figuren in het midden: het accent is rood,
+        // maar de hoes loopt onderaan grijsblauw af, en daar moet de gloed op aansluiten.
+        val greyBlue = 0xFF9A9FB0.toInt()
+        val width = 20
+        val pixels = IntArray(width * width) { i ->
+            val y = i / width
+            val x = i % width
+            if (y in 4..14 && x in 5..14) red else greyBlue
+        }
+        val seed = coverSeedFromPixels(pixels)!!
+        assertEquals(argbToOklch(red)[2], seed.hue, 5f)
+        val edge = coverEdgeFromPixels(pixels, width)!!
+        assertEquals(argbToOklch(greyBlue)[2], edge.hue, 5f)
+
+        val colors = coverColors(seed, dark = true, edge = edge)
+        val glowHue = argbToOklch(colors.glow.toArgbInt())[2]
+        assertEquals(edge.hue, glowHue, 15f)
+        // Het accent blijft de rode hoofdtint.
+        assertEquals(coverColors(seed, dark = true).accent, colors.accent)
+        // En witte tekst blijft op de gloed ruim leesbaar.
+        assertTrue(contrast(colors.glow, Color.White) >= 7f)
+    }
+
+    @Test
+    fun warmEdgeStaysNearlyGrey() {
+        val edge = coverEdgeFromPixels(solid(amber), 20)!!
+        val glow = coverColors(coverSeedFromPixels(solid(amber)), dark = true, edge = edge).glow
+        assertTrue(argbToOklch(glow.toArgbInt())[1] <= 0.03f)
+    }
+
+    @Test
     fun oklchRoundTrips() {
         listOf(red, teal, amber).forEach { argb ->
             val lch = argbToOklch(argb)
