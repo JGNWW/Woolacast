@@ -607,9 +607,9 @@ Dat mechanisme is ook de basis onder de chart-tracker die nog moet komen.
 
 ## Stand van zaken
 
-De schermen volgen de mockup in `design/` — dezelfde maatvoering, kleuren,
-lijniconen en lettertypen (Bricolage Grotesque voor titels en noteringen,
-Instrument Sans voor de rest, beide gebundeld onder de SIL Open Font License).
+De schermen volgen de mockup in `design/` — dezelfde maatvoering, kleuren en
+lijniconen. Alle tekst staat in het lettertype van de telefoon zelf; de mockups
+gebruiken nog Bricolage Grotesque en Instrument Sans.
 
 | Onderdeel | Status |
 | --- | --- |

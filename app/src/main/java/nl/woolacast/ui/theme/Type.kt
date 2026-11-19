@@ -1,52 +1,23 @@
 package nl.woolacast.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import nl.woolacast.R
 
 /*
- * Dezelfde twee families als in de mockup, gebundeld als variabele fonts
- * (beide SIL Open Font License; de licentietekst zit in assets/fonts/).
- * Bricolage Grotesque voor titels en noteringen, Instrument Sans voor alle
- * interface- en lijsttekst.
+ * Alle tekst staat in het lettertype van de telefoon zelf (Roboto, of wat de
+ * fabrikant of de gebruiker gekozen heeft, zoals op een Samsung). Zo voelt de
+ * app als de rest van het toestel. De twee namen blijven, zodat titels en
+ * gewone tekst later weer los te kiezen zijn.
  */
 
-@OptIn(ExperimentalTextApi::class)
-private fun bricolage(weight: FontWeight) = Font(
-    resId = R.font.bricolage_grotesque,
-    weight = weight,
-    variationSettings = FontVariation.Settings(
-        FontVariation.weight(weight.weight),
-        // Optische maat op 'display': strakkere letters op grote maten.
-        FontVariation.Setting("opsz", 96f)
-    )
-)
+/** Titels en noteringen. */
+val DisplayFamily: FontFamily = FontFamily.Default
 
-@OptIn(ExperimentalTextApi::class)
-private fun instrument(weight: FontWeight) = Font(
-    resId = R.font.instrument_sans,
-    weight = weight,
-    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight))
-)
-
-val DisplayFamily = FontFamily(
-    bricolage(FontWeight.SemiBold),
-    bricolage(FontWeight.Bold),
-    bricolage(FontWeight.ExtraBold)
-)
-
-val BodyFamily = FontFamily(
-    instrument(FontWeight.Normal),
-    instrument(FontWeight.Medium),
-    instrument(FontWeight.SemiBold),
-    instrument(FontWeight.Bold)
-)
+/** Alle interface- en lijsttekst. */
+val BodyFamily: FontFamily = FontFamily.Default
 
 val WoolacastTypography = Typography(
     displaySmall = TextStyle(

@@ -8,8 +8,9 @@ ACC = "#F3A87F"; ON_ACC = "#2A1208"
 INK = "#EDEEF0"; SOFT = "rgba(237,238,240,.78)"; TRACK = "rgba(237,238,240,.2)"
 
 CSS = f"""
-@font-face{{font-family:Display;src:url('../../app/src/main/res/font/bricolage_grotesque.ttf');font-weight:100 900}}
-@font-face{{font-family:Body;src:url('../../app/src/main/res/font/instrument_sans.ttf');font-weight:100 900}}
+/* De app gebruikt het lettertype van de telefoon; hier Roboto als dat er is. */
+@font-face{{font-family:Display;src:local('Roboto'),local('Roboto-Regular');font-weight:100 900}}
+@font-face{{font-family:Body;src:local('Roboto'),local('Roboto-Regular');font-weight:100 900}}
 *{{box-sizing:border-box}}
 body{{margin:0;background:#0b0b0d;font-family:Body,sans-serif;color:{INK};-webkit-font-smoothing:antialiased}}
 .ph{{width:390px;height:844px;position:relative;overflow:hidden;flex:none;border-radius:28px;
