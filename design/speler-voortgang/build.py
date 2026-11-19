@@ -1,0 +1,185 @@
+"""Bouwt de vijf voorstellen voor de voortgangsbalk van de speler (plus de huidige
+versie als referentie) als losse HTML-schermen en één overzicht. Renderen: render.mjs."""
+import math, pathlib
+
+HERE = pathlib.Path(__file__).parent
+
+ACC = "#F3A87F"; ON_ACC = "#2A1208"
+INK = "#EDEEF0"; SOFT = "rgba(237,238,240,.78)"; TRACK = "rgba(237,238,240,.2)"
+
+CSS = f"""
+@font-face{{font-family:Display;src:url('../../app/src/main/res/font/bricolage_grotesque.ttf');font-weight:100 900}}
+@font-face{{font-family:Body;src:url('../../app/src/main/res/font/instrument_sans.ttf');font-weight:100 900}}
+*{{box-sizing:border-box}}
+body{{margin:0;background:#0b0b0d;font-family:Body,sans-serif;color:{INK};-webkit-font-smoothing:antialiased}}
+.ph{{width:390px;height:844px;position:relative;overflow:hidden;flex:none;border-radius:28px;
+  background:linear-gradient(180deg,#423233 0,#3a2f2d 300px,#2c2422 430px,#1d1b1c 640px,#0e0f11 844px)}}
+.sb{{height:28px;display:flex;justify-content:space-between;align-items:center;padding:4px 22px 0;font-size:13px;font-weight:600}}
+.top{{display:flex;justify-content:space-between;padding:10px 10px 0}}
+.ib{{width:44px;height:44px;border-radius:22px;background:rgba(14,15,17,.72);display:flex;align-items:center;justify-content:center}}
+.cover{{width:290px;height:290px;border-radius:18px;margin:14px auto 0;overflow:hidden;position:relative;box-shadow:0 18px 40px rgba(0,0,0,.45)}}
+.body{{padding:0 20px}}
+h1{{font-family:Display;font-weight:700;font-size:25px;line-height:29px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
+.meta{{display:flex;align-items:center;gap:2px;font-size:14px;color:{SOFT};margin-top:4px;min-height:28px}}
+.save{{width:44px;height:44px;border-radius:22px;box-shadow:inset 0 0 0 1.5px rgba(237,238,240,.5);display:flex;align-items:center;justify-content:center;flex:none;margin-bottom:4px}}
+.times{{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:{SOFT};font-variant-numeric:tabular-nums}}
+.transport{{display:flex;align-items:center;justify-content:space-between;padding:0 4px}}
+.tp{{width:48px;height:48px;display:flex;align-items:center;justify-content:center}}
+.play{{width:72px;height:72px;border-radius:36px;background:{ACC};color:{ON_ACC};display:flex;align-items:center;justify-content:center}}
+.tools{{display:flex;gap:8px;margin-top:14px}}
+.tool{{height:44px;border-radius:22px;background:rgba(237,238,240,.09);display:flex;align-items:center;gap:6px;padding:0 12px;font-size:14px;font-weight:600}}
+.card{{position:absolute;left:10px;right:10px;bottom:-40px;height:90px;border-radius:20px;background:#1d1e22;padding:18px 18px;font-size:12px;font-weight:700;letter-spacing:.08em;color:#A0A3AA;display:flex;justify-content:space-between}}
+.card b{{color:{ACC};letter-spacing:0;font-size:14px}}
+.pill{{display:inline-flex;align-items:center;gap:6px;height:32px;border-radius:16px;padding:0 12px 0 10px;font-size:13px;font-weight:600}}
+"""
+
+BARS = '<svg width="{s}" height="{s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M5 20v-7"/><path d="M12 20V4"/><path d="M19 20v-11"/></svg>'
+CHEV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
+
+COVER = """<svg width="290" height="290" viewBox="0 0 320 320">
+<rect width="320" height="320" fill="#F4F2F3"/>
+<path d="M200 0L320 0 320 200z" fill="#E9E6E8"/>
+<path d="M40 320C40 250 70 215 120 205 160 198 200 210 225 240 245 265 250 300 250 320z" fill="#F2B9CB"/>
+<path d="M110 320L128 225 165 222 180 320z" fill="#FFFFFF"/>
+<path d="M95 150C80 95 105 55 150 52 195 50 215 90 208 135 204 165 215 190 200 205 175 220 120 215 100 195 85 182 100 170 95 150z" fill="#1C1716"/>
+<ellipse cx="152" cy="128" rx="34" ry="42" fill="#EBC4A9"/>
+<rect x="140" y="160" width="24" height="40" rx="8" fill="#E2B497"/>
+<text x="20" y="34" font-family="Display" font-weight="800" font-size="15" fill="#1D2156">STUDIO</text>
+<text x="20" y="50" font-family="Display" font-weight="800" font-size="15" fill="#1D2156">NOORD</text>
+<g font-family="Display" font-weight="800" font-size="46" fill="#1D2156" text-anchor="middle">
+<text x="276" y="72">P</text><text x="276" y="114">I</text><text x="276" y="156">E</text><text x="276" y="198">T</text><text x="276" y="240">E</text><text x="276" y="282">R</text></g>
+<rect x="250" y="292" width="16" height="10" fill="#E0508F"/><rect x="270" y="292" width="34" height="10" fill="#E0508F"/>
+</svg>"""
+
+TRANSPORT = f"""<div class="transport">
+<div class="tp"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 102.3-5.7"/><path d="M4 4v4.5h4.5"/><text x="12" y="15.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" font-family="Body">15</text></svg></div>
+<div class="tp"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="2.6" height="14" rx="1"/><path d="M19 5v14L9 12z"/></svg></div>
+<div class="play"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4.4" height="15" rx="1.4"/><rect x="13.6" y="4.5" width="4.4" height="15" rx="1.4"/></svg></div>
+<div class="tp" style="opacity:.38"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5v14l10-7z"/><rect x="16.4" y="5" width="2.6" height="14" rx="1"/></svg></div>
+<div class="tp"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 11-2.3-5.7"/><path d="M20 4v4.5h-4.5"/><text x="12" y="15.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" stroke="none" font-family="Body">30</text></svg></div>
+</div>"""
+
+TOOLS = """<div class="tools">
+<div class="tool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 16a8 8 0 1116 0"/><path d="M12 16l4-5"/></svg>1×</div>
+<div class="tool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>Timer</div>
+<div class="tool"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h10"/><path d="M17 14.5v5l3.5-2.5z" fill="currentColor"/></svg>Wachtrij</div>
+<div class="tool" style="width:44px;padding:0;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13v6h14v-6"/></svg></div>
+</div>"""
+
+TITLE = "#412 – Lotte Brink: ‘Ik ben niet van de grote woorden’"
+SHOW = "PIETER! · 4 nov"
+CHART = "Podcast op #62 · Apple Podcasts NL"
+PCT = 0.74
+POS, LEFT = "44:12", "-15:36"
+W = 350  # breedte van de balk
+
+def wave(x0, x1, y, amp, length):
+    d = f"M{x0:.1f} {y}"; x = x0; up = True; half = length / 2
+    while x < x1 - .01:
+        nx = min(x + half, x1); peak = amp * 2 * ((nx - x) / half)
+        d += f" Q{(x+nx)/2:.1f} {y - peak if up else y + peak:.1f} {nx:.1f} {y}"
+        x = nx; up = not up
+    return d
+
+def head(meta_extra="", eyebrow=""):
+    return f"""<div class="body" style="margin-top:20px">{eyebrow}
+<div style="display:flex;align-items:flex-end;gap:12px"><div style="flex:1;min-width:0"><h1>{TITLE}</h1>
+<div class="meta">{SHOW}{CHEV}</div>{meta_extra}</div>
+<div class="save"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12v16l-6-4-6 4z"/></svg></div></div></div>"""
+
+def phone(region, cover_extra="", meta_extra="", eyebrow="", tail_gap=10):
+    return f"""<div class="ph"><div class="sb"><span>15:36</span><span>66</span></div>
+<div class="top"><div class="ib"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+<div class="ib"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div></div>
+<div class="cover">{COVER}{cover_extra}</div>
+{head(meta_extra, eyebrow)}
+{region}
+<div class="body"><div style="height:{tail_gap}px"></div>{TRANSPORT}{TOOLS}</div>
+<div class="card"><span>OVER DEZE AFLEVERING</span><b>Meer</b></div></div>"""
+
+at = W * PCT
+
+# ---- Huidig: korte golf, wit handvat, pil los erboven ----
+cur_region = f"""<div style="margin-top:8px"><span class="pill" style="background:rgba(237,238,240,.09)">{BARS.format(s=13)}{CHART}</span></div>
+<svg width="{W}" height="28" style="display:block;margin-top:14px">
+<line x1="{at:.0f}" y1="14" x2="{W-2}" y2="14" stroke="{TRACK}" stroke-width="4" stroke-linecap="round"/>
+<path d="{wave(2, at, 14, 2.5, 12)}" fill="none" stroke="{ACC}" stroke-width="4" stroke-linecap="round"/>
+<circle cx="{at:.0f}" cy="14" r="8" fill="{INK}"/></svg>
+<div class="times" style="margin-top:4px"><span>{POS}</span><span>{LEFT}</span></div>"""
+
+# ---- 1. Rustig: rechte lijn, handvat in de accentkleur, notering als bovenregel ----
+v1_eyebrow = f"""<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:{ACC};margin-bottom:6px">{BARS.format(s=12)}#62 · APPLE PODCASTS NL</div>"""
+v1_region = f"""<svg width="{W}" height="28" style="display:block;margin-top:14px">
+<line x1="2" y1="14" x2="{W-2}" y2="14" stroke="{TRACK}" stroke-width="4" stroke-linecap="round"/>
+<line x1="2" y1="14" x2="{at:.0f}" y2="14" stroke="{ACC}" stroke-width="4" stroke-linecap="round"/>
+<circle cx="{at:.0f}" cy="14" r="7" fill="{ACC}"/></svg>
+<div class="times" style="margin-top:4px"><span>{POS}</span><span>{LEFT}</span></div>"""
+
+# ---- 2. Lange golf: Material 3 Expressive zoals bedoeld ----
+gap = 7
+v2_region = f"""<div style="margin-top:14px"><span class="pill" style="box-shadow:inset 0 0 0 1.5px rgba(237,238,240,.35)">{BARS.format(s=13)}{CHART}{CHEV}</span></div>
+<svg width="{W}" height="32" style="display:block;margin-top:16px">
+<line x1="{at+gap:.0f}" y1="16" x2="{W-2}" y2="16" stroke="{TRACK}" stroke-width="4" stroke-linecap="round"/>
+<path d="{wave(2, at-gap, 16, 1.6, 40)}" fill="none" stroke="{ACC}" stroke-width="4" stroke-linecap="round"/>
+<rect x="{at-2:.0f}" y="4" width="4" height="24" rx="2" fill="{ACC}"/></svg>
+<div class="times" style="margin-top:2px"><span>{POS}</span><span>{LEFT}</span></div>"""
+
+# ---- 3. Eén regel: tijden naast de balk, notering als badge op de hoes ----
+inner = W - 2 * 52
+at3 = inner * PCT
+v3_cover = f"""<div style="position:absolute;left:10px;bottom:10px;display:flex;align-items:center;gap:5px;height:28px;padding:0 10px 0 8px;border-radius:14px;background:rgba(14,15,17,.72);font-size:12px;font-weight:700">{BARS.format(s=12)}#62 Apple NL</div>"""
+v3_region = f"""<div style="display:flex;align-items:center;gap:10px;margin-top:20px">
+<span class="times" style="width:42px">{POS}</span>
+<svg width="{inner}" height="28" style="display:block;flex:none">
+<line x1="3" y1="14" x2="{inner-3}" y2="14" stroke="{TRACK}" stroke-width="6" stroke-linecap="round"/>
+<line x1="3" y1="14" x2="{at3:.0f}" y2="14" stroke="{ACC}" stroke-width="6" stroke-linecap="round"/>
+<circle cx="{at3:.0f}" cy="14" r="8" fill="{ACC}" stroke="#2c2422" stroke-width="3"/></svg>
+<span class="times" style="width:42px;justify-content:flex-end">{LEFT}</span></div>"""
+
+# ---- 4. Voortgangskaart: notering, balk en tijden als één blok ----
+inner4 = W - 32
+at4 = inner4 * PCT
+v4_region = f"""<div style="margin-top:14px;border-radius:18px;background:rgba(237,238,240,.07);padding:12px 16px 12px">
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600">
+<span style="display:flex;align-items:center;gap:6px">{BARS.format(s=13)}#62 · Apple Podcasts NL</span>{CHEV}</div>
+<svg width="{inner4}" height="26" style="display:block;margin-top:8px">
+<line x1="2" y1="13" x2="{inner4-2}" y2="13" stroke="{TRACK}" stroke-width="4" stroke-linecap="round"/>
+<line x1="2" y1="13" x2="{at4:.0f}" y2="13" stroke="{ACC}" stroke-width="4" stroke-linecap="round"/>
+<circle cx="{at4:.0f}" cy="13" r="7" fill="{ACC}"/></svg>
+<div class="times" style="margin-top:2px"><span>{POS}</span><span>nog 15 min</span></div></div>"""
+
+# ---- 5. Dikke balk: geen los handvat, notering als link onder de titel ----
+v5_meta = f"""<div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:650;color:{ACC};margin-top:2px">{BARS.format(s=12)}Nr. 62 in Apple Podcasts NL{CHEV}</div>"""
+v5_region = f"""<svg width="{W}" height="28" style="display:block;margin-top:18px">
+<rect x="0" y="9" width="{W}" height="10" rx="5" fill="{TRACK}"/>
+<rect x="0" y="9" width="{at:.0f}" height="10" rx="5" fill="{ACC}"/>
+<rect x="{at-9:.0f}" y="11" width="2" height="6" rx="1" fill="{ON_ACC}" opacity=".5"/></svg>
+<div class="times" style="margin-top:4px"><span>{POS}</span><span>{LEFT}</span></div>"""
+
+VARIANTS = [
+    ("huidig", "Nu", "Korte golf (12 dp) leest als een gedraaid touw; wit handvat hoort niet bij de vulling; de notering zweeft los boven de balk.",
+     phone(f'<div class="body">{cur_region}</div>')),
+    ("1-rustig", "1 · Rustig", "Rechte lijn, handvat in de accentkleur. De notering wordt een bovenregel boven de titel, zoals ‘WEKELIJKS · 100 AFL.’ op de podcastpagina.",
+     phone(f'<div class="body">{v1_region}</div>', eyebrow=v1_eyebrow, tail_gap=14)),
+    ("2-lange-golf", "2 · Lange golf", "Material 3 Expressive zoals bedoeld: golflengte 40 dp, lage golf, een opening bij een staafvormig handvat. Notering als omlijnde pil met ruimte eromheen.",
+     phone(f'<div class="body">{v2_region}</div>', tail_gap=6)),
+    ("3-een-regel", "3 · Eén regel", "Tijden links en rechts van een dikkere balk; de notering als badge op de hoes. Compact: de hoes kan groter.",
+     phone(f'<div class="body">{v3_region}</div>', cover_extra=v3_cover, tail_gap=18)),
+    ("4-kaart", "4 · Voortgangskaart", "Notering, balk en tijden in één zacht vlak. Rechts ‘nog 15 min’ in plaats van een aftellende klok.",
+     phone(f'<div class="body">{v4_region}</div>', tail_gap=12)),
+    ("5-dikke-balk", "5 · Dikke balk", "Een balk van 10 dp zonder los handvat; bij slepen groeit hij naar 16 dp. De notering als accentlink onder de showregel.",
+     phone(f'<div class="body">{v5_region}</div>', meta_extra=v5_meta, tail_gap=14)),
+]
+
+def page(body, width):
+    return f"<!doctype html><html lang='nl'><head><meta charset='utf-8'><style>{CSS}</style></head><body style='width:{width}px'>{body}</body></html>"
+
+for key, _, _, html in VARIANTS:
+    (HERE / f"{key}.html").write_text(page(f"<div style='padding:0'>{html}</div>", 390))
+
+cells = "".join(
+    f"""<div style="width:390px;flex:none"><div style="font-family:Display;font-weight:700;font-size:24px;margin-bottom:6px">{label}</div>
+<div style="font-size:14px;line-height:19px;color:#A0A3AA;height:80px">{desc}</div>{html}</div>""" for _, label, desc, html in VARIANTS)
+overview = f"""<div style="padding:40px;display:flex;flex-wrap:wrap;gap:40px;width:{3*390+2*40+80}px">{cells}</div>"""
+(HERE / "overzicht.html").write_text(page(overview, 3 * 390 + 2 * 40 + 80))
+print("ok")
