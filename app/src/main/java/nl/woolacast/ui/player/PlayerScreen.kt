@@ -1,5 +1,12 @@
 package nl.woolacast.ui.player
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
+import kotlin.math.PI
+import kotlin.math.sin
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -8,6 +15,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -318,14 +326,16 @@ fun PlayerScreen(
                     CastingLabel(castRoutes, Modifier.padding(top = 8.dp))
 
                     state.chartLabel?.let { label ->
-                        Spacer(Modifier.height(8.dp))
+                        // Omlijnd, met een pijltje: het is een ingang naar de podcastpagina, geen losse status.
+                        Spacer(Modifier.height(12.dp))
+                        val pill = RoundedCornerShape(16.dp)
                         Row(
                             modifier = Modifier
                                 .heightIn(min = 32.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f))
+                                .clip(pill)
+                                .border(1.5.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f), pill)
                                 .clickable(onClick = onOpenPodcast)
-                                .padding(start = 10.dp, end = 12.dp),
+                                .padding(start = 10.dp, end = 10.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -335,8 +345,10 @@ fun PlayerScreen(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
+                            Icon(WoolIcons.ChevronRight, null, modifier = Modifier.size(13.dp))
                         }
                     }
 
@@ -919,9 +931,11 @@ private fun TimeLabel(text: String, color: Color) {
 }
 
 /**
- * De voortgangsbalk, in stukken geknipt waar een hoofdstuk begint. De vulling
- * golft in het stuk dat speelt zolang de aflevering loopt (zoals Material 3
- * Expressive); gepauzeerd is ze recht. Slepen en tikken zoeken beide.
+ * De voortgangsbalk, in stukken geknipt waar een hoofdstuk begint. Zolang de
+ * aflevering speelt golft de vulling in het stuk dat speelt: een lange, lage golf
+ * die langzaam naar het handvat toe loopt (Material 3 Expressive). Gepauzeerd
+ * vlakt hij af tot een rechte lijn. Het handvat is een staafje met aan
+ * weerszijden een opening. Slepen en tikken zoeken beide.
  */
 @Composable
 fun ScrubBar(
@@ -942,10 +956,27 @@ fun ScrubBar(
     val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
     val fill = if (buffering && progress == 0f) MaterialTheme.colorScheme.outline else accent
 
+    // De golf groeit en krimpt zacht bij afspelen en pauzeren, in plaats van te verspringen.
+    val waveHeight by animateFloatAsState(if (wavy) 1f else 0f, tween(450), label = "golf")
+    // Waar de golf is: telt door zolang hij speelt, en blijft staan bij pauze, zodat
+    // hij daarna verder loopt waar hij was. Wie animaties uit heeft, krijgt een stilstaande golf.
+    val phase = remember { mutableFloatStateOf(0f) }
+    val moves = rememberAnimationsOn()
+    LaunchedEffect(wavy, moves) {
+        if (!wavy || !moves) return@LaunchedEffect
+        var last = 0L
+        while (true) {
+            withInfiniteAnimationFrameNanos { now ->
+                if (last != 0L) phase.floatValue = (phase.floatValue + (now - last) / 1e9f / WAVE_PERIOD_S) % 1f
+                last = now
+            }
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(28.dp)
+            .height(32.dp)
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
                 width = size.width.toFloat()
@@ -969,64 +1000,86 @@ fun ScrubBar(
                         onScrub(dragValue)
                     }
                 )
-            },
-        contentAlignment = Alignment.CenterStart
+            }
     ) {
-        Canvas(Modifier.fillMaxWidth().height(12.dp)) {
+        Canvas(Modifier.fillMaxSize()) {
             val stroke = 4.dp.toPx()
             val cap = stroke / 2
-            val gap = 4.dp.toPx()
+            val chapterGap = 4.dp.toPx()
             val y = size.height / 2
-            val at = size.width * progress.coerceIn(0f, 1f)
+            val thumbWidth = 4.dp.toPx()
+            // Het handvat blijft heel, ook helemaal aan het begin of eind.
+            val at = (size.width * progress.coerceIn(0f, 1f)).coerceIn(thumbWidth / 2, size.width - thumbWidth / 2)
+            // Ruimte tussen handvat en lijn, plus de halve lijndikte van de ronde uiteinden.
+            val thumbGap = if (enabled) 6.dp.toPx() + cap else 0f
             val bounds = listOf(0f) + marks.filter { it in 0.01f..0.99f }.sorted() + 1f
             bounds.zipWithNext().forEach { (a, b) ->
                 // Ronde uiteinden steken een halve lijndikte uit; de opening blijft zo echt open.
-                val start = size.width * a + (if (a > 0f) gap / 2 else 0f) + cap
-                val end = size.width * b - (if (b < 1f) gap / 2 else 0f) - cap
+                val start = size.width * a + (if (a > 0f) chapterGap / 2 else 0f) + cap
+                val end = size.width * b - (if (b < 1f) chapterGap / 2 else 0f) - cap
                 if (end <= start) return@forEach
-                drawLine(track, Offset(start, y), Offset(end, y), stroke, StrokeCap.Round)
-                val filledTo = minOf(end, at)
-                if (filledTo < start) return@forEach
-                if (wavy && at < end + cap) {
-                    drawPath(wave(start, filledTo, y, amplitude = 2.5.dp.toPx(), length = 12.dp.toPx()), fill, style = Stroke(stroke, cap = StrokeCap.Round))
-                } else {
-                    drawLine(fill, Offset(start, y), Offset(filledTo, y), stroke, StrokeCap.Round)
+                val filledTo = minOf(end, at - thumbGap)
+                if (filledTo > start) {
+                    // Alleen het stuk dat nu speelt golft; afgeronde hoofdstukken liggen stil.
+                    val playing = at <= end + cap + thumbGap
+                    if (playing && waveHeight > 0.01f) {
+                        drawPath(
+                            wave(start, filledTo, y, amplitude = 2.dp.toPx() * waveHeight, length = 40.dp.toPx(), phase = phase.floatValue),
+                            fill,
+                            style = Stroke(stroke, cap = StrokeCap.Round)
+                        )
+                    } else {
+                        drawLine(fill, Offset(start, y), Offset(filledTo, y), stroke, StrokeCap.Round)
+                    }
                 }
+                val restFrom = maxOf(start, at + thumbGap)
+                if (end > restFrom) drawLine(track, Offset(restFrom, y), Offset(end, y), stroke, StrokeCap.Round)
             }
-        }
-        if (enabled) {
-            // Het handvat is altijd een hele stip: op 0 staat hij links tegen het
-            // begin, op 1 rechts tegen het eind, en daartussen schuift hij mee.
-            // (Eerst zat hij in een vak zo breed als de vulling; aan het begin
-            // werd hij daardoor tot een streepje geperst.)
-            BoxWithConstraints(Modifier.fillMaxWidth()) {
-                val thumb = 16.dp
-                Box(
-                    Modifier
-                        .offset(x = (maxWidth - thumb) * progress.coerceIn(0f, 1f))
-                        .size(thumb)
-                        .shadow(3.dp, CircleShape)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.onSurface)
+            if (enabled) {
+                val thumbHeight = 24.dp.toPx()
+                drawRoundRect(
+                    color = fill,
+                    topLeft = Offset(at - thumbWidth / 2, y - thumbHeight / 2),
+                    size = Size(thumbWidth, thumbHeight),
+                    cornerRadius = CornerRadius(thumbWidth / 2)
                 )
             }
         }
     }
 }
 
-/** Een golflijn van [from] tot [to] rond hoogte [y]: halve golven als kwadratische bogen. */
-private fun wave(from: Float, to: Float, y: Float, amplitude: Float, length: Float): Path = Path().apply {
-    moveTo(from, y)
-    val half = length / 2
+/** Seconden per golflengte: zo loopt de golf rustig, niet zenuwachtig. */
+private const val WAVE_PERIOD_S = 2.8f
+
+/** Staan animaties aan? Uit bij "Animaties verwijderen" in de toegankelijkheidsinstellingen. */
+@Composable
+private fun rememberAnimationsOn(): Boolean {
+    val context = LocalContext.current
+    return remember(context) {
+        runCatching {
+            android.provider.Settings.Global.getFloat(
+                context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f
+            ) > 0f
+        }.getOrDefault(true)
+    }
+}
+
+/**
+ * Een golflijn van [from] tot [to] rond hoogte [y], die met [phase] (0–1, één
+ * golflengte) naar rechts opschuift. Aan beide uiteinden loopt hij terug naar
+ * de middellijn, zodat begin en eind rustig blijven terwijl de golf beweegt.
+ */
+private fun wave(from: Float, to: Float, y: Float, amplitude: Float, length: Float, phase: Float): Path = Path().apply {
+    val taper = length / 4
+    val step = 2f
     var x = from
-    var up = true
+    moveTo(from, y)
     while (x < to) {
-        val next = minOf(x + half, to)
-        // Een afgebroken laatste halve golf wordt evenredig lager, zodat hij netjes uitloopt.
-        val peak = amplitude * 2 * ((next - x) / half)
-        quadraticTo((x + next) / 2, if (up) y - peak else y + peak, next, y)
-        x = next
-        up = !up
+        x = minOf(x + step, to)
+        val edge = minOf(x - from, to - x).coerceIn(0f, taper) / taper
+        val ease = edge * edge * (3 - 2 * edge)
+        val angle = 2 * PI * ((x - from) / length - phase)
+        lineTo(x, y - amplitude * ease * sin(angle).toFloat())
     }
 }
 
