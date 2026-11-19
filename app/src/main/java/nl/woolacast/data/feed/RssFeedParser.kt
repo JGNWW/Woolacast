@@ -36,7 +36,9 @@ data class ParsedEpisode(
     val sourceName: String? = null,
     val chaptersUrl: String? = null,
     val inlineChapters: List<Chapter> = emptyList(),
-    val transcript: TranscriptRef? = null
+    val transcript: TranscriptRef? = null,
+    /** De opgemaakte omschrijving (HTML), als de feed die heeft. */
+    val descriptionHtml: String? = null
 )
 
 data class ParsedFeed(
@@ -86,7 +88,9 @@ class RssFeedParser {
 
                     "description", "itunes:summary", "summary", "content", "content:encoded" ->
                         if (item != null) {
-                            if (item.description.isNullOrBlank()) item.description = text(parser)
+                            // Een feed heeft vaak meerdere versies: platte tekst in <description>
+                            // en de opgemaakte in <content:encoded>. Bewaar ze allemaal en kies bij het bouwen.
+                            text(parser)?.let { if (name !in item.descriptions) item.descriptions[name] = it }
                         } else if (channelDescription.isNullOrBlank()) {
                             channelDescription = text(parser)
                         }
@@ -179,7 +183,8 @@ class RssFeedParser {
     private class MutableItem {
         var guid: String? = null
         var title: String? = null
-        var description: String? = null
+        /** Elke omschrijving die de aflevering meegeeft, per tag. */
+        val descriptions = linkedMapOf<String, String>()
         var audioUrl: String? = null
         var duration: Long? = null
         var releaseDate: String? = null
@@ -193,10 +198,15 @@ class RssFeedParser {
 
         fun build(): ParsedEpisode? {
             val heading = title ?: return null
+            // De opgemaakte versie heeft de links en alinea's; anders de eerste die er is.
+            val rich = listOf("content:encoded", "content", "description", "summary", "itunes:summary")
+                .firstNotNullOfOrNull { tag -> descriptions[tag]?.takeIf { Html.looksLikeHtml(it) } }
+            val best = rich ?: descriptions.values.firstOrNull()
             return ParsedEpisode(
                 guid = guid ?: audioUrl ?: heading,
                 title = Html.toPlainText(heading) ?: heading,
-                description = Html.toPlainText(description),
+                description = Html.toPlainText(best),
+                descriptionHtml = rich,
                 audioUrl = secure(audioUrl),
                 durationMillis = duration,
                 releaseDate = releaseDate,

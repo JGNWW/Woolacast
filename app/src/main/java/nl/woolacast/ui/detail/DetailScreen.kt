@@ -79,6 +79,7 @@ import androidx.compose.runtime.derivedStateOf
 import kotlinx.coroutines.flow.StateFlow
 import nl.woolacast.player.PlaybackState
 import nl.woolacast.ui.common.ProgressRingButton
+import nl.woolacast.ui.common.rememberRichDescription
 import nl.woolacast.domain.Catalog
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -875,8 +876,9 @@ private fun EpisodeSheet(
             )
         }
 
-        episode.description?.takeIf { it.isNotBlank() }?.let { description ->
+        rememberRichDescription(episode.descriptionHtml, episode.description, MaterialTheme.colorScheme.primary)?.let { description ->
             Spacer(Modifier.height(18.dp))
+            // Alinea's en links zoals de maker ze opmaakte; een link opent in de browser.
             Text(
                 description,
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp),

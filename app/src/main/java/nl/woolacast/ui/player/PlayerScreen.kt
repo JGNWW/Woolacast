@@ -1,5 +1,7 @@
 package nl.woolacast.ui.player
 
+import androidx.compose.ui.text.AnnotatedString
+import nl.woolacast.ui.common.rememberRichDescription
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.withInfiniteAnimationFrameNanos
@@ -498,7 +500,7 @@ fun PlayerScreen(
                         onOpenQueue = { sheet = Sheet.QUEUE }
                     )
                 }
-                episode?.description?.takeIf { it.isNotBlank() }?.let { AboutCard(it) }
+                episode?.let { rememberRichDescription(it.descriptionHtml, it.description, cover.accent) }?.let { AboutCard(it) }
                 Spacer(Modifier.height(14.dp))
             }
         }
@@ -839,7 +841,7 @@ private fun UpNextCard(
 
 /** Waar de aflevering over gaat, in zes regels; tikken klapt de rest uit. */
 @Composable
-private fun AboutCard(description: String) {
+private fun AboutCard(description: AnnotatedString) {
     var open by remember { mutableStateOf(false) }
     PlayerCard(
         "OVER DEZE AFLEVERING",

@@ -92,7 +92,8 @@ class PodcastRepository(
                 link = parsed.link,
                 chaptersUrl = parsed.chaptersUrl,
                 inlineChapters = parsed.inlineChapters,
-                transcript = parsed.transcript
+                transcript = parsed.transcript,
+                descriptionHtml = parsed.descriptionHtml
             )
         }
 

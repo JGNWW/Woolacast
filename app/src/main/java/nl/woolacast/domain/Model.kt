@@ -58,6 +58,7 @@ data class Episode(
     val showId: String,
     val showTitle: String,
     val title: String,
+    /** Platte tekst, met witregels tussen alinea's. */
     val description: String?,
     val artworkUrl: String?,
     /** Directe audio-URL uit de catalogus; null betekent niet afspeelbaar. */
@@ -71,7 +72,9 @@ data class Episode(
     /** Hoofdstukken die in de feed zelf staan (Podlove Simple Chapters). */
     val inlineChapters: List<Chapter> = emptyList(),
     /** De beste transcriptie die de maker meelevert, als die er is. */
-    val transcript: TranscriptRef? = null
+    val transcript: TranscriptRef? = null,
+    /** De omschrijving zoals de maker hem opmaakte (HTML), met alinea's en links; null als de feed alleen platte tekst heeft. */
+    val descriptionHtml: String? = null
 )
 
 /** Een hoofdstuk: waar het begint en hoe het heet. */
